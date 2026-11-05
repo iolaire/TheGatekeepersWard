@@ -1,0 +1,55 @@
+# Xcode
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+
+# Build output
+build/
+*.o
+*.d
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# macOS system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor / IDE
+*.swp
+*.swo
+.vscode/
+*.orig
+
+# Archives & packages
+*.dmg
+*.pkg
+*.zip
+
+# Secrets & credentials — never commit these
+*.pem
+*.p12
+*.cer
+*.provisionprofile
+secrets.json
+.env
+
+# Kiro local session state (steering & specs are committed, sessions are not)
+.kiro/sessions/
