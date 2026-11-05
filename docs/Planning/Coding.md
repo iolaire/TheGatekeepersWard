@@ -1,0 +1,3 @@
+MVP - A minimum viable product is a version of a product with just enough features to be usable by early customers who can then provide feedback for future product development. A focus on releasing an MVP means that developers potentially avoid lengthy and unnecessary work. Instead, they iterate on working versions and respond to feedback, challenging and validating assumptions about a product's requirements
+
+Pragmatic YAGNI & Direct Solutions - Pragmatic YAGNI refers to applying the "You Aren't Gonna Need It" principle with a practical focus on delivering only what is needed now, avoiding overengineering, while Direct Solutions emphasizes building straightforward, effective systems that solve current problems without unnecessary complexity.
