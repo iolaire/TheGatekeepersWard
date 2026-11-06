@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Commit-time gate: build and run the non-integration test suite.
+# Install with: ln -sf ../../scripts/git-hooks/pre-commit .git/hooks/pre-commit
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+swift build
+swift test --skip integration

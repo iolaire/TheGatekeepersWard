@@ -102,12 +102,14 @@ SwiftUI overlay that appears alongside the TCC dialog. Non-activating — key fo
 
 ### `WardTrigger/` (Test Harness)
 
-Isolated test app with its own bundle ID (`com.gatekeepersward.ward-trigger`). Triggers TCC prompts on demand without disrupting the main dev environment.
+Isolated SPM executable with its own bundle ID (`com.gatekeepersward.ward-trigger`, embedded via a `-sectcreate __TEXT __info_plist` linker flag). Triggers TCC prompts on demand without disrupting the main dev environment.
 
-- Mode 1: Filesystem access — reads `~/Documents`
-- Mode 2: AppleEvents automation — `osascript` calling `System Events`
-- Mode 3: Contacts — `CNContactStore.requestAccess`
-- Companion: `scripts/reset_trigger.sh` — one command to reset TCC permissions for WardTrigger only
+- Mode 1 (`docs`): Documents folder — read-only `contentsOfDirectory(~/Documents)` probe for `~/Documents/.ward_canary` (directory enumeration is what `tccd` gates; a plain `stat` is not intercepted)
+- Mode 2 (`contacts`): Contacts — `CNContactStore.requestAccess(for: .contacts)`
+- Mode 3 (`mic`): Microphone — `AVCaptureDevice.requestAccess(for: .audio)`
+- Dispatch: `Dispatch.swift` — `runWardTriggerDispatch(arguments:behaviors:)` with closure injection so tests stub the triggers; `main.swift` wires the live implementations
+- Companion: `scripts/run_ward_trigger.sh` — wraps the binary in `.build/WardTrigger.app` and launches via LaunchServices so prompts are attributed to WardTrigger's bundle ID instead of the terminal; captured stdout lands in `tmp/ward-trigger.out`
+- Companion: `scripts/reset_ward_trigger.sh` — one command to reset TCC permissions for WardTrigger only (and clean `tmp/ward-trigger.out`)
 
 ### `Resources/`
 

@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Build and Test Gate",
+      "trigger": "PostTaskExec",
+      "action": {
+        "type": "command",
+        "command": "swift build && swift test --skip integration"
+      }
+    }
+  ]
+}

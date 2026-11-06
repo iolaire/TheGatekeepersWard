@@ -21,6 +21,10 @@ build/
 
 # Swift Package Manager
 .build/
+
+# WardTrigger local run artifacts
+tmp/
+ward-trigger.out
 .swiftpm/
 
 # macOS system files

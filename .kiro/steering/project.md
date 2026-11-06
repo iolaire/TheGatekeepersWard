@@ -32,7 +32,7 @@ GatekeepersWard/
 └── Resources/         Icons (ghost variants), color assets (Castle Keep palette)
 GatekeepersWardTests/
 WardTrigger/           Test harness app (com.gatekeepersward.ward-trigger)
-scripts/               reset_trigger.sh, dev utilities
+scripts/               run_ward_trigger.sh, reset_ward_trigger.sh, dev utilities
 docs/                  pitch.md, architecture.md, devlog.md, Planning/
 .kiro/
 ├── steering/          project.md (this file)

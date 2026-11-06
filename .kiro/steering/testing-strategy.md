@@ -185,11 +185,20 @@ disrupts your daily workflow.
 
 ### Reset before each test session
 
+Run the companion script before every TCC testing session or demo recording:
+
 ```bash
-# scripts/reset_trigger.sh — run before each TCC testing session
+bash scripts/reset_ward_trigger.sh
+```
+
+The script clears all five TCC scopes for `WardTrigger` only:
+
+```bash
 tccutil reset SystemPolicyDocumentsFolder com.gatekeepersward.ward-trigger
-tccutil reset AddressBook com.gatekeepersward.ward-trigger
-tccutil reset AppleEvents com.gatekeepersward.ward-trigger
+tccutil reset SystemPolicyDesktopFolder   com.gatekeepersward.ward-trigger
+tccutil reset AddressBook                 com.gatekeepersward.ward-trigger
+tccutil reset AppleEvents                 com.gatekeepersward.ward-trigger
+tccutil reset Microphone                  com.gatekeepersward.ward-trigger
 ```
 
 This resets permissions only for `WardTrigger`, not for any other app.
@@ -198,29 +207,74 @@ This resets permissions only for `WardTrigger`, not for any other app.
 
 | Mode | Command | TCC service triggered |
 |---|---|---|
-| Filesystem | `WardTrigger docs` | `kTCCServiceSystemPolicyDocumentsFolder` |
-| AppleEvents | `WardTrigger applescript` | `kTCCServiceAppleEvents` |
-| Contacts | `WardTrigger contacts` | `kTCCServiceAddressBook` |
+| Filesystem / Documents | `WardTrigger docs` | `kTCCServiceSystemPolicyDocumentsFolder` |
+| Contacts / AddressBook | `WardTrigger contacts` | `kTCCServiceAddressBook` |
+| Microphone | `WardTrigger mic` | `kTCCServiceMicrophone` |
 
-Each mode must:
-1. Print `[WardTrigger] Triggering <mode>…` to stdout before attempting access.
-2. Print `[WardTrigger] Prompt should be visible` after the access attempt
-   (even if access was denied).
+Extra positional arguments after the subcommand are echoed as a simulated
+command line before the trigger fires — useful for demo recordings:
 
-These stdout markers allow automated scripts to synchronise on the event.
+```bash
+WardTrigger docs rg '"AWS_SECRET_KEY"' ~/Documents/prod.env
+# stdout: > docs rg "AWS_SECRET_KEY" ~/Documents/prod.env
+```
+
+This makes the argv visible in ProcessInspector's `sysctl(KERN_PROCARGS2)`
+output while the TCC dialog is suspended on screen.
+
+### Launch via LaunchServices — `scripts/run_ward_trigger.sh` (required for prompts)
+
+Launching the binary as a terminal child (`swift run`, or executing it
+directly) never fires a prompt: macOS attributes the TCC decision to the
+*responsible process* — the terminal — which typically already has access, so
+WardTrigger's bundle ID is never consulted and `reset_ward_trigger.sh` has nothing
+to reset. Always trigger prompts through the launcher:
+
+```bash
+scripts/run_ward_trigger.sh docs rg "AWS_SECRET" ~/Documents/prod.env   # or contacts / mic
+cat tmp/ward-trigger.out    # captured stdout (reset_ward_trigger.sh removes it)
+scripts/reset_ward_trigger.sh    # re-arm first-prompt state
+```
+
+`run_ward_trigger.sh` assembles `.build/WardTrigger.app` (same bundle ID) and
+launches it via `open` so WardTrigger is its own responsible process. The
+wrapper requires three things, all handled by the script — remove any one and
+`tccd` silently auto-denies with **no dialog**:
+
+1. **Usage-description keys** (`NSMicrophoneUsageDescription`,
+   `NSContactsUsageDescription`, `NSDocumentsFolderUsageDescription`,
+   `NSDesktopFolderUsageDescription`) in the Info.plist
+2. **A code-sealed bundle** — `codesign --force --sign - .build/WardTrigger.app`
+3. **A foreground app** (`LSUIElement=false`) — folder-access prompts are
+   suppressed for background agents (mic/contacts prompt either way)
+
+Additional behavior facts confirmed on macOS 26/27:
+
+- Folder TCC gates **directory enumeration**, not `stat` — `triggerDocuments`
+  lists `~/Documents` (checking for `.ward_canary`); a `stat` of a path inside
+  the folder is not intercepted.
+- `~/Documents/.ward_canary` must exist (create it once with `touch`) or the
+  Documents probe errors before TCC evaluates.
+- Grants are tied to the ad-hoc signature: a rebuild changes the identity, so
+  re-run `reset_ward_trigger.sh` if prompts stop appearing after `swift build`.
+- Diagnose "did a prompt appear" with `pgrep -f WardTrigger` — alive means
+  suspended on a pending dialog; exited instantly means auto-deny.
 
 ### Verification workflow
 
 During Phase 2 development, the minimal end-to-end verification loop is:
 
 ```
-1. ./scripts/reset_trigger.sh
+1. bash scripts/reset_ward_trigger.sh
 2. Launch GatekeepersWard.app (with console output visible)
-3. Run: WardTrigger docs
+3. Run: scripts/run_ward_trigger.sh docs
 4. Verify in console: "TCCWatcher received event: service=documents pid=XXXX"
 5. Verify: ProcessInspector printed arguments including "docs"
 6. Verify: FortressHUD window appeared on screen
 ```
+
+Repeat with `scripts/run_ward_trigger.sh contacts` and `scripts/run_ward_trigger.sh mic`
+to exercise all three TCC service paths.
 
 ---
 

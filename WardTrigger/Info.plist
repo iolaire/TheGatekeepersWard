@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>com.gatekeepersward.ward-trigger</string>
+	<key>CFBundleName</key>
+	<string>WardTrigger</string>
+	<key>CFBundleDisplayName</key>
+	<string>WardTrigger</string>
+	<key>CFBundleExecutable</key>
+	<string>WardTrigger</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>WardTrigger probes the Documents canary file to trigger the Documents folder TCC prompt for Gatekeeper's Ward testing.</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>WardTrigger is reset via tccutil for repeatable Desktop folder TCC prompts during Gatekeeper's Ward testing.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>WardTrigger requests Contacts access to trigger the Contacts TCC prompt for Gatekeeper's Ward testing.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>WardTrigger requests microphone access to trigger the Microphone TCC prompt for Gatekeeper's Ward testing.</string>
+</dict>
+</plist>
