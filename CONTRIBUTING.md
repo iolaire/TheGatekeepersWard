@@ -37,6 +37,10 @@ Run tests before opening a PR:
 xcodebuild test -scheme GatekeepersWard -destination 'platform=macOS'
 ```
 
+## License
+
+By contributing, you agree your contributions are licensed under the [Apache License 2.0](LICENSE).
+
 ## Team
 
 - iolaire

@@ -92,7 +92,7 @@ This fits the *"stitch together a chimera of technologies"* prompt to the letter
 
 ## Hackathon Compliance Checklist
 
-- [ ] Public GitHub repository with detectable MIT `LICENSE` file
+- [ ] Public GitHub repository with detectable Apache 2.0 `LICENSE` file
 - [ ] `.kiro/` directory with `specs/`, `hooks/`, and `steering/` populated
 - [ ] Spec-driven development documented (scores in *Technological Implementation 20%*)
 - [ ] Property-Based Testing (PBT) implemented on `KERN_PROCARGS2` parser and log parser
