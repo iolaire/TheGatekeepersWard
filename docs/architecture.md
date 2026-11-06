@@ -2,42 +2,48 @@
 
 ## Overview
 
-Gatekeeper's Ward is a native macOS menu bar app written in Swift. It operates entirely in userspace with no kernel extensions.
+Gatekeeper's Ward is a native macOS menu bar app written in Swift. It operates entirely in userspace — no kernel extensions, no SIP bypass, no restricted Apple entitlements.
+
+The lore: your macOS system is a **fortified castle courtyard**. Unprivileged child processes are mischievous **wandering spirits** trying to slip past the portcullis gates into protected vaults (`~/Documents`, Contacts, Camera). Gatekeeper's Ward is the **night watch lantern** — spotting these phantoms suspended mid-escape while macOS holds the gate shut.
+
+---
+
+## System Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    macOS User Session                        │
-│                                                             │
-│  ┌─────────────┐    TCC event     ┌──────────────────────┐  │
-│  │  AI Agent   │ ───────────────► │  macOS Permission    │  │
-│  │  (Cursor /  │                  │  Dialog (TCC)        │  │
-│  │  Claude /   │                  └──────────────────────┘  │
-│  │  Kiro etc.) │                           │                 │
-│  └──────┬──────┘                           │ simultaneously  │
-│         │ spawns                           ▼                 │
-│  ┌──────▼──────┐   ┌──────────────────────────────────────┐ │
-│  │ Child proc  │   │        Gatekeeper's Ward              │ │
-│  │ (bash/node  │   │                                       │ │
-│  │  /python)   │   │  ┌─────────────┐  ┌───────────────┐  │ │
-│  └─────────────┘   │  │  Permission │  │  Process      │  │ │
-│                    │  │  Watcher    │  │  Inspector    │  │ │
-│  sysctl            │  │  (log stream│  │  (sysctl      │  │ │
-│  KERN_PROCARGS2    │  │   unified)  │  │  KERN_PROCARGS│  │ │
-│  ◄─────────────────│  └──────┬──────┘  └───────┬───────┘  │ │
-│                    │         │                  │          │ │
-│                    │         └────────┬─────────┘          │ │
-│                    │                  ▼                     │ │
-│                    │         ┌────────────────┐             │ │
-│                    │         │  Fortress HUD  │             │ │
-│                    │         │  (SwiftUI)     │             │ │
-│                    │         └────────────────┘             │ │
-│                    │                                        │ │
-│                    │  ┌─────────────┐  ┌────────────────┐  │ │
-│                    │  │  Menu Bar   │  │  Decision Log  │  │ │
-│                    │  │  Controller │  │  (persistent)  │  │ │
-│                    │  └─────────────┘  └────────────────┘  │ │
-│                    └──────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                      macOS User Session                          │
+│                                                                 │
+│  ┌─────────────┐    TCC event     ┌────────────────────────┐    │
+│  │  AI Agent   │ ───────────────► │  macOS TCC Dialog      │    │
+│  │  (Cursor /  │                  │  "App wants access…"   │    │
+│  │  Claude /   │                  └────────────────────────┘    │
+│  │  Kiro etc.) │                           │                    │
+│  └──────┬──────┘                           │ simultaneously     │
+│         │ spawns                           ▼                    │
+│  ┌──────▼──────┐   ┌────────────────────────────────────────┐   │
+│  │ Child proc  │   │          Gatekeeper's Ward              │   │
+│  │ (bash/node/ │   │                                        │   │
+│  │  python/rg) │   │  ┌──────────────┐  ┌────────────────┐  │   │
+│  └─────────────┘   │  │  TCCWatcher  │  │ ProcessInspect │  │   │
+│                    │  │  log stream  │  │ sysctl         │  │   │
+│  sysctl            │  │  NDJSON      │  │ KERN_PROCARGS2 │  │   │
+│  KERN_PROCARGS2 ◄──│  └──────┬───────┘  └───────┬────────┘  │   │
+│                    │         │                   │           │   │
+│                    │         └─────────┬──────────┘           │   │
+│                    │                   ▼                      │   │
+│                    │        ┌──────────────────┐              │   │
+│                    │        │  Fortress HUD     │              │   │
+│                    │        │  NSPanel floating │              │   │
+│                    │        │  SwiftUI view     │              │   │
+│                    │        └──────────────────┘              │   │
+│                    │                                          │   │
+│                    │  ┌──────────────┐  ┌──────────────────┐  │   │
+│                    │  │  MenuBar     │  │  Decision Log    │  │   │
+│                    │  │  Ghost icon  │  │  (persistent)    │  │   │
+│                    │  └──────────────┘  └──────────────────┘  │   │
+│                    └────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -45,92 +51,143 @@ Gatekeeper's Ward is a native macOS menu bar app written in Swift. It operates e
 ## Modules
 
 ### `App/`
-Entry point (`@main`), app lifecycle, dependency wiring.
+`@main` entry point, `AppDelegate`, dependency wiring, and app lifecycle. Owns the top-level object graph.
 
 ### `Core/` — Process Inspection Engine
-The heart of the app. Given a PID, resolves the full process story:
 
-- **`ProcessInspector`** — wraps `sysctl(KERN_PROCARGS2)` to extract binary path, argv, working directory, and environment
-- **`ProcessTree`** — walks the parent chain (`KERN_PROC_PPID`) to build a readable call stack from AI agent → shell → command
-- **`ProcessSnapshot`** — value type holding everything we know about a process at a point in time
+The forensic heart of the app. Given a PID, resolves the full process story using only unprivileged Darwin APIs.
 
-Key API:
+- **`ProcessInspector`** — wraps `sysctl(KERN_PROCARGS2)` to extract binary path, argv, and environment; uses `proc_pidinfo(PROC_PIDVNODEPATHINFO)` for working directory
+- **`ProcessTree`** — walks the parent chain via `sysctl(KERN_PROC_PID)` to build the full lineage from AI agent → child shell → command
+- **`ProcessSnapshot`** — immutable value type holding everything known about a process at a point in time
+
 ```swift
-let snapshot = try ProcessInspector.snapshot(pid: 12847)
-// snapshot.binaryPath → "/bin/zsh"
-// snapshot.arguments  → ["-c", "find ~/Documents -name '*.pem'"]
-// snapshot.parentChain → ["cursor", "node", "zsh"]
+let snapshot = try ProcessInspector.snapshot(pid: 14582)
+// snapshot.binaryPath  → "/usr/local/bin/rg"
+// snapshot.arguments   → ["rg", "AWS_SECRET", "/Users/dev/Documents"]
+// snapshot.parentChain → ["cursor", "node", "zsh", "rg"]
+// snapshot.workingDir  → "/Users/dev/Projects/myapp"
 ```
+
+**Key insight:** when macOS fires a TCC prompt, `tccd` puts the requesting process thread to sleep until the user clicks Allow/Don't Allow. The process stays in the Darwin process table — `sysctl(KERN_PROCARGS2, pid)` will succeed reliably because the process cannot exit while the dialog is active.
 
 ### `Permissions/` — TCC Event Watcher
-Listens for macOS TCC permission challenge events using the unified log:
 
-```bash
-log stream --predicate 'subsystem == "com.apple.TCC"'
-```
+Listens for macOS TCC permission challenge events using the unified log.
 
-- **`TCCWatcher`** — runs `log stream` in a subprocess, parses relevant events
-- **`TCCEvent`** — model: app bundle ID, resource type (Documents/Desktop/etc.), timestamp
-- On event: hands PID to `ProcessInspector`, fires HUD
+- **`TCCWatcher`** — runs `/usr/bin/log stream` as a background subprocess; parses NDJSON lines for events in `subsystem == "com.apple.TCC"`; extracts `clientPID` and `responsiblePID`
+- **`TCCEvent`** — model: service key, client PID, responsible PID, timestamp
+- Parser supports both structured NDJSON fields and regex fallback on `eventMessage` to handle wording changes across macOS versions (Ventura / Sonoma / Sequoia)
+
+On event: hands PIDs to `ProcessInspector`, fires HUD.
 
 ### `HUD/` — Fortress HUD Overlay
-SwiftUI overlay window that appears alongside the TCC dialog.
 
-- **`FortressHUDWindow`** — frameless, dark, borderless `NSPanel` positioned near the TCC dialog
-- **`FortressHUDView`** — gothic-styled SwiftUI view showing process forensics
-- **`ProcessCard`** — individual row component: PID, binary, path, args
-- Gothic aesthetic: dark stone palette, serif headers, subtle red accent for suspicious signals
+SwiftUI overlay that appears alongside the TCC dialog. Non-activating — key focus stays on Apple's native dialog.
+
+- **`FortressHUDWindow`** — frameless `NSPanel`:
+  - `styleMask: [.nonactivatingPanel, .borderless]`
+  - `level: .floating` (appears over normal windows without stealing focus)
+  - Positioned near upper-right, offset from native TCC prompt
+- **`FortressHUDView`** — SwiftUI view with The Castle Keep aesthetic
+- **`ProcessLineageView`** — animated lineage tree: each process node has a spirit icon with a contextual tool (🔍 for `rg`, 🗝️ for shell scripts)
+- **`RiskTagView`** — highlights suspicious arguments in Mischief Crimson (`#F43F5E`): `.pem`, `.env`, `id_rsa`, `curl`, `base64`, `nc`
 
 ### `MenuBar/`
-- **`MenuBarController`** — manages `NSStatusItem`, the skull icon, and the dropdown menu
-- Menu items: Show History, Preferences, Quit
+
+- **`MenuBarController`** — manages `NSStatusItem` with animated ghost icon
+  - Idle state: ghost floats gently
+  - Active TCC event: ghost perks up, wide eyes, raises lantern
+- Dropdown: past permission challenges history, preferences, quit
+
+### `WardTrigger/` (Test Harness)
+
+Isolated test app with its own bundle ID (`com.gatekeepersward.ward-trigger`). Triggers TCC prompts on demand without disrupting the main dev environment.
+
+- Mode 1: Filesystem access — reads `~/Documents`
+- Mode 2: AppleEvents automation — `osascript` calling `System Events`
+- Mode 3: Contacts — `CNContactStore.requestAccess`
+- Companion: `scripts/reset_trigger.sh` — one command to reset TCC permissions for WardTrigger only
 
 ### `Resources/`
-- App icon (gothic castle / skull variants)
-- SF Symbol overrides
-- Color assets (gothic palette)
+
+- App icon: ghost with lantern variants
+- Menu bar icons: ghost idle / ghost alert states
+- Color assets: The Castle Keep palette (see below)
+
+---
+
+## Visual Design — The Castle Keep Palette
+
+| Token | Hex | Role |
+|---|---|---|
+| Spectral Ectoplasm | `#E0E7FF` / `#C7D2FE` | Ghost figures, translucent glow |
+| Kiro Violet | `#8B5CF6` | Portcullis bars, lineage tree nodes, headers |
+| Torchlight Amber | `#F59E0B` | Suspended status badge, lantern glow, warnings |
+| Obsidian Slate | `#0E1013` | Background (frosted acrylic `.ultraThinMaterial`) |
+| Mischief Crimson | `#F43F5E` | Suspicious argument highlight |
+| Wrought Iron | `#2D3139` | Border / panel edge |
 
 ---
 
 ## Data Flow
 
 ```
-unified log event (TCC challenge)
+unified log event (TCC challenge fires)
         │
         ▼
-  TCCWatcher.parse(logLine)
+  TCCWatcher.parse(ndjsonLine)          ← /usr/bin/log stream subprocess
         │
         ▼
-  ProcessInspector.snapshot(pid:)  ← sysctl KERN_PROCARGS2
+  ProcessInspector.snapshot(pid:)       ← sysctl KERN_PROCARGS2
         │
         ▼
-  ProcessTree.walk(from: pid)      ← sysctl KERN_PROC_PPID (chain)
+  ProcessTree.walk(from: pid)           ← sysctl KERN_PROC_PID chain
         │
         ▼
-  FortressHUDWindow.present(snapshot:)
+  FortressHUDWindow.present(snapshot:)  ← NSPanel .floating, non-activating
         │
         ▼
-  User sees HUD alongside macOS dialog → makes informed Allow/Deny
+  User sees HUD alongside macOS dialog  → informed Allow / Deny
+  ("Let Spirit Pass" / "Lower Portcullis")
         │
         ▼
-  DecisionLog.record(event:decision:)
+  DecisionLog.record(event:, decision:) ← persisted history in menu bar
 ```
+
+---
+
+## Implementation Roadmap
+
+| Phase | Dates | Focus |
+|---|---|---|
+| 1 | Nov 06–08 | LICENSE, `.kiro/specs/`, `Package.swift`, `WardTrigger` test harness |
+| 2 | Nov 09–13 | `ProcessInspector`, `TCCWatcher`, console verification |
+| 3 | Nov 14–19 | `FortressHUDWindow`, `FortressHUDView`, `MenuBarController` |
+| 4 | Nov 20–23 | Real agent testing (Cursor/Claude/Kiro), edge case hardening |
+| 5 | Nov 24–27 | Property-Based Testing, unit tests, `.kiro/hooks/` |
+| 6 | Nov 28–Dec 01 | Demo video (≤3 min), Devpost write-up, blog post |
+| 7 | Dec 02–04 | Final polish, buffer, submit |
+
+**Deadline:** December 4, 2026 at 2:00 PM PT
 
 ---
 
 ## Constraints & Non-Goals
 
-- **No SIP bypass** — we only read process args for processes we own or that are unprotected
-- **No kernel extensions** — pure userspace
-- **No restricted entitlements** — ships as a normal notarised app
-- **No blocking** — we inform, we don't intercept; Apple's TCC dialog remains in control
+- **No SIP bypass** — purely unprivileged userspace
+- **No kernel extensions** — zero `KEXT` or `DriverKit`
+- **No restricted entitlements** — ships as a standard notarised `.app`
+- **No blocking** — we inform; Apple's TCC dialog retains full control
 - **macOS 13+ (Ventura)** — minimum target for unified log API stability
+- **i18n** — post-MVP only, after fully functional English release
 
 ---
 
 ## Open Questions
 
-- [ ] Can we reliably time the HUD to appear *before* the user clicks on the TCC dialog?
-- [ ] What's the latency budget between `log stream` event and HUD display?
-- [ ] For child processes we don't own, are there sysctl limits we need to handle gracefully?
-- [ ] Best approach for positioning the HUD window relative to the TCC dialog?
+- [ ] Can we reliably time the HUD to appear *before* the user clicks the TCC dialog? (Answer: yes — `tccd` blocks the child process thread until user responds)
+- [ ] Exact `log stream` NDJSON field names for `clientPID` / `responsiblePID` across Ventura / Sonoma / Sequoia?
+- [ ] Best window position strategy: fixed upper-right vs. dynamically offset near native TCC dialog?
+- [ ] Multi-monitor handling — which screen does the TCC dialog appear on?
+- [ ] PBT framework: `swift-testing` property tests or a third-party like `SwiftCheck`?

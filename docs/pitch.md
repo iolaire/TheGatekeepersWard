@@ -6,14 +6,14 @@
 
 ## The Problem
 
-Modern AI coding agents (Cursor, Claude Code, Kiro, etc.) operate autonomously inside your filesystem. When they trigger a macOS TCC (Transparency, Consent, and Control) permission dialog, you see only:
+Modern AI coding agents (Cursor, Claude Code, Kiro, GitHub Copilot Workspace) operate autonomously inside your filesystem. When they trigger a macOS TCC (Transparency, Consent, and Control) permission dialog, you see only:
 
 > *"XYZ app would like to access your Documents folder."*
 
 You have no context. Is this:
 - A benign `cat README.md`?
 - A subshell doing `find ~/Documents -name "*.pem"`?
-- Something worse?
+- A `rg "AWS_SECRET_KEY" ~/Documents/prod.env`?
 
 You're forced to **Allow** or **Don't Allow** blind.
 
@@ -21,52 +21,101 @@ You're forced to **Allow** or **Don't Allow** blind.
 
 ## The Solution
 
-**Gatekeeper's Ward** — a lightweight macOS menu bar utility that intercepts permission challenges and immediately shows you a gothic forensic HUD alongside Apple's own dialog:
+**Gatekeeper's Ward** — a lightweight macOS menu bar utility that intercepts permission challenges and immediately shows a gothic Fortress HUD alongside Apple's own dialog.
 
-| Field | Example |
-|---|---|
-| Requesting agent PID | `12847 (cursor)` |
-| Child process binary | `/bin/zsh` |
-| Working directory | `/Users/iolaire/Projects/myapp` |
-| Full command line | `zsh -c "find ~/Documents -name '*.pem'"` |
-| Parent chain | `cursor → node → zsh` |
+```
+┌──────────────────────────────────────────────────────────────┐
+│ 👻 GATEKEEPER'S WARD              [kTCCServiceDocumentsFolder] │
+├──────────────────────────────────────────────────────────────┤
+│ Master App:  Cursor (PID 14201)                              │
+│ Lineage:     cursor ➔ node ➔ zsh ➔ ripgrep (PID 14582)       │
+├──────────────────────────────────────────────────────────────┤
+│ EXECUTED COMMAND                                             │
+│ $ rg "AWS_SECRET" /Users/dev/Documents                       │
+├──────────────────────────────────────────────────────────────┤
+│ ⚠️ Target: ~/Documents/Work/production.env   Spirit Paused   │
+│                                                              │
+│  [ Let Spirit Pass ]              [ Lower Portcullis ]       │
+└──────────────────────────────────────────────────────────────┘
+```
 
 You can now make an **informed** decision.
 
 ---
 
+## The Castle Keep & The Wandering Spirits
+
+Your macOS system is a **fortified castle courtyard**. Unprivileged child processes are mischievous, curious spirits trying to slip past the portcullis gates into protected vaults. Gatekeeper's Ward is the **night watch lantern** that spots these phantoms suspended mid-escape while macOS holds the gate shut.
+
+The process lineage tree shows each spirit carrying a contextual tool (🔍 for `ripgrep`, 🗝️ for shell scripts). The menu bar ghost perks up with wide eyes and raises a lantern the instant a TCC event fires.
+
+---
+
 ## Why It's Compelling for Kiroween
 
-This is the ultimate Frankenstein project:
-- 🧟 **POSIX undead**: `sysctl KERN_PROCARGS2` — a 20-year-old Unix API, resurrected
-- 🏰 **Gothic UI**: full fortress HUD overlay in SwiftUI
-- 🤖 **AI-agent native**: purpose-built for the agentic coding era
-- 🕯️ **Zero dark magic**: no kernel extensions, no SIP bypass, no scary entitlements
+**Frankenstein angle** — stitching together technologies that have no right to work so well together:
+
+| Layer | Technology |
+|---|---|
+| Zombie API | `sysctl KERN_PROCARGS2` — 20-year-old POSIX, resurrected |
+| Modern declarative | SwiftUI Fortress HUD |
+| System forensics | macOS Unified Log NDJSON streaming |
+| Target domain | Cutting-edge autonomous AI coding agents |
+
+This fits the *"stitch together a chimera of technologies"* prompt to the letter.
+
+**Costume Contest angle** — the gothic Castle Keep aesthetic is deliberate and polished: obsidian background, Kiro Violet portcullis bars, Torchlight Amber lantern glow, Mischief Crimson for suspicious arguments.
 
 ---
 
 ## Differentiators
 
-- **No kernel extension required** — pure userspace, ships as a notarised .app
+- **No kernel extension required** — pure userspace, ships as a notarised `.app`
+- **No SIP bypass** — zero security compromise required to install or run
 - **Open source** — developers can audit and trust it
-- **Zero config** — install, run, done
+- **Zero config** — install, launch, done
 - **Real-time** — HUD appears the instant the permission dialog fires, not after
+- **Process suspension insight** — `tccd` blocks the child process thread while waiting; the process is frozen in the table, so `sysctl` inspection is always reliable
 
 ---
 
-## Demo Flow (for judges)
+## Hackathon Category & Prize Strategy
 
-1. Launch Gatekeeper's Ward → gothic skull appears in menu bar
-2. Open Cursor / Claude Code, trigger a permission-requiring action
-3. macOS shows its dialog — simultaneously, our Fortress HUD pops up
-4. HUD reveals: agent PID, child binary, working directory, full args
-5. Developer makes informed choice; HUD logs decision to history
+| Category | Rationale |
+|---|---|
+| **Frankenstein ($5,000)** | Primary target: POSIX + Unified Log + SwiftUI + AI agents |
+| **Best Demo ($1,000)** | ≤3 min video: agent runs command → HUD reveals hidden script instantly |
+| **Costume Contest** | Polished gothic Castle Keep aesthetic throughout |
+| **Bonus Blog/Social** | Short Dev.to post + `#KiroweenHackathon26` tweet for bonus credits |
+
+---
+
+## Hackathon Compliance Checklist
+
+- [ ] Public GitHub repository with detectable MIT `LICENSE` file
+- [ ] `.kiro/` directory with `specs/`, `hooks/`, and `steering/` populated
+- [ ] Spec-driven development documented (scores in *Technological Implementation 20%*)
+- [ ] Property-Based Testing (PBT) implemented on `KERN_PROCARGS2` parser and log parser
+- [ ] Demo video ≤3 minutes on a real Mac device
+- [ ] Devpost submission submitted before December 4, 2026 at 2:00 PM PT
+
+---
+
+## Demo Flow (≤3 Minutes)
+
+| Timecode | Scene | Narrative |
+|---|---|---|
+| 0:00–0:35 | AI agent running + opaque TCC modal | *"Modern agents work fast but macOS blinds us. You're forced to guess."* |
+| 0:35–1:15 | Same trigger — Fortress HUD slides in alongside Apple's dialog | *"Gatekeeper's Ward unmasks the intruder instantly."* |
+| 1:15–2:00 | Code walkthrough: `sysctl KERN_PROCARGS2` + Unified Log | *"Zero dark magic. No kernel extensions. We resurrect 20-year-old POSIX APIs."* |
+| 2:00–2:35 | Menu bar ghost, history dropdown, risk tags on suspicious args | *"Full lineage tree, process history, automatic risk tagging."* |
+| 2:35–3:00 | Kiro spec-driven development + GitHub repo link | *"Built for Kiroween 2026. Know who knocks before you drop the castle gates."* |
 
 ---
 
 ## Future (post-hackathon)
 
-- Allow/block rules engine (auto-deny suspicious patterns)
-- Brew install distribution
+- Allow/block rules engine (auto-deny patterns matching `.pem`, `curl | sh`, etc.)
+- `brew install` distribution
 - Integration with popular agent frameworks' audit logs
-- iOS companion (for remote monitoring)
+- Optional: companion app for remote monitoring
