@@ -53,3 +53,4 @@ secrets.json
 
 # Kiro local session state (steering & specs are committed, sessions are not)
 .kiro/sessions/
+.kiro/tools/.venv/

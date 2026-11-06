@@ -1,0 +1,184 @@
+[
+  {
+    "key": "kTCCServiceSystemPolicyDocumentsFolder",
+    "display_name": "Documents Folder",
+    "scope": "user",
+    "description": "Read and write access to files in the user's Documents folder.",
+    "ui_prompt_label": "access files in your Documents folder"
+  },
+  {
+    "key": "kTCCServiceSystemPolicyDesktopFolder",
+    "display_name": "Desktop Folder",
+    "scope": "user",
+    "description": "Read and write access to files in the user's Desktop folder.",
+    "ui_prompt_label": "access files in your Desktop folder"
+  },
+  {
+    "key": "kTCCServiceSystemPolicyDownloadsFolder",
+    "display_name": "Downloads Folder",
+    "scope": "user",
+    "description": "Read and write access to files in the user's Downloads folder.",
+    "ui_prompt_label": "access files in your Downloads folder"
+  },
+  {
+    "key": "kTCCServiceSystemPolicyAllFiles",
+    "display_name": "Full Disk Access",
+    "scope": "user",
+    "description": "Access to the entire disk, including protected locations such as Mail, Messages, Safari data, and other apps' containers.",
+    "ui_prompt_label": "access all files on your disk"
+  },
+  {
+    "key": "kTCCServiceAddressBook",
+    "display_name": "Contacts (Legacy)",
+    "scope": "user",
+    "description": "Legacy access to the AddressBook framework contact store.",
+    "ui_prompt_label": "access your contacts"
+  },
+  {
+    "key": "kTCCServiceContactsFull",
+    "display_name": "Contacts (Full)",
+    "scope": "user",
+    "description": "Full access to the user's contacts, including notes and images, via ContactsKit.",
+    "ui_prompt_label": "full access to your contacts"
+  },
+  {
+    "key": "kTCCServiceContactsLimited",
+    "display_name": "Contacts (Limited)",
+    "scope": "user",
+    "description": "Limited access to a user-selected subset of contacts via ContactsKit.",
+    "ui_prompt_label": "limited access to selected contacts"
+  },
+  {
+    "key": "kTCCServiceCalendar",
+    "display_name": "Calendar",
+    "scope": "user",
+    "description": "Access to the user's calendar events via EventKit.",
+    "ui_prompt_label": "access your calendar"
+  },
+  {
+    "key": "kTCCServiceReminders",
+    "display_name": "Reminders",
+    "scope": "user",
+    "description": "Access to the user's reminders via EventKit.",
+    "ui_prompt_label": "access your reminders"
+  },
+  {
+    "key": "kTCCServiceCamera",
+    "display_name": "Camera",
+    "scope": "user",
+    "description": "Access to the device camera for photo and video capture.",
+    "ui_prompt_label": "access your camera"
+  },
+  {
+    "key": "kTCCServiceMicrophone",
+    "display_name": "Microphone",
+    "scope": "user",
+    "description": "Access to the device microphone for audio recording.",
+    "ui_prompt_label": "access your microphone"
+  },
+  {
+    "key": "kTCCServiceScreenCapture",
+    "display_name": "Screen Recording",
+    "scope": "user",
+    "description": "Capture of the contents of the system screen and other displays, including windows of other apps.",
+    "ui_prompt_label": "record your screen"
+  },
+  {
+    "key": "kTCCServiceAccessibility",
+    "display_name": "Accessibility",
+    "scope": "system",
+    "description": "Control of the system via the Accessibility API (AXUIElement), including synthetic input events.",
+    "ui_prompt_label": "control your computer"
+  },
+  {
+    "key": "kTCCServiceAppleEvents",
+    "display_name": "Apple Events",
+    "scope": "user",
+    "description": "Sending Apple Events (AppleScript automation) to another application, identified per-target in TCC as the indirect object.",
+    "ui_prompt_label": "send Apple Events to other applications"
+  },
+  {
+    "key": "kTCCServiceListenEvent",
+    "display_name": "Input Monitoring",
+    "scope": "user",
+    "description": "Receiving global keyboard and mouse events (CGEventTap listen-only) before other applications.",
+    "ui_prompt_label": "monitor input from your keyboard and mouse"
+  },
+  {
+    "key": "kTCCServicePostEvent",
+    "display_name": "Send Input Events",
+    "scope": "user",
+    "description": "Posting synthetic keyboard and mouse events (CGEvent posting).",
+    "ui_prompt_label": "send keyboard and mouse events"
+  },
+  {
+    "key": "kTCCServiceMediaLibrary",
+    "display_name": "Media & Apple Music",
+    "scope": "user",
+    "description": "Access to the media library managed by Music and TV apps.",
+    "ui_prompt_label": "access your media library"
+  },
+  {
+    "key": "kTCCServiceSpeechRecognition",
+    "display_name": "Speech Recognition",
+    "scope": "user",
+    "description": "Use of the system speech recognition service for audio sent by the app.",
+    "ui_prompt_label": "use speech recognition"
+  },
+  {
+    "key": "kTCCServicePhotos",
+    "display_name": "Photos",
+    "scope": "user",
+    "description": "Full read and write access to the user's Photos library.",
+    "ui_prompt_label": "access your photos"
+  },
+  {
+    "key": "kTCCServicePhotosAddOnly",
+    "display_name": "Add to Photos",
+    "scope": "user",
+    "description": "Add-only access to the user's Photos library.",
+    "ui_prompt_label": "add photos to your library"
+  },
+  {
+    "key": "kTCCServiceSystemPolicyRemovableVolumes",
+    "display_name": "Removable Volumes",
+    "scope": "user",
+    "description": "Access to files on removable volumes such as external drives and USB storage.",
+    "ui_prompt_label": "access files on removable volumes"
+  },
+  {
+    "key": "kTCCServiceSystemPolicyNetworkVolumes",
+    "display_name": "Network Volumes",
+    "scope": "user",
+    "description": "Access to files on network volumes.",
+    "ui_prompt_label": "access files on network volumes"
+  },
+  {
+    "key": "kTCCServiceFileProviderPresence",
+    "display_name": "Files and Folders (File Provider)",
+    "scope": "user",
+    "description": "Presence in the file provider domain, allowing access to files managed by FileProvider frameworks.",
+    "ui_prompt_label": "access files managed by file providers"
+  },
+  {
+    "key": "kTCCServiceDeveloperTool",
+    "display_name": "Developer Tools",
+    "scope": "system",
+    "description": "Attachment of a debugger to other processes (e.g. running lldb or Xcode tooling).",
+    "ui_prompt_label": "run developer tools"
+  },
+  {
+    "key": "kTCCServiceBluetoothAlways",
+    "display_name": "Bluetooth",
+    "scope": "user",
+    "description": "Use of Bluetooth peripherals while the app is in use.",
+    "ui_prompt_label": "use Bluetooth"
+  },
+  {
+    "key": "kTCCServiceWebKitIntelligentTrackingPrevention",
+    "display_name": "Intelligent Tracking Prevention",
+    "scope": "user",
+    "description": "Access to ITP data for websites (used by WebView hosts).",
+    "ui_prompt_label": "access website tracking-prevention data"
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "darwin-tcc-docs": {
+      "command": ".kiro/tools/.venv/bin/python",
+      "args": [".kiro/tools/mcp_darwin_server.py"],
+      "disabled": false
+    }
+  }
+}
