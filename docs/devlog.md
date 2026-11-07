@@ -4,7 +4,7 @@ Running notes from the build. Newest entries at the top.
 
 ---
 
-## 2026-11-06 — Day 2 (evening): WardTrigger shipped end-to-end
+## 2026-11-06 (20:01 UTC) — Day 2: WardTrigger shipped end-to-end
 
 **iolaire (pairing with ZCode)**
 
@@ -26,7 +26,7 @@ All findings recorded in `.kiro/steering/testing-strategy.md` §5 so Phase 2 (`T
 
 **Also shipped today (rest of Day 2):**
 
-- **Planning docs (morning)** — added hackathon details (`Overview`, `Rules`, `Schedule`), `PlanReview_20261106.md`, `TestHarnessDesign.md`, and `WhatsNeeded.md`; refreshed `README`, `architecture.md`, `pitch.md`, and the project steering file from the review.
+- **Planning docs** — added hackathon details (`Overview`, `Rules`, `Schedule`), `PlanReview_20261106.md`, `TestHarnessDesign.md`, and `WhatsNeeded.md`; refreshed `README`, `architecture.md`, `pitch.md`, and the project steering file from the review.
 - **Visual identity** — committed the four style explorations under `docs/Planning/Styles/` and the write-up for the chosen direction, *The Castle Keep & The Wandering Spirits*.
 - **License change** — the repo now carries an **Apache 2.0** `LICENSE` (README, CONTRIBUTING, and pitch references updated). Earlier notes and `.kiro/steering/project.md` still say MIT; Apache 2.0 is OSI-approved, so it satisfies the open-source detection requirement. Worth reconciling the remaining MIT mentions.
 - **Steering library** — seven new steering docs: `darwin-c-interop`, `log-stream-parsing`, `macos-security-boundaries`, `swift-coding-standards`, `swift-memory-safety`, `swiftui-hud-design`, and `testing-strategy`. Plus `docs/Planning/ScoringWell.md` to keep judging criteria in view.
@@ -40,7 +40,7 @@ All findings recorded in `.kiro/steering/testing-strategy.md` §5 so Phase 2 (`T
 
 ---
 
-## 2026-11-06 — Day 2: Plan Review & Strategy Lock
+## 2026-11-06 (14:32 UTC) — Day 2: Plan Review & Strategy Lock
 
 **iolaire & Dharshaneshwaran**
 
@@ -92,7 +92,7 @@ Reviewed full plan in `docs/Planning/PlanReview_20261106.md`. Key decisions lock
 
 ---
 
-## 2026-11-05 — Day 1: Project Setup
+## 2026-11-05 (16:43 UTC) — Day 1: Project Setup
 
 **iolaire & Dharshaneshwaran**
 
