@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Gatekeeper's Ward app bundle. Not sandboxed on purpose: the app runs
+  /usr/bin/log and reads other processes' argv with sysctl, which the App
+  Sandbox forbids (see .kiro/steering/macos-security-boundaries.md §4).
+  It requests no TCC permissions and no entitlements.
+-->
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>com.gatekeepersward.app</string>
+	<key>CFBundleName</key>
+	<string>Gatekeeper's Ward</string>
+	<key>CFBundleDisplayName</key>
+	<string>Gatekeeper's Ward</string>
+	<key>CFBundleExecutable</key>
+	<string>GatekeepersWardApp</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<key>LSUIElement</key>
+	<true/>
+</dict>
+</plist>

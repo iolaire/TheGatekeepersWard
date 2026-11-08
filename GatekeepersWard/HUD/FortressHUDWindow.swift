@@ -1,0 +1,83 @@
+import AppKit
+import SwiftUI
+
+/// The floating, non-activating panel that holds the Fortress HUD.
+///
+/// It never becomes key or main, so Apple's TCC dialog keeps keyboard focus
+/// (`.kiro/steering/swiftui-hud-design.md` §2).
+@MainActor
+final class FortressHUDWindow: NSPanel {
+    /// How long the HUD stays up if no result is seen.
+    static let autoDismissDelay: TimeInterval = 30
+
+    private var dismissTask: Task<Void, Never>?
+
+    /// Creates a hidden panel.
+    init() {
+        super.init(
+            contentRect: NSRect(x: 0, y: 0, width: 360, height: 200),
+            styleMask: [.nonactivatingPanel, .borderless, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        isFloatingPanel = true
+        level = .floating
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        isOpaque = false
+        backgroundColor = .clear
+        hasShadow = true
+        animationBehavior = .utilityWindow
+        // An accessory app is never "active", so the default would hide us.
+        hidesOnDeactivate = false
+        isMovableByWindowBackground = true
+    }
+
+    override var canBecomeKey: Bool { false }
+    override var canBecomeMain: Bool { false }
+
+    /// Shows `content` near the top-right of the main screen without taking
+    /// focus, and schedules the auto-dismiss.
+    func present(_ content: HUDContent) {
+        let hosting = NSHostingView(rootView: FortressHUDView(content: content))
+        hosting.layoutSubtreeIfNeeded()
+        let size = hosting.fittingSize
+        contentView = hosting
+        setContentSize(size)
+        if let screen = NSScreen.main {
+            let visible = screen.visibleFrame
+            setFrameOrigin(NSPoint(x: visible.maxX - size.width - 16, y: visible.maxY - size.height - 16))
+        }
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        alphaValue = reduceMotion ? 1 : 0
+        orderFrontRegardless()   // never makeKeyAndOrderFront
+        if !reduceMotion {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.2
+                animator().alphaValue = 1
+            }
+        }
+        dismissTask?.cancel()
+        dismissTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(Self.autoDismissDelay * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            self?.dismiss()
+        }
+    }
+
+    /// Fades the panel out (0.25 s) and hides it.
+    func dismiss() {
+        dismissTask?.cancel()
+        dismissTask = nil
+        guard isVisible else { return }
+        if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+            orderOut(nil)
+            return
+        }
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.25
+            animator().alphaValue = 0
+        }, completionHandler: { [weak self] in
+            Task { @MainActor in self?.orderOut(nil) }
+        })
+    }
+}

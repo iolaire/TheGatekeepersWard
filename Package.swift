@@ -7,6 +7,14 @@ let package = Package(
     targets: [
         // Main library: Core/, Permissions/, HUD/, MenuBar/ sources.
         .target(name: "GatekeepersWard", path: "GatekeepersWard"),
+        // The menu bar app. A thin launcher; wrapped into an .app bundle by
+        // scripts/run_ward.sh.
+        .executableTarget(
+            name: "GatekeepersWardApp",
+            dependencies: ["GatekeepersWard"],
+            path: "GatekeepersWardApp",
+            exclude: ["Info.plist"]
+        ),
         // Standalone TCC trigger CLI with an embedded bundle identifier so
         // `tccutil reset` can scope decisions to com.gatekeepersward.ward-trigger.
         .executableTarget(
