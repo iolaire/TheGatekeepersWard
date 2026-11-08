@@ -48,6 +48,16 @@ enum TCCLogFixtures {
         "AUTHREQ_RESULT: msgID=95165.1572, authValue=2, authReason=2, authVersion=1, desired_auth=0, error=(null),",
     ]
 
+    /// Real macOS 27.0.1 Contacts request. The app asked `tccd` directly (no
+    /// `sandboxd` in between), so the attribution has only a `requesting`
+    /// block, and that process is the client.
+    static let macOS27DirectAttributionEventMessageFixture =
+        "AUTHREQ_ATTRIBUTION: msgID=22810.3, attribution={requesting={TCCDProcess: identifier=com.gatekeepersward.ward-trigger, pid=22810, auid=501, euid=501, binary_path=/Users/dev/TheGatekeepersWard/.build/WardTrigger.app/Contents/MacOS/WardTrigger}, },"
+
+    /// The prompting line for the same Contacts request.
+    static let macOS27DirectPromptingEventMessageFixture =
+        "AUTHREQ_PROMPTING: msgID=22810.3, service=kTCCServiceAddressBook, subject=Sub:{com.gatekeepersward.ward-trigger}Resp:{TCCDProcess: identifier=com.gatekeepersward.ward-trigger, pid=22810, auid=501, euid=501, binary_path=/Users/dev/TheGatekeepersWard/.build/WardTrigger.app/Contents/MacOS/WardTrigger},"
+
     /// Wraps a `tccd` message in a well-formed `com.apple.TCC` NDJSON line.
     ///
     /// - Parameter eventMessage: The message text.

@@ -38,6 +38,21 @@ struct TCCRequestCorrelatorTests {
         #expect(prompt.responsiblePID == 8443)
     }
 
+    @Test("Direct request (Contacts): the requesting process is the client")
+    func directRequestUsesRequestingPID() throws {
+        var correlator = TCCRequestCorrelator()
+        _ = correlator.ingest(TCCLogFixtures.tccLine(
+            TCCLogFixtures.macOS27DirectAttributionEventMessageFixture
+        ))
+        let result = correlator.ingest(TCCLogFixtures.tccLine(
+            TCCLogFixtures.macOS27DirectPromptingEventMessageFixture
+        ))
+        let event = try #require(result)
+        #expect(event.service == .addressBook)
+        #expect(event.clientPID == 22810)
+        #expect(event.responsiblePID == 22810)
+    }
+
     @Test("Self-responsible process: client and responsible PID are the same process")
     func selfResponsibleProcess() throws {
         var correlator = TCCRequestCorrelator()

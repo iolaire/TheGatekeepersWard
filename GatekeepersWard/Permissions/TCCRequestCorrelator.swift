@@ -12,8 +12,10 @@ import Foundation
 ///     requesting={TCCDProcess: identifier=com.apple.sandboxd, pid=95165, …}, },
 /// ```
 ///
-/// `requesting` is the system daemon that forwarded the request (`sandboxd`),
-/// so it is deliberately not captured.
+/// When an `accessing` block is present, `requesting` is the system daemon
+/// that forwarded the request (`sandboxd`) and is ignored. When it is absent
+/// (the app asked `tccd` directly, e.g. for Contacts), `requesting` is the
+/// client.
 struct TCCAttribution: Equatable {
     /// The request identifier shared by every log line of one request.
     let messageID: String
@@ -38,20 +40,23 @@ func extractTCCMessageID(from message: String) -> String? {
 
 /// Parses an `AUTHREQ_ATTRIBUTION` log message.
 ///
-/// PIDs are read only from inside the `accessing={…}` and `responsible={…}`
-/// blocks, so the `requesting` daemon's PID can never be picked up.
+/// PIDs are read only from inside `TCCDProcess` blocks. `requesting={…}` is
+/// used only when there is no `accessing={…}` block.
 ///
 /// - Parameter message: The `eventMessage` text of one log line.
 /// - Returns: The attribution, or `nil` when the line is not an attribution
-///   line or carries no `msgID` or accessing PID.
+///   line or carries no `msgID` or client PID.
 func extractTCCAttribution(from message: String) -> TCCAttribution? {
     guard message.hasPrefix("AUTHREQ_ATTRIBUTION:"),
-          let messageID = extractTCCMessageID(from: message),
-          let accessing = message.firstMatch(
-              of: #/accessing=\{TCCDProcess: [^}]*?\bpid=(\d+)/#
-          ),
-          let accessingPID = Int(accessing.1)
+          let messageID = extractTCCMessageID(from: message)
     else { return nil }
+
+    // With an `accessing` block, `requesting` is a forwarding daemon
+    // (sandboxd, mds) and must be ignored. Without one (e.g. a Contacts or
+    // Microphone request the app makes itself), `requesting` is the client.
+    let accessing = message.firstMatch(of: #/accessing=\{TCCDProcess: [^}]*?\bpid=(\d+)/#)
+        ?? message.firstMatch(of: #/requesting=\{TCCDProcess: [^}]*?\bpid=(\d+)/#)
+    guard let accessing, let accessingPID = Int(accessing.1) else { return nil }
 
     let responsible = message.firstMatch(
         of: #/responsible=\{TCCDProcess: [^}]*?\bpid=(\d+)/#
