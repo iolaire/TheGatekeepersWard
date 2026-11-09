@@ -4,6 +4,35 @@ Running notes from the build. Newest entries at the top.
 
 ---
 
+## 2026-11-09 (17:40 UTC) — Day 5: Category and Team Representative decided
+
+**iolaire (pairing with Kiro)**
+
+Closing two items from the submission review.
+
+- **Category: Frankenstein only.** Devpost takes one category, so Costume Contest is dropped as a secondary target. The gothic Castle Keep theme stays, but the pitch now frames it as support for the Frankenstein story. This supersedes the "Frankenstein primary, Costume Contest secondary" line in the Nov 6 Plan Review entry below. `README.md` already said Frankenstein; `docs/pitch.md` was updated to match.
+- **Team Representative: Iolaire McFadden.** Recorded in the README Team section. The Devpost submission form needs the same name.
+
+---
+
+## 2026-11-09 (17:15 UTC) — Day 5: HUD now sits beside Apple's alert
+
+**iolaire (pairing with Kiro)**
+
+Spec: `.kiro/specs/hud-placement-and-menubar-theme` (commit `670cf4d`). Until now the HUD always opened in the top-right corner, which could be far from Apple's dialog. It now opens 10 pt to the right of the alert, top-aligned with it.
+
+- **Finding the alert without extra permissions.** `AlertLocator` polls the window server list every 100 ms for up to 1 s and hands each snapshot to `AlertMatcher`, a pure function that picks the window by owner name (`UserNotificationCenter`), layer (8) and non-empty bounds. It never reads window titles, so there is no Accessibility or Screen Recording prompt. The values come from the live capture in the 15:48 UTC entry.
+- **Where it goes.** `PlacementCalculator` is a pure type. It flips the window server's top-left coordinates into AppKit's bottom-left space, puts the HUD 10 pt right of the alert, flips to the left side if the right would overflow, and clamps to the visible frame of the screen holding the alert centre. A HUD larger than the screen aligns to the top-left.
+- **No jump.** The panel starts at alpha 0, waits for the locate result (or the 1 s timeout), moves, then fades in over 0.2 s (instantly under Reduce Motion). If the alert is not found it uses the old top-right position. A stale locate task is cancelled on the next `present` or on `dismiss()`.
+- **Focus rules unchanged.** The panel is still `.nonactivatingPanel` + `.borderless` at `.floating`, shown with `orderFrontRegardless()`, and never key or main.
+- **Menu bar ghost.** `GhostIcon` is now drawn in full colour in the Castle Keep palette (ectoplasm gradient body, Kiro Violet outline, Torchlight Amber lantern), not a black template. The tint on the menu bar button was removed so the colours are not altered. It renders identically under aqua and darkAqua.
+- **Bigger ghost.** The icon was also enlarged to 22 x 22 pt; see the 17:13 UTC entry below.
+- **Tests.** Property tests for the placement geometry (adjacency, left flip, containment, oversized HUD) and for alert matching, unit tests for `AlertLocator` with an injected window list, `GhostIcon` pixel checks and `FortressHUDWindow` style checks. 108 Swift tests in 17 suites pass.
+- **Review re-run.** `docs/HACKATHON_REVIEW.md` was refreshed at `670cf4d`: 32/50 (was 30/50), Needs Work. The gap is submission material (video, write-up, README screenshots, a recorded run with a real agent), not the product. The review also found README drift: it says 81 tests (now 108), still lists an empty `Resources/` folder, and lacks the MCP venv setup steps.
+- **Not yet verified by eye on a real Mac:** the placement beside a live dialog and the larger ghost. Multi-display behaviour is the open item 8.7 in the `ward-app` spec.
+
+---
+
 ## 2026-11-09 (17:13 UTC) — Day 5: Bigger menu bar ghost
 
 **iolaire (pairing with Kiro)**
@@ -16,25 +45,45 @@ Running notes from the build. Newest entries at the top.
 
 ---
 
-## 2026-11-09 (15:48 UTC) — TCC alert window: dump helper added, values still unverified
+## 2026-11-09 (15:48 UTC) — TCC alert window: owner and layer recorded
 
 **iolaire (pairing with Kiro)**
 
+Task 1.1 of `hud-placement-and-menubar-theme`: find out how the window server describes Apple's TCC dialog, so the HUD can be placed beside it without guessing.
+
 - Added `scripts/dump_window_list.swift`. It prints owner name, layer and CG bounds from `CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)`. It never reads `kCGWindowName`, so no Screen Recording permission is needed. Pass an optional owner substring to filter, for example `swift scripts/dump_window_list.swift notification`.
-- macOS version of the run: 27.0.1 (Build 26A434).
-- No WardTrigger TCC dialog was on screen during the run, so the alert owner name and layer are **not yet recorded**.
+- The first run had no dialog on screen, so nothing was recorded. A second run, taken while a WardTrigger prompt was up, found the alert.
 
-**Recorded (unverified) values for the TCC alert window**
+**Recorded values (macOS 27.0.1, build 26A434, captured with a live WardTrigger dialog)**
 
-| Field | Value | Status |
-|---|---|---|
-| Owner name | `UserNotificationCenter` | VERIFIED |
-| Layer | `8` (alert about 260 x 282 pt) | VERIFIED |
-| macOS version | 27.0.1 (26A434) | captured with a live WardTrigger dialog |
+| Field | Value |
+|---|---|
+| Owner name | `UserNotificationCenter` |
+| Layer | `8` |
+| Size | about 260 x 282 pt |
 
-**Observed for reference (no dialog present):** `Notification Center` owns layer -2147483601 windows (a notification banner), `Dock` is layer 20, menu bar `Window Server` is layer 24, regular app windows are layer 0. The TCC alert is a separate process and was not in the list.
+These are the defaults in `AlertLocator` (`defaultOwnerName`, `defaultLayer`). They are only verified on macOS 27; other versions may name the owner differently, which is why the HUD falls back to the top-right corner when no match is found.
 
-**To finish:** run `scripts/run_ward_trigger.sh`, fire a prompt, and while the dialog is up run `swift scripts/dump_window_list.swift`. Replace the unverified rows above with the owner and layer seen. Requirements 2.3 and 5.4 depend on those values.
+**Observed for reference (no dialog present):** `Notification Center` owns layer -2147483601 windows (a notification banner), `Dock` is layer 20, menu bar `Window Server` is layer 24, regular app windows are layer 0.
+
+---
+
+## 2026-11-09 (15:34 UTC) — Day 5: Review follow-ups fixed (prompt tracking, restart backoff)
+
+**iolaire (pairing with Kiro)**
+
+Fixed most of the open follow-ups from the Dharshaneshwaran-branch review (commit `f2c2567`, `.kiro/specs/ward-app/tasks.md` section 8).
+
+- **`PromptTracker`** (new, `App/PromptTracker.swift`). A pure, synchronous type that tracks open prompts by `msgID`. The HUD shows the newest prompt. When it is answered the previous one comes back, and only when none are left does the HUD hide and the ghost go idle. Before this, concurrent prompts replaced each other. Legacy-wording prompts with no `msgID` get a private id, so they no longer interfere with others.
+- **Ghost alert no longer sticks.** `FortressHUDWindow.onAutoDismiss` ends the ghost alert and calls `PromptTracker.expire()` when the 30 s HUD timeout fires.
+- **Restart backoff.** `TCCWatcher.restartDelay(afterFailures:)` doubles the delay from 2 s up to 60 s, and resets after the subprocess has run steadily for 30 s. `log stream` stderr is now drained and logged (first 500 bytes per read), so a failing subprocess leaves a trace.
+- **Non-blocking shutdown.** `applicationShouldTerminate` returns `.terminateLater` while the watcher stops, instead of waiting on a semaphore on the main thread.
+- **`Package.swift`** only adds the Command Line Tools plugin path when it exists, and the root-owned-process test is skipped when running as root.
+- New tests: `PromptTrackerTests` and `TCCWatcherRestartTests`. `docs/architecture.md` and the README were updated to match the as-built layout.
+
+**Still open** (kept in the spec on purpose): legacy-wording prompts still end only on the 30 s timer, because no Ventura or Sonoma result wording has been captured (8.3). `AUTHREQ_PROMPTING` arriving before its attribution is deferred, since no macOS 27 capture shows that order (8.4). A visible UI state when `log stream` cannot start (8.5b), multi-display behaviour (8.7), the Spectral Ectoplasm secondary tone (8.9) and a two-prompt manual test (8.10) are also open.
+
+The 14:06 UTC entry below lists these items as open follow-ups; that was true when it was written.
 
 ---
 

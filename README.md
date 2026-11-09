@@ -111,7 +111,7 @@ realism. See `docs/architecture.md` for details.
 
 ## Team
 
-- **iolaire**
+- **Iolaire McFadden** (iolaire), Team Representative
 - **Dharshaneshwaran**
 
 ## License

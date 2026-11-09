@@ -50,7 +50,7 @@ Retroactive plan for the Ward App built on the `dev` branch by Dharshaneshwaran.
 
 - [x] 6. Checkpoint: `swift build` succeeds and `swift test` passes (70 tests) on `origin/dev`.
 
-- [ ] 7. Manual verification with WardTrigger (Requirement 13.4)
+- [x] 7. Manual verification with WardTrigger (Requirement 13.4)
   - [x] 7.1 Run `scripts/run_ward.sh`, then `scripts/reset_ward_trigger.sh`, then `scripts/run_ward_trigger.sh docs rg "AWS_SECRET" ~/Documents/prod.env`. Confirm the ghost alerts, the HUD appears beside Apple's dialog and the `AWS_SECRET` and `.env` arguments are crimson.
     - _Requirements: 7.7, 8.1 to 8.4, 9.4, 10.3_
   - [x] 7.2 Confirm Apple's Allow and Don't Allow buttons stay clickable with the HUD open (no focus steal).
@@ -61,7 +61,7 @@ Retroactive plan for the Ward App built on the `dev` branch by Dharshaneshwaran.
     - _Requirements: 7.8_
   - [x] 7.5 Run `scripts/run_ward.sh --stop` and confirm no `log stream` process remains (`pgrep -fl "log stream"`).
     - _Requirements: 11.4, 11.5_
-  - [ ] 7.6 Record the macOS version used and the outcome in `docs/devlog.md`.
+  - [x] 7.6 Record the macOS version used and the outcome in `docs/devlog.md`. Recorded in the Day 4 and Day 5 entries (macOS 27.0.1, verified live with WardTrigger).
 
 - [ ] 8. Follow-ups from review
   - [x] 8.1 Call `endAlert()` when the HUD auto-dismisses, so the ghost cannot blink indefinitely. `FortressHUDWindow.onAutoDismiss` plus `PromptTracker.expire()`.

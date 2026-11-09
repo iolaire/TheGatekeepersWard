@@ -200,8 +200,8 @@ unified log event (TCC challenge fires)
 
 ## Open Questions
 
-- [ ] Can we reliably time the HUD to appear *before* the user clicks the TCC dialog? (Answer: yes — `tccd` blocks the child process thread until user responds)
+- [x] Can we reliably time the HUD to appear *before* the user clicks the TCC dialog? (Answer: yes — `tccd` blocks the child process thread until user responds)
 - [ ] Exact `log stream` NDJSON field names for `clientPID` / `responsiblePID` across Ventura / Sonoma / Sequoia?
-- [ ] Best window position strategy: fixed upper-right vs. dynamically offset near native TCC dialog?
+- [x] Best window position strategy: fixed upper-right vs. dynamically offset near native TCC dialog? (Answer: dynamic. The HUD sits 10 pt right of the alert found through the window list, with a top-right fallback.)
 - [ ] Multi-monitor handling — which screen does the TCC dialog appear on?
-- [ ] PBT framework: `swift-testing` property tests or a third-party like `SwiftCheck`?
+- [x] PBT framework: `swift-testing` property tests or a third-party like `SwiftCheck`? (Answer: `swift-testing` with seeded generator loops of 100+ iterations; no extra dependency.)

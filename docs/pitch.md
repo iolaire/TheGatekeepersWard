@@ -64,7 +64,7 @@ The process lineage tree shows each spirit carrying a contextual tool (🔍 for 
 
 This fits the *"stitch together a chimera of technologies"* prompt to the letter.
 
-**Costume Contest angle** — the gothic Castle Keep aesthetic is deliberate and polished: obsidian background, Kiro Violet portcullis bars, Torchlight Amber lantern glow, Mischief Crimson for suspicious arguments.
+**The gothic Castle Keep aesthetic** supports the Frankenstein story rather than competing with it: obsidian background, Kiro Violet portcullis bars, Torchlight Amber lantern glow, Mischief Crimson for suspicious arguments. The theme explains the function.
 
 ---
 
@@ -83,19 +83,18 @@ This fits the *"stitch together a chimera of technologies"* prompt to the letter
 
 | Category | Rationale |
 |---|---|
-| **Frankenstein ($5,000)** | Primary target: POSIX + Unified Log + SwiftUI + AI agents |
+| **Frankenstein ($5,000)** | Our one category: POSIX + Unified Log + SwiftUI + AI agents |
 | **Best Demo ($1,000)** | ≤3 min video: agent runs command → HUD reveals hidden script instantly |
-| **Costume Contest** | Polished gothic Castle Keep aesthetic throughout |
 | **Bonus Blog/Social** | Short Dev.to post + `#KiroweenHackathon26` tweet for bonus credits |
 
 ---
 
 ## Hackathon Compliance Checklist
 
-- [ ] Public GitHub repository with detectable Apache 2.0 `LICENSE` file
-- [ ] `.kiro/` directory with `specs/`, `hooks/`, and `steering/` populated
-- [ ] Spec-driven development documented (scores in *Technological Implementation 20%*)
-- [ ] Property-Based Testing (PBT) implemented on `KERN_PROCARGS2` parser and log parser
+- [x] Public GitHub repository with detectable Apache 2.0 `LICENSE` file
+- [x] `.kiro/` directory with `specs/`, `hooks/`, and `steering/` populated
+- [x] Spec-driven development documented (scores in *Technological Implementation 20%*)
+- [x] Property-Based Testing (PBT) implemented on `KERN_PROCARGS2` parser and log parser
 - [ ] Demo video ≤3 minutes on a real Mac device
 - [ ] Devpost submission submitted before December 4, 2026 at 2:00 PM PT
 

@@ -197,8 +197,8 @@ Build `mcp-darwin-context` — a local Python MCP server that exposes macOS Darw
   - Run `python3 -m pytest .kiro/tools/tests/` from workspace root; confirm exit code 0.
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 15. Create steering document
-  - [ ] 15.1 Write `.kiro/steering/darwin-mcp-usage.md`
+- [x] 15. Create steering document
+  - [x] 15.1 Write `.kiro/steering/darwin-mcp-usage.md`
     - YAML front-matter: `inclusion: manual`, `description` ≤ 120 characters
     - Rule: when writing/modifying code referencing `KERN_PROCARGS2`, `KERN_PROC_PID`, or `proc_pidinfo` → call `search_darwin_headers` with the symbol name first
     - Rule: before inserting a `kTCCService*` string literal or enum case → call `lookup_tcc_service` first
