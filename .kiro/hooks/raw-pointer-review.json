@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Raw Pointer Safety Review",
+      "trigger": "PostFileSave",
+      "description": "After saving Core/ code, review raw-pointer use against swift-memory-safety and darwin-c-interop steering.",
+      "matcher": "GatekeepersWard/Core/.*\\.swift$",
+      "action": {
+        "type": "agent",
+        "prompt": "A file under GatekeepersWard/Core/ was just saved. Review it against .kiro/steering/swift-memory-safety.md and .kiro/steering/darwin-c-interop.md: confirm every UnsafeRawBufferPointer / withUnsafeBytes / CChar buffer access is bounds-checked, no pointer escapes its closure, Unmanaged retain/release is balanced, sysctl size and errno results are checked, and KERN_PROCARGS2 parsing cannot read past the buffer. Fix any violation and make sure the property-based tests in GatekeepersWardTests/Core still cover the changed behavior."
+      }
+    }
+  ]
+}
