@@ -3,7 +3,7 @@
 Review date: 2026-11-09
 Days until deadline (Dec 4, 2026 2:00 PM PT): 25
 
-Scope note: reviewed at commit `763f5fb` (clean working tree). Devpost pages return 403 to tooling, so the rules were read from `docs/Planning/HackathonDetails/Rules.md`. No demo video, Devpost text, blog post or social post exists yet. Those are scored on what is observable.
+Scope note: reviewed at commit `82695ec` on local `main` (two unrelated docs files have uncommitted edits). That commit is not pushed yet, so GitHub still shows `6b86320`. Devpost pages return 403 to tooling, so the rules were read from `docs/Planning/HackathonDetails/Rules.md`. No demo video, Devpost text, blog post or social post exists yet. Those are scored on what is observable.
 
 ## Overall Score: 19/50 (current state, Phase 2 of 7 just starting)
 
@@ -19,9 +19,9 @@ This is a mid-project snapshot. The score is low because the product (inspector,
 |---|---|---|
 | Public GitHub repo | Pass | `gh repo view`: `PUBLIC`, `github.com/iolaire/TheGatekeepersWard` |
 | License detected by GitHub | Pass | `gh repo view --json licenseInfo` returns `apache-2.0`. Fixed in `aa07d0e`; copyright now in `NOTICE`. Re-check after each LICENSE edit |
-| `/.kiro` committed, not ignored | Pass | 40+ tracked files; `.gitignore` excludes only `.kiro/sessions/` and `.kiro/tools/.venv/` |
-| Source, assets, run instructions | Partial | `swift build` succeeds, README documents build/test. Product code is missing: `App/`, `HUD/`, `MenuBar/`, `Resources/` empty; `Core/` and `Permissions/` hold only the two parsers |
-| Built in Submission Period | Pass | First commit 2026-11-05, 16 commits, all by `iolaire`. No pre-existing code to disclose |
+| `/.kiro` committed, not ignored | Pass | 46 tracked files; `.gitignore` excludes only `.kiro/sessions/` and `.kiro/tools/.venv/` |
+| Source, assets, run instructions | Partial | `swift build` succeeds, README documents build/test and the 11 WardTrigger subcommands. Product code is missing: `App/`, `HUD/`, `MenuBar/`, `Resources/` empty; `Core/` and `Permissions/` hold only the two parsers. Latest commit `82695ec` is local only: run `git push` so judges see it |
+| Built in Submission Period | Pass | First commit 2026-11-05, 19 commits, all by `iolaire`. No pre-existing code to disclose |
 | Runs as depicted | Not verifiable | README describes a HUD that does not exist yet |
 | Demo video (<3 min, public YouTube) | Missing | Phase 6 |
 | Text description | Missing | README covers part of it; Devpost text not written |
@@ -34,18 +34,18 @@ This is a mid-project snapshot. The score is low because the product (inspector,
 ## Stage Two Scoring
 
 ### Potential Impact (5/10)
-- **Strengths:** Real, relatable pain: opaque TCC prompts from AI agents with no indication of which command asked. The "we inform, we don't intercept" framing is honest. The process stays blocked in the process table during the prompt, so inspection is reliable.
-- **Gaps:** Nothing works end to end. `ProcArgsParser` (74 lines) and `TCCEventParser` (151 lines) are not called by anything. No first-run or permission guidance, no accessibility implementation.
+- **Strengths:** Real, relatable pain: opaque TCC prompts from AI agents with no indication of which command asked. The "we inform, we don't intercept" framing is honest. The process stays blocked in the process table during the prompt, so inspection is reliable. WardTrigger now fires 11 real prompts (Documents, Desktop, Downloads, Contacts, Calendar, Reminders, Photos, Microphone, Camera, Automation, Screen Recording), run by hand on a Mac, and `TCCService` has a named case for each (enforced by a test), so the demo can show services agents actually trip.
+- **Gaps:** Nothing works end to end. `ProcArgsParser` (74 lines) and `TCCEventParser` (175 lines) are not called by anything. No first-run or permission guidance, no accessibility implementation.
 - **Improve:** Land Phase 2 (inspector plus watcher printing real forensics for a real prompt). That alone should move this to 6 or 7.
 
 ### Technological Implementation (8/10)
-Strongest area. `swift build` passes; `swift test` ran 4 times in this review (24 tests, 3 suites) and passed every time, so the flaky failure noted previously did not reproduce but is unexplained.
+Strongest area. `swift build` passes; `swift test` passed again at `82695ec` (27 tests, 3 suites) and `pytest` for the MCP server passed (55 passed, 1 skipped). The flaky failure noted earlier has not reproduced and is still unexplained.
 
 | Kiro feature | Present? | Evidence | Gap |
 |---|---|---|---|
-| Specs | Yes | `.kiro/specs/ward-trigger/` (33/33 tasks done), `darwin-tcc-mcp-server/` (34 done, 2 open) | No spec for ProcessInspector, TCCWatcher, HUD or MenuBar. Write them before coding Phases 2 and 3 |
+| Specs | Yes | `.kiro/specs/ward-trigger/` (41/41 tasks done, including Requirement 13 added today for the expanded trigger set), `darwin-tcc-mcp-server/` (34 done, 2 open) | No spec for ProcessInspector, TCCWatcher, HUD or MenuBar. Write them before coding Phases 2 and 3 |
 | Steering | Yes, strong | 9 files in `.kiro/steering/` (Darwin interop, memory safety, log parsing, security boundaries, HUD, testing, coding standards, MCP usage, project) with always and auto modes | Show 2 or 3 concrete cases where steering changed output |
-| Hooks | Yes, minimal | `.kiro/hooks/build-test-gate.json` (PostTaskExec runs `swift build && swift test --skip integration`); `scripts/git-hooks/pre-commit` | Only one Kiro hook. Add one or two with distinct purposes (PostFileSave force-unwrap/doc-comment check, steering drift) |
+| Hooks | Yes, 6 | `.kiro/hooks/`: `build-test-gate` (PostTaskExec), `swift-standards-lint` and `castle-keep-palette-check` (PostFileSave, backed by `scripts/hooks/*.sh`), `security-boundary-guard` (PreToolUse, asks before forbidden entitlements/APIs), `raw-pointer-review` (agent, PostFileSave on `Core/`), `spec-first-nudge` (UserPromptSubmit). Each maps to a steering file. Lint script passes on all 6 Swift files; guard and palette scripts verified on planted violations | Added in `6b86320` and not yet observed firing inside Kiro (payload shape assumed; scripts fall back to scanning the tree). Palette hook has nothing to check until `HUD/` exists. Capture a short clip or devlog entry of a hook catching a violation for the write-up |
 | MCP | Yes, strong | Custom `darwin-tcc-docs` server in `.kiro/tools/` (header search, struct lookup, TCC registry) with Python tests, configured in `.kiro/settings/mcp.json` | Document concrete cases where it prevented a wrong struct layout or TCC service name. Config uses `.kiro/tools/.venv/bin/python`, which is gitignored; README needs venv setup steps for judges |
 | Property-based testing | Yes | Swift Testing properties: argv round trip, parser never traps, buffer round trip, event extractor never traps, demo echo. Hypothesis on the Python side | Parsers not integrated yet. Report any real bug PBT found |
 | Custom agents / powers | No | None in repo | Optional; state in the write-up why not |
@@ -67,7 +67,7 @@ Strongest area. `swift build` passes; `swift test` ran 4 times in this review (2
 - **Improve:** Storyboard exists in `docs/pitch.md`. Record rough footage as soon as Phase 3 works, not on Dec 1.
 
 ## Code Quality
-- Matches standards: no force-unwraps found in `GatekeepersWard/` or `WardTrigger/`, all files under 160 lines, small value-type parsers.
+- Matches standards: no force-unwraps found in `GatekeepersWard/` or `WardTrigger/`, all files under 180 lines, small value-type parsers.
 - Build warning: `GatekeepersWardTests/WardTrigger/README.md` is an unhandled resource in `Package.swift`. Exclude it.
 - No secrets or large binaries tracked; `.build/` is ignored.
 - Not yet testable: graceful degradation when a process has exited, and regex fallback in a live pipeline.
@@ -90,7 +90,7 @@ A project can win one Overall or Category prize, but any number of bonus prizes.
 
 **Top Strengths:**
 - Real, well-framed problem with an honest scope
-- Deep Kiro use: 2 specs, 9 steering files, a custom MCP server, a hook, and property-based tests
+- Deep Kiro use: 2 specs, 9 steering files, a custom MCP server, 6 hooks tied to steering, and property-based tests
 - Clean hard-requirement hygiene: public repo, Apache 2.0 detected, `.kiro` committed, builds and tests green
 - Coherent theme and palette documented
 
@@ -104,9 +104,10 @@ A project can win one Overall or Category prize, but any number of bonus prizes.
 1. Write specs for ProcessInspector and TCCWatcher, then implement Phase 2 with real console output (Impact, Tech)
 2. Build the HUD and menu bar ghost (Design, Impact, Presentation)
 3. Add README venv setup for the MCP server, and a Kiro usage section with steering/MCP/PBT examples (Tech)
-4. Add 1 or 2 more hooks (Tech, cheap)
+4. Record one real hook catch (e.g. security guard prompt) for the video and write-up (Tech, cheap)
 5. Record the demo video once Phase 3 works; keep it under 3:00 and show the real TCC prompt beside the HUD (Presentation)
 6. Publish a blog post and a `#KiroweenHackathon26` post (bonus prizes)
 7. Exclude the stray README from `Package.swift` and investigate the earlier flaky test (polish)
+8. Push `main` (or open a PR from `feature/expand-ward-trigger`) so the public repo matches the review, and add a 2026-11-09 devlog entry: it still describes the old `tmp/` relay and has nothing on the eight new triggers (Tech, minutes)
 
 **Hackathon Readiness:** Needs Work
