@@ -1,5 +1,15 @@
 // swift-tools-version: 5.9
+import Foundation
 import PackageDescription
+
+// The Command Line Tools toolchain bundles swift-testing's macro plugin but
+// SwiftPM does not auto-load it, so tests need it passed explicitly. Full Xcode
+// finds the plugin on its own, so only pass the flag where the file exists.
+let commandLineToolsTestingMacros =
+    "/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing/libTestingMacros.dylib"
+let testingPluginFlags: [String] = FileManager.default.fileExists(atPath: commandLineToolsTestingMacros)
+    ? ["-load-plugin-library", commandLineToolsTestingMacros]
+    : []
 
 let package = Package(
     name: "GatekeepersWard",
@@ -34,14 +44,7 @@ let package = Package(
             name: "GatekeepersWardTests",
             dependencies: ["GatekeepersWard", "WardTrigger"],
             path: "GatekeepersWardTests",
-            swiftSettings: [
-                // The CommandLineTools toolchain bundles swift-testing's macro
-                // plugin but SPM does not auto-load it; load it explicitly.
-                .unsafeFlags([
-                    "-load-plugin-library",
-                    "/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing/libTestingMacros.dylib",
-                ])
-            ]
+            swiftSettings: testingPluginFlags.isEmpty ? [] : [.unsafeFlags(testingPluginFlags)]
         ),
     ]
 )

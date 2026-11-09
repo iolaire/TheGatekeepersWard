@@ -51,38 +51,42 @@ Retroactive plan for the Ward App built on the `dev` branch by Dharshaneshwaran.
 - [x] 6. Checkpoint: `swift build` succeeds and `swift test` passes (70 tests) on `origin/dev`.
 
 - [ ] 7. Manual verification with WardTrigger (Requirement 13.4)
-  - [ ] 7.1 Run `scripts/run_ward.sh`, then `scripts/reset_ward_trigger.sh`, then `scripts/run_ward_trigger.sh docs rg "AWS_SECRET" ~/Documents/prod.env`. Confirm the ghost alerts, the HUD appears beside Apple's dialog and the `AWS_SECRET` and `.env` arguments are crimson.
+  - [x] 7.1 Run `scripts/run_ward.sh`, then `scripts/reset_ward_trigger.sh`, then `scripts/run_ward_trigger.sh docs rg "AWS_SECRET" ~/Documents/prod.env`. Confirm the ghost alerts, the HUD appears beside Apple's dialog and the `AWS_SECRET` and `.env` arguments are crimson.
     - _Requirements: 7.7, 8.1 to 8.4, 9.4, 10.3_
-  - [ ] 7.2 Confirm Apple's Allow and Don't Allow buttons stay clickable with the HUD open (no focus steal).
+  - [x] 7.2 Confirm Apple's Allow and Don't Allow buttons stay clickable with the HUD open (no focus steal).
     - _Requirements: 8.2, 12.2_
-  - [ ] 7.3 Answer the dialog and confirm the HUD dismisses and the ghost returns to idle.
+  - [x] 7.3 Answer the dialog and confirm the HUD dismisses and the ghost returns to idle.
     - _Requirements: 11.2, 10.4_
-  - [ ] 7.4 Repeat with `contacts` and `mic` and confirm the vault names.
+  - [x] 7.4 Repeat with `contacts` and `mic` and confirm the vault names.
     - _Requirements: 7.8_
-  - [ ] 7.5 Run `scripts/run_ward.sh --stop` and confirm no `log stream` process remains (`pgrep -fl "log stream"`).
+  - [x] 7.5 Run `scripts/run_ward.sh --stop` and confirm no `log stream` process remains (`pgrep -fl "log stream"`).
     - _Requirements: 11.4, 11.5_
   - [ ] 7.6 Record the macOS version used and the outcome in `docs/devlog.md`.
 
 - [ ] 8. Follow-ups from review
-  - [ ] 8.1 Call `endAlert()` when the HUD auto-dismisses, so the ghost cannot blink indefinitely.
-    - _Requirements: 10.4, 11.2_
-  - [ ] 8.2 Track pending prompts by `msgID` (or restore the previous prompt) so concurrent prompts dismiss correctly.
-    - _Requirements: 11.2, 11.3_
-  - [ ] 8.3 Give legacy-wording prompts (no `msgID`) a dismissal path other than the timer.
-    - _Requirements: 4.2, 11.2_
-  - [ ] 8.4 Handle `AUTHREQ_PROMPTING` arriving before its attribution (short hold-back or late update of the HUD).
+  - [x] 8.1 Call `endAlert()` when the HUD auto-dismisses, so the ghost cannot blink indefinitely. `FortressHUDWindow.onAutoDismiss` plus `PromptTracker.expire()`.
+    - _Requirements: 10.4, 11.6_
+  - [x] 8.2 Track pending prompts by `msgID` (or restore the previous prompt) so concurrent prompts dismiss correctly. `PromptTracker` with `PromptTrackerTests`.
+    - _Requirements: 11.2 to 11.5_
+  - [ ] 8.3 Give legacy-wording prompts (no `msgID`) a dismissal path other than the timer. Partly addressed: they are tracked separately and no longer interfere with other prompts, but only the timeout ends them. Needs a capture of the Ventura or Sonoma result wording, or a manual dismiss.
+    - _Requirements: 4.2, 11.6_
+  - [ ] 8.4 Handle `AUTHREQ_PROMPTING` arriving before its attribution. Deferred: no captured macOS 27 sequence shows this order. Revisit if a real capture does.
     - _Requirements: 3.3, 3.8_
-  - [ ] 8.5 Add backoff and a visible state to the watcher restart loop, and log `log stream` stderr.
+  - [x] 8.5 Add backoff to the watcher restart loop and log `log stream` stderr. `TCCWatcher.restartDelay(afterFailures:)` with `TCCWatcherRestartTests`.
+    - _Requirements: 1.6, 1.7_
+  - [ ] 8.5b Show a visible state in the UI (for example the ghost tooltip) when `log stream` cannot start.
     - _Requirements: 1.6_
-  - [ ] 8.6 Replace the semaphore wait in `applicationWillTerminate` with a non-blocking shutdown.
-    - _Requirements: 11.4_
-  - [ ] 8.7 Position the HUD on the screen that holds Apple's dialog instead of `NSScreen.main`.
+  - [x] 8.6 Replace the semaphore wait in `applicationWillTerminate` with a non-blocking shutdown (`applicationShouldTerminate` returning `.terminateLater`).
+    - _Requirements: 11.7_
+  - [ ] 8.7 Position the HUD on the screen that holds Apple's dialog instead of `NSScreen.main`. Needs a check on a multi-display Mac to see which screen Apple's dialog uses.
     - _Requirements: 8.4_
-  - [ ] 8.8 Make the fixed Command Line Tools plugin path in `Package.swift` portable, and make the root-owned process test independent of the machine.
+  - [x] 8.8 Make the Command Line Tools plugin path in `Package.swift` conditional on the file existing, and skip the root-owned process test when running as root.
     - _Requirements: 13.1_
-  - [ ] 8.9 Decide on the Spectral Ectoplasm secondary tone (`#C7D2FE`) and the emoji header, then update `CastlePalette` or the steering file.
+  - [ ] 8.9 Decide on the Spectral Ectoplasm secondary tone (`#C7D2FE`) and the emoji header, then update `CastlePalette` or the steering file. Needs a design decision.
     - _Requirements: 9.1_
+  - [ ] 8.10 Run the new behaviour on a real Mac: open two prompts at once (for example `docs` and `mic`) and answer them in both orders; let one time out; quit with `scripts/run_ward.sh --stop` and confirm no `log stream` is left.
+    - _Requirements: 11.2 to 11.7_
 
-- [ ] 9. Documentation
-  - [ ] 9.1 Add the Phase 2 and 3 entry to `docs/devlog.md` and update test counts in `docs/HACKATHON_REVIEW.md` and the README.
-  - [ ] 9.2 Update `docs/architecture.md` where the as-built layout differs from the plan: lineage is inside `ProcessInspector`, and `ProcessLineageView` and `RiskTagView` live in `FortressHUDView.swift`.
+- [x] 9. Documentation
+  - [x] 9.1 Add the Phase 2 and 3 entry to `docs/devlog.md` and update the test count in the README. `docs/HACKATHON_REVIEW.md` is a dated snapshot of a review run, so it is refreshed by re-running the review, not edited by hand.
+  - [x] 9.2 Update `docs/architecture.md` where the as-built layout differs from the plan: lineage is inside `ProcessInspector`, `ProcessLineageView` and `RiskTagView` live in `FortressHUDView.swift`, and the data flow, menu bar and Resources sections match the code.

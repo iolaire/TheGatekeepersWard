@@ -10,13 +10,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuBar: MenuBarController?
     private var hud: FortressHUDWindow?
     private var watchTask: Task<Void, Never>?
-    /// `msgID` of the prompt the HUD is showing, so only its result hides it.
-    private var shownMessageID: String?
+    /// Open prompts, so each result only affects its own prompt.
+    private var prompts = PromptTracker<HUDContent>()
 
     /// Creates the menu bar item and starts watching the TCC log.
     func applicationDidFinishLaunching(_ notification: Notification) {
         menuBar = MenuBarController()
         hud = FortressHUDWindow()
+        // The HUD gave up waiting: forget the prompts and settle the ghost.
+        hud?.onAutoDismiss = { [weak self] in
+            self?.prompts.expire()
+            self?.menuBar?.endAlert()
+        }
         watchTask = Task { [weak self] in
             guard let self else { return }
             await self.watcher.start()
@@ -27,17 +32,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         logger.info("Gatekeeper's Ward is watching")
     }
 
-    /// Stops the `log stream` subprocess.
-    func applicationWillTerminate(_ notification: Notification) {
+    /// Stops the `log stream` subprocess before quitting, without blocking the
+    /// main thread: AppKit waits for `reply(toApplicationShouldTerminate:)`.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         watchTask?.cancel()
         let watcher = self.watcher
-        // Best effort: terminate the child before the process exits.
-        let done = DispatchSemaphore(value: 0)
-        Task.detached {   // detached: the main actor is blocked by wait() below
+        Task {
             await watcher.stop()
-            done.signal()
+            NSApp.reply(toApplicationShouldTerminate: true)
         }
-        _ = done.wait(timeout: .now() + 1)
+        return .terminateLater
     }
 
     private func handle(_ event: TCCWatcherEvent) async {
@@ -45,16 +49,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case .prompt(let prompt):
             let content = await ProcessInspector.shared.hudContent(for: prompt)
             logger.info("prompt for \(prompt.service.rawKey, privacy: .public)")
-            shownMessageID = prompt.messageID
-            hud?.present(content)
+            apply(prompts.prompt(messageID: prompt.messageID, content: content))
             menuBar?.recordPrompt(RecentSpirit(
                 name: content.spirit?.name ?? "unknown",
                 vault: prompt.service.vaultName,
                 date: prompt.detectedAt
             ))
         case .resolved(let result):
-            guard result.messageID == shownMessageID else { return }
-            shownMessageID = nil
+            apply(prompts.resolve(messageID: result.messageID))
+        }
+    }
+
+    /// Moves the HUD and ghost to match a `PromptTracker` decision.
+    private func apply(_ change: PromptTracker<HUDContent>.Change) {
+        switch change {
+        case .none:
+            break
+        case .show(let content):
+            hud?.present(content)
+        case .hide:
             hud?.dismiss()
             menuBar?.endAlert()
         }

@@ -56,7 +56,10 @@ struct ProcessInspectorTests {
         #expect(snapshot.exitedBeforeInspection)
     }
 
-    @Test("A root-owned process is marked as denied, not exited")
+    @Test(
+        "A root-owned process is marked as denied, not exited",
+        .disabled(if: geteuid() == 0, "root can read launchd's arguments")
+    )
     func otherUserProcessIsDenied() throws {
         // launchd (PID 1) is root-owned; its argv is not readable by us.
         let snapshot = ProcessInspector.inspect(pid: 1)

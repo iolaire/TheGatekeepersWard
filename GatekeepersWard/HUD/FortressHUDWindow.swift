@@ -12,6 +12,10 @@ final class FortressHUDWindow: NSPanel {
 
     private var dismissTask: Task<Void, Never>?
 
+    /// Called when the HUD hides itself after `autoDismissDelay`, so the owner
+    /// can drop its state for the prompts that timed out.
+    var onAutoDismiss: (() -> Void)?
+
     /// Creates a hidden panel.
     init() {
         super.init(
@@ -61,6 +65,7 @@ final class FortressHUDWindow: NSPanel {
             try? await Task.sleep(nanoseconds: UInt64(Self.autoDismissDelay * 1_000_000_000))
             guard !Task.isCancelled else { return }
             self?.dismiss()
+            self?.onAutoDismiss?()
         }
     }
 

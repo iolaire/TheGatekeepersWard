@@ -41,8 +41,9 @@ The Ward App informs and never intercepts. Apple's TCC dialog keeps full control
 3. WHEN the pending partial line exceeds 1 MiB, THE LineBuffer SHALL discard it.
 4. THE TCCWatcher SHALL ignore the non-JSON header line that `log stream` prints at startup.
 5. THE TCCWatcher SHALL publish events through an `AsyncStream` that keeps only the newest 64 events.
-6. IF the `log stream` subprocess exits while the watcher is running, THEN THE TCCWatcher SHALL start it again after 2 seconds.
-7. WHEN `stop()` is called, THE TCCWatcher SHALL stop the subprocess and cancel any pending restart.
+6. IF the `log stream` subprocess exits or fails to start while the watcher is running, THEN THE TCCWatcher SHALL start it again after 2 seconds, doubling the delay on each consecutive failure up to 60 seconds, and SHALL reset the delay after the subprocess ran for 30 seconds.
+7. THE TCCWatcher SHALL write the subprocess's standard error output to the application log.
+8. WHEN `stop()` is called, THE TCCWatcher SHALL stop the subprocess and cancel any pending restart.
 
 ### Requirement 2: Event Parsing Across macOS Versions
 
@@ -176,11 +177,14 @@ The Ward App informs and never intercepts. Apple's TCC dialog keeps full control
 #### Acceptance Criteria
 
 1. WHEN a `.prompt` event arrives, THE Ward_App SHALL present the HUD and record the spirit in the menu bar history.
-2. WHEN a `.resolved` event arrives whose `msgID` equals that of the HUD currently shown, THE Ward_App SHALL dismiss the HUD and end the Ghost alert.
-3. WHEN a `.resolved` event arrives with a different `msgID`, THE Ward_App SHALL ignore it.
-4. WHEN the app terminates, THE Ward_App SHALL stop the `log stream` subprocess so none is left behind.
-5. WHEN the app receives SIGTERM, THE Ward_App SHALL terminate through `NSApp.terminate` so the subprocess is stopped.
-6. THE `scripts/run_ward.sh` script SHALL build the app, wrap it in `.build/GatekeepersWard.app`, sign it ad hoc and launch it, and SHALL support `--stop`.
+2. THE Ward_App SHALL track every open prompt by `msgID` and SHALL show the newest one in the HUD.
+3. WHEN a `.resolved` event arrives for the prompt shown, THE Ward_App SHALL show the previous open prompt, or, if none is open, dismiss the HUD and end the Ghost alert.
+4. WHEN a `.resolved` event arrives for an open prompt that is not shown, THE Ward_App SHALL forget that prompt and leave the HUD unchanged.
+5. WHEN a `.resolved` event arrives with an unknown `msgID`, including one that arrives after the HUD timed out, THE Ward_App SHALL ignore it.
+6. WHEN the HUD hides itself after its 30 second timeout, THE Ward_App SHALL forget all open prompts and end the Ghost alert.
+7. WHEN the app terminates, THE Ward_App SHALL stop the `log stream` subprocess so none is left behind, and SHALL do so without blocking the main thread.
+8. WHEN the app receives SIGTERM, THE Ward_App SHALL terminate through `NSApp.terminate` so the subprocess is stopped.
+9. THE `scripts/run_ward.sh` script SHALL build the app, wrap it in `.build/GatekeepersWard.app`, sign it ad hoc and launch it, and SHALL support `--stop`.
 
 ### Requirement 12: Security Boundaries and Standards
 

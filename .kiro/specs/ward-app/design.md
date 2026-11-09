@@ -19,7 +19,7 @@ The Ward App is a menu bar accessory application. A single pipeline turns `log s
                       -> HUDContent.build (status, master app, icons)
                  -> FortressHUDWindow.present
                  -> MenuBarController.recordPrompt (ghost alert)
-       .resolved -> if msgID == shownMessageID: HUD dismiss, ghost idle
+       .resolved -> PromptTracker: show previous prompt, or HUD dismiss + ghost idle
 ```
 
 Design principles from `.kiro/steering/project.md`:
@@ -73,7 +73,7 @@ Regexes use Swift `#/.../#` literals. `TCCService` has eleven named cases plus `
 
 **TCCWatcher** (actor). `logArguments` is static and tested. `events` is a `nonisolated AsyncStream` with `.bufferingNewest(64)`.
 - `start()` launches the subprocess at userInitiated QoS, sets a `readabilityHandler` on stdout that feeds a `StreamReader` (one `LineBuffer` and one `TCCEventPipeline` per subprocess), drains stderr, and sets a `terminationHandler`.
-- Unexpected exit while running, or a throwing `run()`, schedules a restart after 2 s.
+- Unexpected exit while running, or a throwing `run()`, schedules a restart. The delay is `restartDelay(afterFailures:)`: 2 s, doubling per consecutive failure, capped at 60 s. A run of 30 s or more resets the count. Stderr is written to the application log (first 500 bytes per read).
 - `stop()` clears handlers, cancels the restart and terminates the process.
 - `StreamReader` is `@unchecked Sendable`. It relies on `FileHandle` never running its readability handler concurrently with itself.
 
@@ -130,7 +130,9 @@ Regexes use Swift `#/.../#` literals. `TCCService` has eleven named cases plus `
 
 ### App/
 
-**AppDelegate** (`@MainActor`) wires the watcher, HUD and menu bar, and runs the event loop in a `Task`. It keeps `shownMessageID` so a `.resolved` event only dismisses the HUD it belongs to. On terminate it cancels the task and stops the watcher, waiting at most 1 s.
+**PromptTracker\<Content\>** (struct, pure). Keeps open prompts in arrival order, keyed by `msgID`. Prompts without a `msgID` (older wordings) get a private id. `prompt(messageID:content:)` returns `.show(content)`. `resolve(messageID:)` returns `.show(previous)` when the shown prompt was answered and others remain, `.hide` when none remain, and `.none` for an unknown id or a prompt that is not on screen. `expire()` forgets everything. `AppDelegate` instantiates it with `HUDContent`.
+
+**AppDelegate** (`@MainActor`) wires the watcher, HUD and menu bar, and runs the event loop in a `Task`. Each event goes through the `PromptTracker`, and `apply(_:)` turns the result into HUD and ghost calls. `FortressHUDWindow.onAutoDismiss` makes it call `expire()` and `endAlert()` when the 30 s timer fires. On quit it implements `applicationShouldTerminate`: it cancels the task, returns `.terminateLater`, awaits `watcher.stop()` in a `Task`, then calls `reply(toApplicationShouldTerminate: true)`. The main thread is never blocked.
 
 **GatekeepersWardApp.run()** sets the `.accessory` activation policy, ignores `SIGTERM` and installs a `DispatchSource` handler that calls `NSApp.terminate`. Without this, `pkill` would orphan the `log stream` child.
 
@@ -143,7 +145,7 @@ Builds `GatekeepersWardApp`, replaces any running copy, assembles `.build/Gateke
 | Situation | Behaviour |
 |---|---|
 | Line is not JSON or not TCC | Parser returns `nil` or an `.unknown` event; the pipeline emits nothing |
-| `log stream` exits or fails to launch | Restart after 2 s, indefinitely |
+| `log stream` exits or fails to launch | Restart with backoff (2 s doubling to 60 s), indefinitely; stderr is logged |
 | Process exited before inspection | Exited snapshot, status "Slipped" |
 | Arguments unreadable (root-owned or restricted) | `inspectionDenied`, status "Veiled", path from `proc_pidpath` when available |
 | No PID known | No spirit, status "Veiled" |
@@ -163,6 +165,8 @@ Tests use Swift Testing. Real macOS 27 captures live in `TCCLogFixtures`.
 | Parser | `TCCEventParserTests` | pattern D and attribution wording; earlier PBT on main |
 | Correlator | `TCCRequestCorrelatorTests` | msgID matching, single use, eviction, direct requests, old wording |
 | Pipeline | `TCCWatcherPipelineTests` | chunking (including random chunking), header ignored, prompt then result, denied result, `logArguments` |
+| Restart | `TCCWatcherRestartTests` | backoff doubles from 2 s, caps at 60 s, non-positive counts give the base delay |
+| Prompt tracking | `PromptTrackerTests` | stacking, restoring the previous prompt, unknown and late results, repeated `msgID`, legacy prompts, expiry |
 
 Property-based coverage of the `KERN_PROCARGS2` parser and the NDJSON parser predates this spec and lives in `ParseProcArgsBufferTests` and `TCCEventParserTests`.
 
@@ -170,15 +174,15 @@ Not covered by automated tests (manual verification with WardTrigger, see `tasks
 
 ## Known Limitations and Risks
 
-These came out of the review and are tracked as open tasks.
+These came out of the review. Items 1, 2, 5 (partly), 6 and 9 are fixed; the rest are tracked as open tasks.
 
-1. **Ghost alert not cleared on HUD auto-dismiss.** The 30 s dismissal does not call `endAlert()`. If a `.resolved` event never matches, the ghost keeps blinking.
-2. **Single `shownMessageID`.** A second concurrent prompt replaces the first, and the first prompt's result is then ignored.
-3. **Legacy-wording prompts have no `msgID`**, so only the 30 s timer dismisses them.
-4. **Out-of-order lines.** If `AUTHREQ_PROMPTING` arrives before its attribution, the HUD inspects the responsible app (the parent) instead of the child.
-5. **Restart loop** has no backoff and no visible error when `/usr/bin/log` cannot launch. Stderr is discarded.
-6. **Termination wait.** `applicationWillTerminate` blocks the main actor for up to 1 s on a semaphore.
+1. ~~**Ghost alert not cleared on HUD auto-dismiss.**~~ Fixed: `onAutoDismiss` ends the alert.
+2. ~~**Single `shownMessageID`.**~~ Fixed by `PromptTracker`.
+3. **Legacy-wording prompts have no `msgID`**, so only the 30 s timer dismisses them. They are now tracked separately and no longer block other prompts, but they still end only by timeout.
+4. **Out-of-order lines.** If `AUTHREQ_PROMPTING` arrives before its attribution, the HUD inspects the responsible app (the parent) instead of the child. Not seen in any captured log; left unimplemented until a real capture shows it.
+5. **Restart loop** now backs off and logs stderr, but there is still no visible error in the UI when `/usr/bin/log` cannot launch.
+6. ~~**Termination wait.**~~ Fixed with `.terminateLater`.
 7. **Placement** uses `NSScreen.main`, which may not be the screen showing Apple's dialog.
 8. **Menu times** ("2 min ago") refresh only when the menu is rebuilt.
-9. **Test environment.** The test target links a hard-coded Command Line Tools plugin path through `unsafeFlags`, and the root-owned process test depends on the machine.
+9. ~~**Test environment.**~~ Fixed: `Package.swift` passes the Command Line Tools plugin path only if the file exists, and the root-owned process test is skipped when the tests run as root.
 10. **Palette.** Spectral Ectoplasm secondary `#C7D2FE` is unused and the header uses an emoji.

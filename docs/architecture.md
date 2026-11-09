@@ -57,16 +57,16 @@ The lore: your macOS system is a **fortified castle courtyard**. Unprivileged ch
 
 The forensic heart of the app. Given a PID, resolves the full process story using only unprivileged Darwin APIs.
 
-- **`ProcessInspector`** — wraps `sysctl(KERN_PROCARGS2)` to extract binary path, argv, and environment; uses `proc_pidinfo(PROC_PIDVNODEPATHINFO)` for working directory
-- **`ProcessTree`** — walks the parent chain via `sysctl(KERN_PROC_PID)` to build the full lineage from AI agent → child shell → command
-- **`ProcessSnapshot`** — immutable value type holding everything known about a process at a point in time
+- **`ProcessInspector`** — an actor wrapping `sysctl(KERN_PROCARGS2)` (parsed by `ProcArgsParser`) for argv, `proc_pidpath` for the binary, and `proc_pidinfo(PROC_PIDVNODEPATHINFO)` for the working directory. It also walks the parent chain (`KERN_PROC_PID`, depth-capped, loop-safe) to build the lineage from AI agent → child shell → command; there is no separate `ProcessTree` type
+- **`ProcessSnapshot`** — immutable value type holding everything known about a process at a point in time, with `exitedBeforeInspection` and `inspectionDenied` flags for graceful degradation
+- **`RiskTagger`** — flags credential files, secret-path words, and network or encoding tools in argv
 
 ```swift
-let snapshot = try ProcessInspector.snapshot(pid: 14582)
-// snapshot.binaryPath  → "/usr/local/bin/rg"
-// snapshot.arguments   → ["rg", "AWS_SECRET", "/Users/dev/Documents"]
-// snapshot.parentChain → ["cursor", "node", "zsh", "rg"]
-// snapshot.workingDir  → "/Users/dev/Projects/myapp"
+let snapshot = await ProcessInspector.shared.snapshot(pid: 14582)
+// snapshot.executablePath   → "/usr/local/bin/rg"
+// snapshot.arguments        → ["rg", "AWS_SECRET", "/Users/dev/Documents"]
+// snapshot.lineage          → [cursor, node, zsh, rg]   (ProcessNode values, oldest first)
+// snapshot.workingDirectory → "/Users/dev/Projects/myapp"
 ```
 
 **Key insight:** when macOS fires a TCC prompt, `tccd` puts the requesting process thread to sleep until the user clicks Allow/Don't Allow. The process stays in the Darwin process table — `sysctl(KERN_PROCARGS2, pid)` will succeed reliably because the process cannot exit while the dialog is active.
@@ -75,30 +75,40 @@ let snapshot = try ProcessInspector.snapshot(pid: 14582)
 
 Listens for macOS TCC permission challenge events using the unified log.
 
-- **`TCCWatcher`** — runs `/usr/bin/log stream` as a background subprocess; parses NDJSON lines for events in `subsystem == "com.apple.TCC"`; extracts `clientPID` and `responsiblePID`
-- **`TCCEvent`** — model: service key, client PID, responsible PID, timestamp
-- Parser supports both structured NDJSON fields and regex fallback on `eventMessage` to handle wording changes across macOS versions (Ventura / Sonoma / Sequoia)
+- **`TCCWatcher`** — an actor that runs `/usr/bin/log stream` as a background subprocess for `subsystem == "com.apple.TCC"` and publishes `.prompt` and `.resolved` events on an `AsyncStream`. It restarts the subprocess with backoff (2 s, doubling to 60 s) and logs its stderr
+- **`LineBuffer`** — rebuilds whole lines from stdout chunks of any size
+- **`TCCEventParser`** (`extractTCCEvent`) — decodes the NDJSON line and falls back to regex on `eventMessage`. Defines `TCCEvent` (service key, client PID, responsible PID) and `TCCService`. Handles the Ventura and Sonoma wordings plus the macOS 27 `AUTHREQ_*` wording
+- **`TCCRequestCorrelator`** — on macOS 27 the prompt line names only the responsible app, while the child that is asking appears in an earlier `AUTHREQ_ATTRIBUTION` line with the same `msgID`. The correlator joins them so the HUD shows the child
+- **`TCCEventPipeline`** — pure line-in, event-out step that ties these together (`.resolved` when an `AUTHREQ_RESULT` arrives)
 
-On event: hands PIDs to `ProcessInspector`, fires HUD.
+On a prompt: `AppDelegate` hands the PIDs to `ProcessInspector`, builds `HUDContent` and shows the HUD.
 
 ### `HUD/` — Fortress HUD Overlay
 
 SwiftUI overlay that appears alongside the TCC dialog. Non-activating — key focus stays on Apple's native dialog.
 
 - **`FortressHUDWindow`** — frameless `NSPanel`:
-  - `styleMask: [.nonactivatingPanel, .borderless]`
-  - `level: .floating` (appears over normal windows without stealing focus)
-  - Positioned near upper-right, offset from native TCC prompt
-- **`FortressHUDView`** — SwiftUI view with The Castle Keep aesthetic
-- **`ProcessLineageView`** — animated lineage tree: each process node has a spirit icon with a contextual tool (🔍 for `rg`, 🗝️ for shell scripts)
-- **`RiskTagView`** — highlights suspicious arguments in Mischief Crimson (`#F43F5E`): `.pem`, `.env`, `id_rsa`, `curl`, `base64`, `nc`
+  - `styleMask: [.nonactivatingPanel, .borderless, .fullSizeContentView]`
+  - `level: .floating` (appears over normal windows without stealing focus); never key or main
+  - Positioned at the top-right of the main screen; hides itself after 30 s if no result arrives
+- **`HUDContent`** — view-model: the prompt, the inspected spirit, the master app, risk tags, and a status ("Spirit Paused at the Gate", "Suspicious Spirit", "Slipped Through", "Origins Are Veiled"). Also holds the vault names and the process-to-icon table (SF Symbols, for example a magnifier for `rg` and a key for shells)
+- **`FortressHUDView`** — SwiftUI view with The Castle Keep aesthetic. It contains two subviews, not separate files:
+  - **`ProcessLineageView`** — the lineage as wrapping chips (laid out by `FlowLayout`) with the spirit highlighted
+  - **`RiskTagView`** — highlights suspicious arguments in Mischief Crimson (`#F43F5E`)
+- **`CastlePalette`** — the palette as code constants
+- The HUD informs only. "Let Spirit Pass" and "Lower Portcullis" appear as text; Apple's dialog decides
+
+### `App/` — prompt tracking
+
+`AppDelegate` owns a `PromptTracker`, which keeps every open prompt by `msgID`. The HUD shows the newest; answering it brings the previous one back; the HUD hides and the ghost goes idle only when none are left.
 
 ### `MenuBar/`
 
-- **`MenuBarController`** — manages `NSStatusItem` with animated ghost icon
-  - Idle state: ghost floats gently
-  - Active TCC event: ghost perks up, wide eyes, raises lantern
-- Dropdown: past permission challenges history, preferences, quit
+- **`MenuBarController`** — manages `NSStatusItem` with the ghost icon
+  - Idle state: sleepy eyes, no lantern
+  - Active TCC event: wide eyes, lantern raised and lowered every 0.8 s
+- **`GhostIcon`** — the ghost is drawn in code as a template image
+- Dropdown: the last 10 spirits with relative times, Clear History, About, Quit
 
 ### `WardTrigger/` (Test Harness)
 
@@ -113,9 +123,7 @@ Isolated SPM executable with its own bundle ID (`com.gatekeepersward.ward-trigge
 
 ### `Resources/`
 
-- App icon: ghost with lantern variants
-- Menu bar icons: ghost idle / ghost alert states
-- Color assets: The Castle Keep palette (see below)
+Currently empty by design. SwiftPM cannot compile asset catalogs, so the ghost icon (`GhostIcon`) and the palette (`CastlePalette`) are code. An app icon for the `.app` bundle is still to do.
 
 ---
 
@@ -138,23 +146,27 @@ Isolated SPM executable with its own bundle ID (`com.gatekeepersward.ward-trigge
 unified log event (TCC challenge fires)
         │
         ▼
-  TCCWatcher.parse(ndjsonLine)          ← /usr/bin/log stream subprocess
+  /usr/bin/log stream → LineBuffer      ← whole NDJSON lines
         │
         ▼
-  ProcessInspector.snapshot(pid:)       ← sysctl KERN_PROCARGS2
+  TCCEventPipeline                      ← TCCEventParser + TCCRequestCorrelator
+        │                                  (.prompt / .resolved events)
+        ▼
+  ProcessInspector.snapshot(pid:)       ← sysctl KERN_PROCARGS2, lineage walk
         │
         ▼
-  ProcessTree.walk(from: pid)           ← sysctl KERN_PROC_PID chain
+  RiskTagger → HUDContent               ← status, master app, risk tags
         │
         ▼
-  FortressHUDWindow.present(snapshot:)  ← NSPanel .floating, non-activating
+  FortressHUDWindow.present(content)    ← NSPanel .floating, non-activating
+  MenuBarController.recordPrompt        ← ghost alert, recent-spirits list
         │
         ▼
   User sees HUD alongside macOS dialog  → informed Allow / Deny
   ("Let Spirit Pass" / "Lower Portcullis")
         │
         ▼
-  DecisionLog.record(event:, decision:) ← persisted history in menu bar
+  .resolved event (same msgID)          → PromptTracker: HUD hides, ghost idles
 ```
 
 ---

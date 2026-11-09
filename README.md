@@ -83,7 +83,8 @@ docs/               Planning, architecture, devlog
 git clone https://github.com/iolaire/TheGatekeepersWard.git
 cd TheGatekeepersWard
 swift build          # builds the GatekeepersWard library and WardTrigger CLI
-swift test           # 27 tests incl. 5 property-based suites
+swift test           # 81 tests incl. 5 property-based suites
+scripts/run_ward.sh  # builds and launches the menu bar app (stop: scripts/run_ward.sh --stop)
 ```
 
 **Trigger a real TCC prompt** (attributed to WardTrigger's own bundle ID —

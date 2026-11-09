@@ -73,7 +73,8 @@ struct TCCEventPipeline {
 /// Streams TCC prompts by running `/usr/bin/log stream` as a child process.
 ///
 /// Reads the public unified log only; needs no entitlement. Restarts the
-/// subprocess 2 seconds after it exits unexpectedly (e.g. after sleep).
+/// subprocess if it exits unexpectedly (e.g. after sleep): after 2 seconds
+/// first, then with doubling delays up to 60 seconds if it keeps failing.
 actor TCCWatcher {
     /// Arguments for `/usr/bin/log`, per `.kiro/steering/log-stream-parsing.md`.
     static let logArguments = [
@@ -87,6 +88,19 @@ actor TCCWatcher {
     private var process: Process?
     private var isRunning = false
     private var restartTask: Task<Void, Never>?
+    /// Restarts since the subprocess last ran steadily; drives the backoff.
+    private var consecutiveFailures = 0
+    private var startedAt: Date?
+
+    /// A subprocess that ran at least this long counts as healthy.
+    static let healthyRunTime: TimeInterval = 30
+
+    /// Seconds to wait before restart number `failures` (1-based): 2, 4, 8, ...
+    /// capped at 60, so a broken `log` binary is not relaunched in a tight loop.
+    static func restartDelay(afterFailures failures: Int) -> TimeInterval {
+        let exponent = min(max(failures - 1, 0), 5)
+        return min(2 * Double(1 << exponent), 60)
+    }
 
     /// Creates a stopped watcher. Call `start()` to begin streaming.
     init() {
@@ -105,9 +119,16 @@ actor TCCWatcher {
         let errors = Pipe()
         proc.standardOutput = output
         proc.standardError = errors
-        // Drain stderr so startup diagnostics can never fill the pipe.
+        // Always drain stderr so it can never fill the pipe, and log what
+        // `log stream` says (bad predicate, permission problems) for diagnosis.
         errors.fileHandleForReading.readabilityHandler = { handle in
-            _ = handle.availableData
+            let data = handle.availableData
+            guard !data.isEmpty else { return }
+            let text = String(decoding: data.prefix(500), as: UTF8.self)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if !text.isEmpty {
+                logger.error("log stream stderr: \(text, privacy: .public)")
+            }
         }
         // FileHandle calls this handler serially, one chunk at a time, so
         // the reader below sees chunks in order. Hopping into the actor with
@@ -123,10 +144,12 @@ actor TCCWatcher {
         do {
             try proc.run()
             process = proc
+            startedAt = Date()
             logger.info("log stream started")
         } catch {
             logger.error("could not start log stream: \(error.localizedDescription, privacy: .public)")
             clearHandlers(of: proc)
+            consecutiveFailures += 1
             scheduleRestart()
         }
     }
@@ -149,14 +172,19 @@ actor TCCWatcher {
         clearHandlers(of: process)
         self.process = nil
         guard isRunning else { return }
-        logger.info("log stream exited; restarting in 2 s")
+        if let startedAt, Date().timeIntervalSince(startedAt) >= Self.healthyRunTime {
+            consecutiveFailures = 0   // it ran fine for a while; this is a fresh failure
+        }
+        consecutiveFailures += 1
         scheduleRestart()
     }
 
     private func scheduleRestart() {
+        let delay = Self.restartDelay(afterFailures: consecutiveFailures)
+        logger.info("log stream not running; restarting in \(Int(delay)) s")
         restartTask?.cancel()
         restartTask = Task {
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             guard !Task.isCancelled else { return }
             self.start()
         }

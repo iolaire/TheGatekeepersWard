@@ -4,6 +4,20 @@ Running notes from the build. Newest entries at the top.
 
 ---
 
+## 2026-11-09 (14:06 UTC) — Day 5: Dharshaneshwaran's branch meets main
+
+**Dharshaneshwaran**
+
+While iolaire was adding eight triggers to WardTrigger on `main`, the `dev` branch was still on the three-service parser. Dharshaneshwaran merged `main` into `dev` and found the HUD no longer compiled: `TCCService` had gained cases for Downloads, Calendar, Reminders, Photos, Camera and Screen Capture, and the HUD's vault-name `switch` is exhaustive. Dharshaneshwaran added the six vault names (`2e1b562`), so every WardTrigger service now gets its own lore copy in the HUD instead of "Unknown Vault".
+
+**Integration (iolaire, with Kiro).** Reviewed `origin/dev` before merging: clean build, 70 tests passing, every file under 300 lines, no force-unwraps. The one gap was process, not code: the inspector, watcher, HUD and menu bar had no spec. We wrote `.kiro/specs/ward-app` (13 requirements, a design, and a task list that records the review findings as open follow-ups), then merged `dev` into `main` with `--no-ff` so Dharshaneshwaran's five commits stay in the history under that name. Manual smoke test with WardTrigger (task 7 in the spec) done after the merge.
+
+**Open follow-ups from the review** (all in `.kiro/specs/ward-app/tasks.md`, section 8): the ghost keeps its alert pose if the HUD auto-dismisses without a matching result; concurrent prompts replace each other; legacy-wording prompts only dismiss on the 30 s timer; the watcher restart loop has no backoff.
+
+**State:** 70 Swift tests pass on merged `main`. Not pushed yet.
+
+---
+
 ## 2026-11-09 (13:56 UTC) — Day 5: WardTrigger grows to 11 services
 
 **iolaire (pairing with Kiro)**
@@ -35,6 +49,31 @@ WardTrigger only covered three TCC services (Documents, Contacts, Microphone). T
 **State:** 27 Swift tests and 55 Python tests pass. The code is committed to local `main` (`82695ec`) but not pushed yet.
 
 **Next up:** specs for `ProcessInspector` and `TCCWatcher`, then Phase 2 against live WardTrigger prompts. Open question: confirm in the `com.apple.TCC` log stream which service keys the new triggers actually emit, since only the Documents, Contacts and Microphone wording has been captured so far.
+
+---
+
+## 2026-11-08 (08:52 UTC) — Day 4: Phase 2 and 3 land on the dev branch
+
+**Dharshaneshwaran**
+
+The whole runtime pipeline went in on a separate `dev` branch, in three commits across the morning (07:27 and 08:52 UTC). It was not visible on `main` until the Nov 9 merge, which is why the Day 5 notes below still call the inspector, watcher and HUD unbuilt.
+
+**macOS 27 changes the TCC log shape.** On macOS 27.0.1 the `AUTHREQ_PROMPTING` line names only the responsible app (Zed, Cursor), not the child process that is actually asking. The child's PID sits in an earlier `AUTHREQ_ATTRIBUTION` line carrying the same `msgID`. `TCCRequestCorrelator` remembers each attribution and attaches its PID to the matching prompt, once, with oldest-first eviction at 256 entries. Without it the HUD would show the parent and miss the spirit. A new pattern D in `TCCEventParser` reads the service and responsible PID from the new wording.
+
+**Direct requests have no accessing block.** Contacts and Microphone requests made straight by an app log only `requesting={...}`. The correlator now falls back to the requesting PID as the client. The real lines from the live Mac went into the fixtures as a test.
+
+**What the main commit adds** (`798f4f9`):
+
+- **`TCCWatcher`**: runs `log stream` (NDJSON, `com.apple.TCC`), rebuilds lines across chunk boundaries with `LineBuffer`, restarts the subprocess after 2 s if it dies, and emits `.prompt` and `.resolved` events. A result with `authValue=2` means allowed.
+- **`ProcessInspector`**: path, argv, working directory and lineage through `sysctl(KERN_PROCARGS2)` and `proc_pidinfo`, read-only. It degrades to an "exited" or "denied" snapshot instead of failing.
+- **`RiskTagger`**: flags credential files, secret words and network or encoding tools. Short tool names are matched as whole words, so `nc` does not fire inside `since`.
+- **Fortress HUD**: a non-activating floating `NSPanel` with a SwiftUI card. Lineage wraps as chips, the spirit is highlighted, risk tags are crimson, and the card dismisses itself after 30 s or when its prompt resolves. Reduce Motion is respected.
+- **Menu bar ghost**: drawn in code (SwiftPM cannot compile asset catalogs). Idle has half-closed eyes; a prompt wakes it with a raised lantern and a blink. The menu keeps the last 10 spirits.
+- **App shell**: `GatekeepersWardApp` target and `scripts/run_ward.sh` (build, wrap in an `.app`, ad hoc sign, launch). SIGTERM goes through `NSApp.terminate` so a `pkill` cannot orphan the `log stream` child.
+
+**Verified live** on macOS 27.0.1 with WardTrigger, and from a Kiro CLI session in Zed. 70 Swift tests: the new unit suites cover the inspector, tagger, HUD content, layout, correlator and the stream pipeline, including a random-chunking property test.
+
+**Decision:** the HUD informs and has no buttons. "Let Spirit Pass" and "Lower Portcullis" appear as text, because Apple's dialog keeps control.
 
 ---
 
