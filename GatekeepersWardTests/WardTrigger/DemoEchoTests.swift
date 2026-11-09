@@ -10,9 +10,9 @@ func extraArgsAppearsInOutput() {
     for _ in 0..<iterations {
         let wordCount = Int.random(in: 1...6, using: &rng)
         let words = generatePrintableASCIIArgv(count: wordCount, rng: &rng)
-        let output = captureStdout {
-            printDemoCommandLine(subcommand: "docs", extra: words)
-        }
+        let collector = OutputCollector()
+        printDemoCommandLine(subcommand: "docs", extra: words, write: collector.sink)
+        let output = collector.text
         #expect(output.hasPrefix("> docs"))
         for word in words {
             #expect(output.contains(word))
@@ -22,17 +22,17 @@ func extraArgsAppearsInOutput() {
 
 @Test("Empty extra argument list produces the minimal `> subcommand` line")
 func noExtraArgsProducesMinimalOutput() {
-    let output = captureStdout {
-        printDemoCommandLine(subcommand: "contacts", extra: [])
-    }
+    let collector = OutputCollector()
+    printDemoCommandLine(subcommand: "contacts", extra: [], write: collector.sink)
+    let output = collector.text
     #expect(output == "> contacts\n")
 }
 
 @Test("Usage summary mentions all three subcommands")
 func usageMentionsAllThreeSubcommands() {
-    let output = captureStdout {
-        printUsage()
-    }
+    let collector = OutputCollector()
+    printUsage(write: collector.sink)
+    let output = collector.text
     #expect(output.contains("docs"))
     #expect(output.contains("contacts"))
     #expect(output.contains("mic"))
@@ -40,9 +40,9 @@ func usageMentionsAllThreeSubcommands() {
 
 @Test("Unrecognized-subcommand message identifies the argument by value")
 func unrecognizedPrefixesArgName() {
-    let output = captureStdout {
-        printUnrecognized("bogus")
-    }
+    let collector = OutputCollector()
+    printUnrecognized("bogus", write: collector.sink)
+    let output = collector.text
     #expect(output.contains("bogus"))
     #expect(output.contains("Unknown subcommand: bogus"))
     // printUnrecognized must be followed by the usage summary.

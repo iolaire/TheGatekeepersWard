@@ -5,6 +5,8 @@ import Testing
 /// Records which stub behaviors fired during a dispatch test run.
 private final class TriggerRecorder {
     var fired: [String] = []
+    /// Lines the stub print behaviors "wrote"; per-test, never touches stdout.
+    let output = OutputCollector()
 
     /// Appends an event marker.
     func record(_ name: String) {
@@ -17,9 +19,9 @@ private final class TriggerRecorder {
 private func makeStubBehaviors(_ recorder: TriggerRecorder) -> WardTriggerBehaviors {
     WardTriggerBehaviors(
         demoCommandLine: { subcommand, extra in
-            print(([">", subcommand] + extra).joined(separator: " "))
+            recorder.output.sink(([">", subcommand] + extra).joined(separator: " "))
         },
-        usage: { print("Usage: docs | contacts | mic") },
+        usage: { recorder.output.sink("Usage: docs | contacts | mic") },
         unrecognized: { recorder.record("unrecognized:\($0)") },
         documents: { recorder.record("docs") },
         contacts: { recorder.record("contacts") },
@@ -63,13 +65,11 @@ func micSubcommandCallsTriggerMicrophone() {
 @Test("No arguments exits with code 1 and prints the usage summary")
 func noArgsExitsWithCode1AndPrintsUsage() {
     let recorder = TriggerRecorder()
-    var status: Int32 = 0
-    let output = captureStdout {
-        status = runWardTriggerDispatch(
-            arguments: ["WardTrigger"],
-            behaviors: makeStubBehaviors(recorder)
-        )
-    }
+    let status = runWardTriggerDispatch(
+        arguments: ["WardTrigger"],
+        behaviors: makeStubBehaviors(recorder)
+    )
+    let output = recorder.output.text
     #expect(status == 1)
     #expect(recorder.fired.isEmpty)
     #expect(output.contains("docs"))
@@ -80,13 +80,11 @@ func noArgsExitsWithCode1AndPrintsUsage() {
 @Test("Unknown subcommand exits with code 1 and names the bad argument")
 func unknownSubcommandExitsWithCode1() {
     let recorder = TriggerRecorder()
-    var status: Int32 = 0
-    let output = captureStdout {
-        status = runWardTriggerDispatch(
-            arguments: ["WardTrigger", "bogus"],
-            behaviors: makeStubBehaviors(recorder)
-        )
-    }
+    let status = runWardTriggerDispatch(
+        arguments: ["WardTrigger", "bogus"],
+        behaviors: makeStubBehaviors(recorder)
+    )
+    let output = recorder.output.text
     #expect(status == 1)
     #expect(recorder.fired == ["unrecognized:bogus"])
     #expect(output.contains("bogus"))

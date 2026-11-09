@@ -20,8 +20,8 @@ test only invokes the binary with no arguments (which prints usage and exits
 
 Shared fixtures these tests rely on live in `../Fixtures/`:
 `ProcArgsFixtures.swift` (`SeededRNG`, `generatePrintableASCIIArgv`,
-`encodeProcArgsBuffer`), `TCCLogFixtures.swift`, and `StdoutCapture.swift`
-(`captureStdout(_:)`).
+`encodeProcArgsBuffer`), `TCCLogFixtures.swift`, and `OutputCollector.swift`
+(per-test output sink).
 
 ## Running
 
@@ -86,9 +86,11 @@ Tips:
 
 ## Implementation notes
 
-- **Stdout capture is process-global.** `captureStdout(_:)` redirects file
-  descriptor 1 with `dup2`, so it is guarded by a lock — Swift Testing runs
-  tests in parallel and concurrent captures would lose each other's output.
+- **Never redirect stdout in tests.** Swift Testing runs tests in parallel and
+  file descriptor 1 is process-global, so any `dup2` capture races with every
+  other test that prints (this caused a flaky `noExtraArgsProducesMinimalOutput`).
+  The `print*` helpers take an injectable `write:` sink; tests pass an
+  `OutputCollector` so each test owns its output.
 - **Real TCC behavior is deliberately untested here.** Triggering an actual
   prompt requires LaunchServices attribution, usage-description keys, a
   code-sealed bundle, and a foreground app — all handled by

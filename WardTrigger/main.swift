@@ -7,8 +7,8 @@ import Foundation
 
 let wardTriggerBehaviors = WardTriggerBehaviors(
     demoCommandLine: { printDemoCommandLine(subcommand: $0, extra: $1) },
-    usage: printUsage,
-    unrecognized: printUnrecognized,
+    usage: { printUsage() },
+    unrecognized: { printUnrecognized($0) },
     documents: triggerDocuments,
     contacts: triggerContacts,
     microphone: triggerMicrophone
