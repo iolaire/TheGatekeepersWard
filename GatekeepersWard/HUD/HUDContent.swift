@@ -45,16 +45,22 @@ enum HUDStatus: Equatable, Sendable {
 }
 
 extension TCCService {
-    /// The lore name of the protected resource (steering §7). Desktop and
-    /// Apple Events have no canonical name there, so they get descriptive ones.
+    /// The lore name of the protected resource. Documents, Contacts, Camera
+    /// and Microphone use the canonical copy from steering §7; the steering
+    /// has no names for the others, so they get descriptive ones.
     var vaultName: String {
         switch self {
         case .documentsFolder: return "Documents Vault"
         case .addressBook: return "Contacts Registry"
+        case .camera: return "Seeing-Glass"
         case .microphone: return "Voice Chamber"
         case .desktopFolder: return "Desktop Vault"
+        case .downloadsFolder: return "Downloads Vault"
+        case .calendar: return "Calendar Scrolls"
+        case .reminders: return "Reminders Ledger"
+        case .photos: return "Portrait Gallery"
+        case .screenCapture: return "Scrying Mirror"
         case .appleEvents: return "Automation Vault"
-        case .unknown(let key) where key == "kTCCServiceCamera": return "Seeing-Glass"
         case .unknown: return "Unknown Vault"
         }
     }
