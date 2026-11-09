@@ -28,7 +28,7 @@ All findings recorded in `.kiro/steering/testing-strategy.md` §5 so Phase 2 (`T
 
 - **Planning docs** — added hackathon details (`Overview`, `Rules`, `Schedule`), `PlanReview_20261106.md`, `TestHarnessDesign.md`, and `WhatsNeeded.md`; refreshed `README`, `architecture.md`, `pitch.md`, and the project steering file from the review.
 - **Visual identity** — committed the four style explorations under `docs/Planning/Styles/` and the write-up for the chosen direction, *The Castle Keep & The Wandering Spirits*.
-- **License change** — the repo now carries an **Apache 2.0** `LICENSE` (README, CONTRIBUTING, and pitch references updated). Earlier notes and `.kiro/steering/project.md` still say MIT; Apache 2.0 is OSI-approved, so it satisfies the open-source detection requirement. Worth reconciling the remaining MIT mentions.
+- **License change** — the repo carries an **Apache 2.0** `LICENSE`. On Nov 9 it was restored to the unmodified stock text (the appended copyright lines made GitHub report "Other"); the copyright line now lives in `NOTICE`. `.kiro/steering/project.md` and older planning notes were updated to match.
 - **Steering library** — seven new steering docs: `darwin-c-interop`, `log-stream-parsing`, `macos-security-boundaries`, `swift-coding-standards`, `swift-memory-safety`, `swiftui-hud-design`, and `testing-strategy`. Plus `docs/Planning/ScoringWell.md` to keep judging criteria in view.
 - **Darwin/TCC MCP server** — wrote the `darwin-tcc-mcp-server` spec (requirements, design, tasks) and implemented it under `.kiro/tools/` in Python: SDK locator, header reader/search, C struct parser with a pre-generated known-structs table, and a TCC service registry (`tcc_services.json`). It exposes `get_darwin_struct`, `lookup_tcc_service`, and `search_darwin_headers`, is registered in `.kiro/settings/mcp.json`, and is covered by a pytest suite (including server integration tests). Usage guidance lives in `.kiro/steering/darwin-mcp-usage.md`. This lets us look up `KERN_PROCARGS2` layouts and TCC service names from the real SDK headers instead of memory.
 - **Hooks** — `.kiro/hooks/build-test-gate.json` plus `scripts/git-hooks/pre-commit` enforce build and test before commit, which covers the hackathon's active-hooks requirement.
@@ -51,7 +51,7 @@ Reviewed full plan in `docs/Planning/PlanReview_20261106.md`. Key decisions lock
 **Deadline confirmed:** December 4, 2026 at 2:00 PM PT. Internal target: submit by December 2 for safety buffer.
 
 **Hackathon compliance gaps identified and actioned:**
-- Need `LICENSE` (MIT) at repo root — README links to it but file doesn't exist yet
+- Need `LICENSE` (MIT at the time; now Apache 2.0) at repo root — README links to it but file doesn't exist yet
 - Need `.kiro/specs/` populated — judges check for spec-driven development
 - Need `.kiro/hooks/` with active hooks (pre-commit build/test)
 - Need Property-Based Testing on the `KERN_PROCARGS2` buffer parser and log parser
@@ -84,7 +84,7 @@ Reviewed full plan in `docs/Planning/PlanReview_20261106.md`. Key decisions lock
 | 7 | Dec 02–04 | Final polish + submit |
 
 **Next up (Phase 1):**
-- Add `LICENSE` (MIT) to repo root
+- Add `LICENSE` (MIT at the time; now Apache 2.0) to repo root
 - Create `.kiro/specs/mvp-spec.md`
 - Initialize `Package.swift` (macOS 13+, no external deps yet)
 - Build `WardTrigger` — three modes: filesystem access, AppleEvents, Contacts

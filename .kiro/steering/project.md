@@ -66,7 +66,7 @@ docs/                  pitch.md, architecture.md, devlog.md, Planning/
 ## Hackathon Compliance Requirements
 
 These are judging requirements — not optional:
-- MIT `LICENSE` file at repo root (required for open source detection)
+- Apache 2.0 `LICENSE` file at repo root, unmodified stock text so GitHub detects it (copyright lives in `NOTICE`)
 - `.kiro/specs/` populated with formal specs (scores in Technological Implementation 20%)
 - `.kiro/hooks/` with active hooks (pre-commit build / test enforcement)
 - Property-Based Testing on `KERN_PROCARGS2` buffer parser and `log stream` NDJSON parser

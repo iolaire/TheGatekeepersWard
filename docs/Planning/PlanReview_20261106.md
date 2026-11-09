@@ -24,7 +24,7 @@ Reviewing your workspace against `docs/Planning/HackathonDetails/Rules.md` revea
 
 1. **Missing `LICENSE` File:**
    * Rule requirement: *“must be public and open source by including an open source license file. This license should be detectable and visible at the top of the repository page.”*
-   * Your [README.md](file:///Volumes/Gold/Kiroween2026/TheGatekeepersWard/README.md) links to `LICENSE` (MIT), but the file does not exist yet at the repo root. We should add `LICENSE` immediately.
+   * Your [README.md](file:///Volumes/Gold/Kiroween2026/TheGatekeepersWard/README.md) links to `LICENSE` (MIT at the time; now Apache 2.0), but the file does not exist yet at the repo root. We should add `LICENSE` immediately.
 2. **`.kiro/` Directory Requirements:**
    * Rule requirement: *“must contain the `/.kiro` directory at the root of the project to show usage of specs, hooks, and steering. Do NOT add the `/.kiro` directory to your `.gitignore`.”*
    * Currently, you have `.kiro/steering/project.md` and an empty `.kiro/hooks/`, but **no `.kiro/specs/` directory**. Adding formal specs here will directly score points in the *Technological Implementation (20%)* bucket.
@@ -87,7 +87,7 @@ gantt
 
 | Phase | Dates | Working Days | Total Hours (2p × 2h) | Focus & Deliverables |
 |---|---|:---:|:---:|---|
-| **Phase 1: Setup, Specs & Test Harness** | Nov 06 – Nov 08 | 3 days | **12 hrs** | • MIT `LICENSE` & `.kiro/specs/mvp-spec.md`<br>• `Package.swift` setup (macOS 13+)<br>• `WardTrigger` test app (isolated bundle ID) & reset script |
+| **Phase 1: Setup, Specs & Test Harness** | Nov 06 – Nov 08 | 3 days | **12 hrs** | • Apache 2.0 `LICENSE` (originally planned as MIT) & `.kiro/specs/mvp-spec.md`<br>• `Package.swift` setup (macOS 13+)<br>• `WardTrigger` test app (isolated bundle ID) & reset script |
 | **Phase 2: Core Forensics Engine** | Nov 09 – Nov 13 | 5 days | **20 hrs** | • `ProcessInspector`: `sysctl(KERN_PROCARGS2)`, `KERN_PROC_PPID`, cwd<br>• `TCCWatcher`: `/usr/bin/log stream` ndjson listener<br>• Verify live detection with `WardTrigger` |
 | **Phase 3: Gothic HUD & MenuBar** | Nov 14 – Nov 19 | 6 days | **24 hrs** | • `FortressHUDWindow` (`NSPanel` non-activating floating panel)<br>• `FortressHUDView` (Gothic aesthetic, dark stone palette, skull crest, risk tags)<br>• `MenuBarController` (`NSStatusItem` + recent history list) |
 | **Phase 4: Agent Integration & Hardening** | Nov 20 – Nov 23 | 4 days | **16 hrs** | • Test real agent workflows (Cursor, Claude Code, Kiro CLI)<br>• Process lifetime & suspension race condition hardening<br>• Graceful fallback when child processes exit prematurely |
@@ -103,7 +103,7 @@ gantt
 #### Phase 1: Setup, Specs & Test Harness (Nov 06 – Nov 08 | 12 Person-Hours)
 * **Goal:** Establish compliance foundations and build the deterministic TCC trigger.
 * **Tasks:**
-  1. Add `LICENSE` (MIT) with detectable GitHub tag.
+  1. Add `LICENSE` (originally MIT; now Apache 2.0) with detectable GitHub tag.
   2. Create formal `.kiro/specs/mvp-spec.md` for spec-driven development points.
   3. Initialize `Package.swift` supporting macOS 13+.
   4. Build `WardTrigger` test app (dual-mode: standalone bundle `com.gatekeepersward.ward-trigger` + CLI subshell simulator).
