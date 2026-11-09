@@ -39,6 +39,10 @@ Package.swift
 WardTrigger/
 ├── main.swift                   ← entry point, CommandLine dispatch
 ├── Triggers.swift               ← triggerDocuments(), triggerContacts(), triggerMicrophone()
+├── FolderTriggers.swift         ← probeProtectedFolder(), triggerDesktop(), triggerDownloads()
+├── PrivacyTriggers.swift        ← triggerCalendar(), triggerReminders(), triggerCamera(), triggerPhotos()
+├── AutomationTriggers.swift     ← triggerAppleEvents(), triggerScreenCapture()
+├── TriggerCatalog.swift         ← wardTriggerCatalog: name, service key, summary, run
 ├── DemoEcho.swift               ← printDemoCommandLine(_:) helper
 ├── Dispatch.swift               ← runWardTriggerDispatch with injectable behaviors
 └── Info.plist                   ← CFBundleIdentifier = com.gatekeepersward.ward-trigger
@@ -82,6 +86,26 @@ During a TCC dialog, `tccd` suspends the requesting thread. WardTrigger remains 
 ---
 
 ## Components and Interfaces
+
+### Expansion: table-driven dispatch (Requirement 13)
+
+The original three-way `switch` does not scale to eleven triggers. Dispatch is now table-driven:
+
+- `TriggerCatalog.swift` defines `wardTriggerCatalog: [TriggerSpec]` (`name`, `serviceKey`, `summary`, `run`).
+- `WardTriggerBehaviors.triggers: [String: () -> Void]` replaces the per-trigger closures; `main.swift` wires `WardTriggerBehaviors.liveTriggers` (built from the catalog) and tests substitute recorder stubs for every catalog name.
+- `printUsage` iterates the catalog, so the usage text can never drift from the dispatchable subcommands.
+
+| Subcommand | Service key | API |
+|---|---|---|
+| `docs` / `desktop` / `downloads` | `SystemPolicy{Documents,Desktop,Downloads}Folder` | `contentsOfDirectory` via `probeProtectedFolder` |
+| `contacts` | `AddressBook` | `CNContactStore.requestAccess` |
+| `calendar` / `reminders` | `Calendar` / `Reminders` | EventKit (`requestFullAccessTo…` on macOS 14+) |
+| `photos` | `Photos` | `PHPhotoLibrary.requestAuthorization(for: .readWrite)` |
+| `mic` / `camera` | `Microphone` / `Camera` | `AVCaptureDevice.requestAccess` |
+| `events` | `AppleEvents` | `NSAppleScript` → Finder (blocks while the dialog is up) |
+| `screen` | `ScreenCapture` | `CGRequestScreenCaptureAccess` + 60 s `CGPreflightScreenCaptureAccess` poll |
+
+Not included by design: Network/Removable Volumes (need a mounted volume), Full Disk Access and Developer Tool (no prompt), Accessibility / Input Monitoring (redirect to System Settings).
 
 ### `main.swift`
 

@@ -232,7 +232,7 @@ to reset. Always trigger prompts through the launcher:
 
 ```bash
 scripts/run_ward_trigger.sh docs rg "AWS_SECRET" ~/Documents/prod.env   # or contacts / mic
-cat tmp/ward-trigger.out    # captured stdout (reset_ward_trigger.sh removes it)
+cat "${TMPDIR}ward-trigger.out"    # captured stdout (reset_ward_trigger.sh removes it)
 scripts/reset_ward_trigger.sh    # re-arm first-prompt state
 ```
 

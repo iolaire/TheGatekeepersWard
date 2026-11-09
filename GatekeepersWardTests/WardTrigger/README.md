@@ -53,11 +53,11 @@ scripts/run_ward_trigger.sh contacts
 scripts/run_ward_trigger.sh mic
 
 # Read the captured stdout of the trigger run:
-cat tmp/ward-trigger.out
+cat "${TMPDIR}ward-trigger.out"
 # > docs rg AWS_SECRET /Users/<you>/Documents/prod.env
 # [WardTrigger] Documents access granted/denied…
 
-# Re-arm first-prompt state and clean tmp/ward-trigger.out:
+# Re-arm first-prompt state and clean $TMPDIR/ward-trigger.out:
 scripts/reset_ward_trigger.sh
 ```
 
@@ -68,6 +68,11 @@ Behavior per subcommand:
 | `docs` | `kTCCServiceSystemPolicyDocumentsFolder` | Documents dialog (needs the canary file to exist; enumerates `~/Documents` read-only) |
 | `contacts` | `kTCCServiceAddressBook` | Contacts dialog — blocks until you click, then exits 0 either way |
 | `mic` | `kTCCServiceMicrophone` | Microphone dialog — same semaphore pattern as contacts |
+| `desktop` / `downloads` | `kTCCServiceSystemPolicyDesktopFolder` / `…DownloadsFolder` | Folder dialog (read-only listing) |
+| `calendar` / `reminders` | `kTCCServiceCalendar` / `kTCCServiceReminders` | EventKit dialog |
+| `camera` / `photos` | `kTCCServiceCamera` / `kTCCServicePhotos` | Camera / Photos dialog |
+| `events` | `kTCCServiceAppleEvents` | Automation dialog (Apple event to Finder, like `osascript`) |
+| `screen` | `kTCCServiceScreenCapture` | Screen Recording dialog — stays alive up to 60 s waiting on your answer |
 
 Extra positional arguments after the subcommand are echoed as a simulated
 command line and live in the process's argv (for `ProcessInspector`'s

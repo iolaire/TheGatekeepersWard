@@ -21,12 +21,43 @@ private func makeStubBehaviors(_ recorder: TriggerRecorder) -> WardTriggerBehavi
         demoCommandLine: { subcommand, extra in
             recorder.output.sink(([">", subcommand] + extra).joined(separator: " "))
         },
-        usage: { recorder.output.sink("Usage: docs | contacts | mic") },
+        usage: { printUsage(write: recorder.output.sink) },
         unrecognized: { recorder.record("unrecognized:\($0)") },
-        documents: { recorder.record("docs") },
-        contacts: { recorder.record("contacts") },
-        microphone: { recorder.record("mic") }
+        triggers: Dictionary(uniqueKeysWithValues: wardTriggerCatalog.map { spec in
+            (spec.name, { recorder.record(spec.name) })
+        })
     )
+}
+
+@Test("Every catalog subcommand calls only its own trigger", arguments: wardTriggerCatalog.map(\.name))
+func everyCatalogSubcommandCallsOnlyItsTrigger(name: String) {
+    let recorder = TriggerRecorder()
+    let status = runWardTriggerDispatch(
+        arguments: ["WardTrigger", name],
+        behaviors: makeStubBehaviors(recorder)
+    )
+    #expect(status == 0)
+    #expect(recorder.fired == [name])
+}
+
+@Test("Catalog names are unique, lowercase, and map to kTCCService keys")
+func catalogIsWellFormed() {
+    let names = wardTriggerCatalog.map(\.name)
+    #expect(Set(names).count == names.count)
+    for spec in wardTriggerCatalog {
+        #expect(spec.name == spec.name.lowercased())
+        #expect(spec.serviceKey.hasPrefix("kTCCService"))
+    }
+}
+
+@Test("The suggested expansion set is present in the catalog")
+func catalogContainsExpansionSet() {
+    let names = Set(wardTriggerCatalog.map(\.name))
+    let expected: Set<String> = [
+        "docs", "contacts", "mic", "desktop", "downloads",
+        "calendar", "reminders", "camera", "photos", "events", "screen",
+    ]
+    #expect(expected.isSubset(of: names))
 }
 
 @Test("`docs` subcommand calls only triggerDocuments")
@@ -72,9 +103,9 @@ func noArgsExitsWithCode1AndPrintsUsage() {
     let output = recorder.output.text
     #expect(status == 1)
     #expect(recorder.fired.isEmpty)
-    #expect(output.contains("docs"))
-    #expect(output.contains("contacts"))
-    #expect(output.contains("mic"))
+    for spec in wardTriggerCatalog {
+        #expect(output.contains(spec.name))
+    }
 }
 
 @Test("Unknown subcommand exits with code 1 and names the bad argument")

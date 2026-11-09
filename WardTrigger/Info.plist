@@ -22,6 +22,22 @@
 	<string>WardTrigger probes the Documents canary file to trigger the Documents folder TCC prompt for Gatekeeper's Ward testing.</string>
 	<key>NSDesktopFolderUsageDescription</key>
 	<string>WardTrigger is reset via tccutil for repeatable Desktop folder TCC prompts during Gatekeeper's Ward testing.</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>WardTrigger lists the Downloads folder to trigger the Downloads folder TCC prompt for Gatekeeper's Ward testing.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>WardTrigger requests Calendar access to trigger the Calendar TCC prompt for Gatekeeper's Ward testing.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>WardTrigger requests Calendar access to trigger the Calendar TCC prompt for Gatekeeper's Ward testing.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>WardTrigger requests Reminders access to trigger the Reminders TCC prompt for Gatekeeper's Ward testing.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>WardTrigger requests Reminders access to trigger the Reminders TCC prompt for Gatekeeper's Ward testing.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>WardTrigger requests Photos access to trigger the Photos TCC prompt for Gatekeeper's Ward testing.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>WardTrigger requests camera access to trigger the Camera TCC prompt for Gatekeeper's Ward testing.</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>WardTrigger sends Finder a read-only Apple event to trigger the Automation TCC prompt for Gatekeeper's Ward testing.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>WardTrigger requests Contacts access to trigger the Contacts TCC prompt for Gatekeeper's Ward testing.</string>
 	<key>NSMicrophoneUsageDescription</key>

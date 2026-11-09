@@ -28,14 +28,14 @@ func noExtraArgsProducesMinimalOutput() {
     #expect(output == "> contacts\n")
 }
 
-@Test("Usage summary mentions all three subcommands")
-func usageMentionsAllThreeSubcommands() {
+@Test("Usage summary lists every catalog subcommand on its own line")
+func usageMentionsEverySubcommand() {
     let collector = OutputCollector()
     printUsage(write: collector.sink)
-    let output = collector.text
-    #expect(output.contains("docs"))
-    #expect(output.contains("contacts"))
-    #expect(output.contains("mic"))
+    let lines = collector.text.split(separator: "\n").map(String.init)
+    for spec in wardTriggerCatalog {
+        #expect(lines.contains { $0.hasPrefix("  \(spec.name) ") && $0.contains(spec.summary) })
+    }
 }
 
 @Test("Unrecognized-subcommand message identifies the argument by value")
@@ -46,7 +46,7 @@ func unrecognizedPrefixesArgName() {
     #expect(output.contains("bogus"))
     #expect(output.contains("Unknown subcommand: bogus"))
     // printUnrecognized must be followed by the usage summary.
-    #expect(output.contains("docs"))
-    #expect(output.contains("contacts"))
-    #expect(output.contains("mic"))
+    for spec in wardTriggerCatalog {
+        #expect(output.contains(spec.name))
+    }
 }
