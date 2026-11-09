@@ -44,6 +44,7 @@ let package = Package(
             name: "GatekeepersWardTests",
             dependencies: ["GatekeepersWard", "WardTrigger"],
             path: "GatekeepersWardTests",
+            exclude: ["WardTrigger/README.md"],
             swiftSettings: testingPluginFlags.isEmpty ? [] : [.unsafeFlags(testingPluginFlags)]
         ),
     ]

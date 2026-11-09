@@ -11,8 +11,19 @@ APP_DIR="$REPO_ROOT/.build/GatekeepersWard.app"
 EXE_PATTERN="GatekeepersWard.app/Contents/MacOS/GatekeepersWardApp"
 
 if [ "${1:-}" = "--stop" ]; then
-    pkill -f "$EXE_PATTERN" && echo "[run_ward] stopped." || echo "[run_ward] not running."
-    exit 0
+    if ! pkill -f "$EXE_PATTERN"; then
+        echo "[run_ward] not running."
+        exit 0
+    fi
+    # SIGTERM triggers a clean quit; confirm the process actually exits.
+    for _ in $(seq 1 30); do
+        pgrep -f "$EXE_PATTERN" >/dev/null || { echo "[run_ward] stopped."; exit 0; }
+        sleep 0.1
+    done
+    echo "[run_ward] still running after 3 s; force-killing." >&2
+    pkill -9 -f "$EXE_PATTERN" || true
+    pkill -f "log stream --style ndjson --level info --predicate subsystem == \"com.apple.TCC\"" || true
+    exit 1
 fi
 
 cd "$REPO_ROOT"

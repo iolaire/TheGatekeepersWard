@@ -1,9 +1,25 @@
 import AppKit
 
-/// Draws the menu bar ghost as an 18×18 pt template image, so macOS tints it
-/// for light and dark menu bars. SF Symbols has no ghost, and SwiftPM cannot
-/// bundle an asset catalog, so it is drawn in code.
+/// Draws the menu bar ghost as a 22×22 pt full-colour image in the Castle Keep
+/// palette. It is not a template image, so it uses only fixed sRGB colours and
+/// looks the same on light and dark menu bars. SF Symbols has no ghost, and
+/// SwiftPM cannot bundle an asset catalog, so it is drawn in code.
 enum GhostIcon {
+    // Fixed sRGB values matching `CastlePalette` (which exposes SwiftUI colours only).
+    private static let ectoplasmLight = srgb(0xE0, 0xE7, 0xFF)
+    private static let ectoplasmDark = srgb(0xC7, 0xD2, 0xFE)
+    private static let kiroViolet = srgb(0x8B, 0x5C, 0xF6)
+    private static let torchlightAmber = srgb(0xF5, 0x9E, 0x0B)
+
+    private static func srgb(_ red: Int, _ green: Int, _ blue: Int) -> NSColor {
+        NSColor(srgbRed: CGFloat(red) / 255, green: CGFloat(green) / 255, blue: CGFloat(blue) / 255, alpha: 1)
+    }
+
+    /// Side length of the rendered image in points (menu bar is ~22–24 pt tall).
+    private static let canvas: CGFloat = 22
+    /// Scale applied to the 18 pt-grid artwork.
+    private static let scale: CGFloat = 1.3
+
     /// The ghost's pose.
     enum Pose {
         /// Half-closed eyes.
@@ -16,19 +32,31 @@ enum GhostIcon {
 
     /// Renders the ghost.
     static func image(_ pose: Pose) -> NSImage {
-        let image = NSImage(size: NSSize(width: 18, height: 18), flipped: false) { _ in
-            NSColor.black.setFill()
-            body().fill()
+        let image = NSImage(size: NSSize(width: canvas, height: canvas), flipped: false) { _ in
+            // Artwork is authored in an 18 pt grid with 2 pt of padding; scale it up
+            // so the ghost fills the menu bar height.
+            let transform = NSAffineTransform()
+            transform.translateX(by: 1, yBy: 1)
+            transform.scale(by: scale)
+            transform.translateX(by: -2, yBy: -2)
+            transform.concat()
+            let body = body()
+            NSGradient(starting: ectoplasmLight, ending: ectoplasmDark)?.draw(in: body, angle: 270)
+            kiroViolet.setStroke()
+            body.lineWidth = 1
+            body.stroke()
             // Cut the eyes out of the body so the menu bar shows through.
             NSGraphicsContext.current?.compositingOperation = .destinationOut
+            NSColor.black.setFill()
             eyes(pose).fill()
             NSGraphicsContext.current?.compositingOperation = .sourceOver
             if pose != .idle {
+                torchlightAmber.setFill()
                 lantern(raised: pose == .alert).fill()
             }
             return true
         }
-        image.isTemplate = true
+        image.isTemplate = false
         return image
     }
 

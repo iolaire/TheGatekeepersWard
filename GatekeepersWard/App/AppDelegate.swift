@@ -88,7 +88,12 @@ public enum GatekeepersWardApp {
         // through a normal quit instead.
         signal(SIGTERM, SIG_IGN)
         let termSource = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
-        termSource.setEventHandler { NSApp.terminate(nil) }
+        // Defer `terminate` to a run-loop perform. Calling it straight from this
+        // main-queue handler deadlocks: `.terminateLater` waits for a main-actor
+        // Task, which cannot run while the main queue is still inside this handler.
+        termSource.setEventHandler {
+            RunLoop.main.perform(inModes: [.common]) { NSApp.terminate(nil) }
+        }
         termSource.resume()
         withExtendedLifetime(termSource) { app.run() }
         exit(0)

@@ -12,8 +12,9 @@ struct RecentSpirit: Equatable {
 
 /// The menu bar ghost and its dropdown (`.kiro/steering/swiftui-hud-design.md` §6).
 ///
-/// The ghost is a template image (`GhostIcon`) so macOS tints it for light
-/// and dark menu bars. Idle: sleepy eyes. Alert: wide eyes, and the lantern
+/// The ghost (`GhostIcon`) is a full-colour, non-template image in the Castle
+/// Keep palette, so it looks the same on light and dark menu bars and is never
+/// tinted. Idle: sleepy eyes. Alert: wide eyes, and the lantern
 /// rises and falls every 0.8 s until the prompt resolves.
 @MainActor
 final class MenuBarController: NSObject {
@@ -67,9 +68,9 @@ final class MenuBarController: NSObject {
     }
 
     private func setIcon(_ pose: GhostIcon.Pose, description: String) {
-        let image = GhostIcon.image(pose)
-        image.accessibilityDescription = description
-        statusItem.button?.image = image
+        // The image is assigned exactly as GhostIcon renders it (no mutation, no tint).
+        statusItem.button?.image = GhostIcon.image(pose)
+        statusItem.button?.setAccessibilityLabel(description)
         statusItem.button?.toolTip = description
     }
 

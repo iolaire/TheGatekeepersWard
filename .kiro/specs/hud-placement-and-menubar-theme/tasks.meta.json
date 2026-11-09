@@ -1,0 +1,342 @@
+{
+  "pbtResults": {
+    "3.3 Write property test for alert matching": {
+      "status": "passed",
+      "lastRunTimestamp": 1794239564328
+    },
+    "2.4 Write property test for containment": {
+      "status": "passed",
+      "lastRunTimestamp": 1794239664959
+    },
+    "2.5 Write property test for oversized HUD": {
+      "status": "passed",
+      "lastRunTimestamp": 1794239805899
+    }
+  },
+  "executionHistory": {
+    "1.1 Add a window list dump helper and record owner name and layer": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285554
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239290185
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239336726
+      }
+    ],
+    "2.1 Create `HUD/PlacementCalculator.swift`": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285660
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239290977
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239336625
+      }
+    ],
+    "2.2 Write property test for coordinate conversion and adjacency": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285715
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239379074
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239464454
+      }
+    ],
+    "2.3 Write property test for left flip": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285735
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239524334
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239586688
+      }
+    ],
+    "2.4 Write property test for containment": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285754
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239628741
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239706504
+      }
+    ],
+    "2.5 Write property test for oversized HUD": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285792
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239748547
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239812827
+      }
+    ],
+    "2.6 Write unit tests for `PlacementCalculator`": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285816
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239379126
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239466623
+      }
+    ],
+    "3.1 Create `HUD/AlertMatcher.swift` with `WindowInfo` and `AlertMatcher`": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285835
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239379691
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239466079
+      }
+    ],
+    "3.2 Create `HUD/AlertLocator.swift`": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285851
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239525053
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239587939
+      }
+    ],
+    "3.3 Write property test for alert matching": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285868
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239525546
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239587446
+      }
+    ],
+    "3.4 Write unit tests for `AlertLocator.locate()`": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285888
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239629532
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239705718
+      }
+    ],
+    "4.1 Update `MenuBar/GhostIcon.swift` to palette colours": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285903
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239291547
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239336678
+      }
+    ],
+    "4.2 Update `MenuBar/MenuBarController.swift`": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285919
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239380492
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239463713
+      }
+    ],
+    "4.3 Write unit tests for `GhostIcon`": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239285997
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239381069
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239465255
+      }
+    ],
+    "5.1 Update `HUD/FortressHUDWindow.swift` (and `FortressHUDWindow+Placement.swift` if size requires)": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239286016
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239630209
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239707298
+      }
+    ],
+    "5.2 Write unit tests for `FortressHUDWindow`": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239286032
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239749272
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239812398
+      }
+    ],
+    "6. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239286052
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239846147
+      },
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239894717
+      }
+    ],
+    "1. Record the empirical TCC alert window values": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239336753
+      }
+    ],
+    "4. Make the menu bar ghost full colour": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239465302
+      }
+    ],
+    "3. Implement alert matching and locating": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239705744
+      }
+    ],
+    "5. Wire placement into the Fortress HUD window": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239812419
+      }
+    ],
+    "2. Implement the pure placement calculator": [
+      {
+        "executionId": "2ec9443b-3889-4167-ae84-f783b2113d7f",
+        "chatSessionId": "sess_818b8cae-d1e8-4348-8fd8-660f4de0b228",
+        "timestamp": 1794239812882
+      }
+    ]
+  }
+}

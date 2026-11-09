@@ -11,6 +11,8 @@ final class FortressHUDWindow: NSPanel {
     static let autoDismissDelay: TimeInterval = 30
 
     private var dismissTask: Task<Void, Never>?
+    /// In-flight alert search; cancelled on a new `present` and on `dismiss()`.
+    var locateTask: Task<Void, Never>?
 
     /// Called when the HUD hides itself after `autoDismissDelay`, so the owner
     /// can drop its state for the prompts that timed out.
@@ -47,19 +49,10 @@ final class FortressHUDWindow: NSPanel {
         let size = hosting.fittingSize
         contentView = hosting
         setContentSize(size)
-        if let screen = NSScreen.main {
-            let visible = screen.visibleFrame
-            setFrameOrigin(NSPoint(x: visible.maxX - size.width - 16, y: visible.maxY - size.height - 16))
-        }
-        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
-        alphaValue = reduceMotion ? 1 : 0
+        setFrameOrigin(fallbackOrigin(for: size))
+        alphaValue = 0   // faded in after the first locate result or timeout
         orderFrontRegardless()   // never makeKeyAndOrderFront
-        if !reduceMotion {
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.2
-                animator().alphaValue = 1
-            }
-        }
+        startLocating(size: size)
         dismissTask?.cancel()
         dismissTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: UInt64(Self.autoDismissDelay * 1_000_000_000))
@@ -73,6 +66,8 @@ final class FortressHUDWindow: NSPanel {
     func dismiss() {
         dismissTask?.cancel()
         dismissTask = nil
+        locateTask?.cancel()
+        locateTask = nil
         guard isVisible else { return }
         if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
             orderOut(nil)
