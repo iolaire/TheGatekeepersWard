@@ -114,11 +114,29 @@ extension TCCLogEvent {
 struct TCCEvent: Equatable {
     /// The protected service the event refers to.
     let service: TCCService
-    /// PID of the client process requesting access, when the message wording
-    /// carries one. `nil` for partial (fallback) events.
+    /// PID of the process that actually requested access (e.g. `rg` run by an
+    /// agent), when known. `nil` for partial (fallback) events, and for macOS
+    /// 27 prompt lines until `TCCRequestCorrelator` fills it in.
     let clientPID: Int?
+    /// PID of the app macOS holds responsible for the request (e.g. Cursor),
+    /// when the message wording carries one.
+    let responsiblePID: Int?
     /// The raw NDJSON event the extraction ran on.
     let logEvent: TCCLogEvent
+
+    /// Creates an event. `responsiblePID` defaults to `nil` because only some
+    /// log wordings carry it.
+    init(
+        service: TCCService,
+        clientPID: Int?,
+        responsiblePID: Int? = nil,
+        logEvent: TCCLogEvent
+    ) {
+        self.service = service
+        self.clientPID = clientPID
+        self.responsiblePID = responsiblePID
+        self.logEvent = logEvent
+    }
 }
 
 /// Extracts a `TCCEvent` from one NDJSON log line.
@@ -128,6 +146,10 @@ struct TCCEvent: Equatable {
 ///
 /// - **Pattern A** (modern wording): `… service kTCCServiceX for client <path> with PID n …`
 /// - **Pattern B** (older wording): `… kTCCServiceX, client pid: n …`
+/// - **Pattern D** (macOS 27, captured from a real prompt):
+///   `AUTHREQ_PROMPTING: … service=kTCCServiceX, … Resp:{TCCDProcess: … pid=n, …}`.
+///   `n` is the *responsible* app's PID; `clientPID` is left `nil` here and
+///   filled in by `TCCRequestCorrelator` from the matching attribution line.
 /// - **Pattern C** (fallback): any `kTCCService*` token, no PID — the line is
 ///   surfaced as a partial event rather than dropped.
 ///
@@ -156,6 +178,23 @@ func extractTCCEvent(from line: String) -> TCCEvent? {
         return TCCEvent(
             service: TCCService(rawKey: String(match.1)),
             clientPID: Int(match.2),
+            logEvent: event
+        )
+    }
+
+    // Pattern D: macOS 27 "AUTHREQ_PROMPTING: … service=kTCCServiceX, …
+    // Resp:{TCCDProcess: identifier=…, pid=n, …}". Resp is the responsible
+    // app: a real capture of a child process prompting showed the parent's
+    // PID here, not the child's. The child's PID appears only on the
+    // AUTHREQ_ATTRIBUTION line with the same msgID, so clientPID stays nil and
+    // `TCCRequestCorrelator` fills it in.
+    if let match = message.firstMatch(
+        of: #/service=(kTCCService[A-Za-z]+),.*?Resp:\{TCCDProcess: [^}]*?\bpid=(\d+)/#
+    ) {
+        return TCCEvent(
+            service: TCCService(rawKey: String(match.1)),
+            clientPID: nil,
+            responsiblePID: Int(match.2),
             logEvent: event
         )
     }

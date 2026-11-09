@@ -81,6 +81,34 @@ struct TCCEventParserTests {
         #expect(event.clientPID == 8765)
     }
 
+    @Test("Pattern D extracts service and responsible PID from the real macOS 27 AUTHREQ_PROMPTING line")
+    func patternDExtractionFromMacOS27Prompting() throws {
+        let line = TCCLogFixtures.generateWellFormedNDJSON(
+            subsystem: "com.apple.TCC",
+            timestamp: "2026-11-07T22:27:58.000+0530",
+            eventMessage: TCCLogFixtures.macOS27PromptingEventMessageFixture
+        )
+        let event = try #require(extractTCCEvent(from: line))
+        #expect(event.service == .documentsFolder)
+        #expect(event.responsiblePID == 2215)
+        // The prompting line alone cannot name the accessing process; that
+        // comes from TCCRequestCorrelator.
+        #expect(event.clientPID == nil)
+    }
+
+    @Test("macOS 27 AUTHREQ_ATTRIBUTION line yields no client PID")
+    func macOS27AttributionLineHasNoClientPID() throws {
+        // This line names two processes (the app and sandboxd) and no service,
+        // so picking either PID would be a guess.
+        let line = TCCLogFixtures.generateWellFormedNDJSON(
+            subsystem: "com.apple.TCC",
+            timestamp: "2026-11-07T22:27:58.000+0530",
+            eventMessage: TCCLogFixtures.macOS27AttributionEventMessageFixture
+        )
+        let event = try #require(extractTCCEvent(from: line))
+        #expect(event.clientPID == nil)
+    }
+
     @Test("Pattern C fallback keeps unknown wordings as a partial event")
     func patternCFallbackOnUnknownMessage() throws {
         let line = TCCLogFixtures.generateWellFormedNDJSON(
