@@ -58,3 +58,9 @@ secrets.json
 # Kiro local session state (steering & specs are committed, sessions are not)
 .kiro/sessions/
 .kiro/tools/.venv/
+
+# Python bytecode
+__pycache__/
+*.pyc
+.pytest_cache/
+.hypothesis/
