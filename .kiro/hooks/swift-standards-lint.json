@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Swift Standards Lint",
+      "trigger": "PostFileSave",
+      "description": "Flags force-unwraps, files over ~300 lines, and public declarations missing /// docs.",
+      "matcher": "(GatekeepersWard|WardTrigger)/.*\\.swift$",
+      "action": {
+        "type": "command",
+        "command": "scripts/hooks/lint-swift-standards.sh",
+        "timeout": 30
+      }
+    }
+  ]
+}

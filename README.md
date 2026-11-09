@@ -83,7 +83,7 @@ docs/               Planning, architecture, devlog
 git clone https://github.com/iolaire/TheGatekeepersWard.git
 cd TheGatekeepersWard
 swift build          # builds the GatekeepersWard library and WardTrigger CLI
-swift test           # 24 tests incl. 5 property-based suites
+swift test           # 27 tests incl. 5 property-based suites
 ```
 
 **Trigger a real TCC prompt** (attributed to WardTrigger's own bundle ID —
@@ -93,12 +93,13 @@ terminal instead):
 ```bash
 touch ~/Documents/.ward_canary                # canary file, created once
 scripts/run_ward_trigger.sh docs rg "AWS_SECRET" ~/Documents/prod.env
-cat tmp/ward-trigger.out                      # captured prompt outcome
+cat "${TMPDIR}ward-trigger.out"                      # captured prompt outcome
 scripts/reset_ward_trigger.sh                      # re-arm first-prompt state
 ```
 
-`docs` / `contacts` / `mic` trigger the Documents, Contacts, and Microphone
-TCC dialogs. The extra arguments are echoed and included in argv for demo
+Subcommands: `docs`, `desktop`, `downloads`, `contacts`, `calendar`,
+`reminders`, `photos`, `mic`, `camera`, `events` (AppleEvents), `screen`. Run
+the binary with no arguments for the list. The extra arguments are echoed and included in argv for demo
 realism. See `docs/architecture.md` for details.
 
 ## Hackathon Category

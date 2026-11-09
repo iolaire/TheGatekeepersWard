@@ -108,8 +108,8 @@ Isolated SPM executable with its own bundle ID (`com.gatekeepersward.ward-trigge
 - Mode 2 (`contacts`): Contacts — `CNContactStore.requestAccess(for: .contacts)`
 - Mode 3 (`mic`): Microphone — `AVCaptureDevice.requestAccess(for: .audio)`
 - Dispatch: `Dispatch.swift` — `runWardTriggerDispatch(arguments:behaviors:)` with closure injection so tests stub the triggers; `main.swift` wires the live implementations
-- Companion: `scripts/run_ward_trigger.sh` — wraps the binary in `.build/WardTrigger.app` and launches via LaunchServices so prompts are attributed to WardTrigger's bundle ID instead of the terminal; captured stdout lands in `tmp/ward-trigger.out`
-- Companion: `scripts/reset_ward_trigger.sh` — one command to reset TCC permissions for WardTrigger only (and clean `tmp/ward-trigger.out`)
+- Companion: `scripts/run_ward_trigger.sh` — wraps the binary in `.build/WardTrigger.app` and launches via LaunchServices so prompts are attributed to WardTrigger's bundle ID instead of the terminal; captured stdout lands in `$TMPDIR/ward-trigger.out`
+- Companion: `scripts/reset_ward_trigger.sh` — one command to reset TCC permissions for WardTrigger only (and clean `$TMPDIR/ward-trigger.out`)
 
 ### `Resources/`
 

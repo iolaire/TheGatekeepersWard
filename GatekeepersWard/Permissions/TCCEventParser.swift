@@ -12,6 +12,18 @@ enum TCCService: Equatable {
     case appleEvents
     /// `kTCCServiceMicrophone` — Microphone access.
     case microphone
+    /// `kTCCServiceSystemPolicyDownloadsFolder` — user Downloads folder access.
+    case downloadsFolder
+    /// `kTCCServiceCalendar` — Calendar access.
+    case calendar
+    /// `kTCCServiceReminders` — Reminders access.
+    case reminders
+    /// `kTCCServicePhotos` — Photos library access.
+    case photos
+    /// `kTCCServiceCamera` — Camera access.
+    case camera
+    /// `kTCCServiceScreenCapture` — Screen and system audio recording.
+    case screenCapture
     /// Any other service key; the raw key is preserved, never dropped.
     case unknown(String)
 
@@ -29,6 +41,12 @@ enum TCCService: Equatable {
         case "kTCCServiceAddressBook": self = .addressBook
         case "kTCCServiceAppleEvents": self = .appleEvents
         case "kTCCServiceMicrophone": self = .microphone
+        case "kTCCServiceSystemPolicyDownloadsFolder": self = .downloadsFolder
+        case "kTCCServiceCalendar": self = .calendar
+        case "kTCCServiceReminders": self = .reminders
+        case "kTCCServicePhotos": self = .photos
+        case "kTCCServiceCamera": self = .camera
+        case "kTCCServiceScreenCapture": self = .screenCapture
         default: self = .unknown(rawKey)
         }
     }
@@ -41,6 +59,12 @@ enum TCCService: Equatable {
         case .addressBook: return "kTCCServiceAddressBook"
         case .appleEvents: return "kTCCServiceAppleEvents"
         case .microphone: return "kTCCServiceMicrophone"
+        case .downloadsFolder: return "kTCCServiceSystemPolicyDownloadsFolder"
+        case .calendar: return "kTCCServiceCalendar"
+        case .reminders: return "kTCCServiceReminders"
+        case .photos: return "kTCCServicePhotos"
+        case .camera: return "kTCCServiceCamera"
+        case .screenCapture: return "kTCCServiceScreenCapture"
         case .unknown(let key): return key
         }
     }

@@ -31,7 +31,7 @@ These are the exact internal string identifiers that gate disk, directory, and s
 | `kTCCServiceSystemPolicyDownloadsFolder` | **Files and Folders → Downloads** | Access to `~/Downloads`. |
 | `kTCCServiceSystemPolicyNetworkVolumes` | **Files and Folders → Network Volumes** | Access to mounted network shares (SMB, AFP, NFS). |
 | `kTCCServiceSystemPolicyRemovableVolumes` | **Files and Folders → Removable Volumes** | Access to external USB drives, SD cards, DMGs. |
-| `kTCCServiceSystemPolicyDeveloperFiles` | **Developer Tools** | Access to build artifacts, derived data, and debugging storage. |
+| `` | **Developer Tools** | Access to build artifacts, derived data, and debugging storage. |
 | `kTCCServiceSystemPolicyAppBundles` | App Bundles Policy | Access to modify or inspect other installed `.app` packages. |
 | `kTCCServiceSystemPolicyAppData` | App Data Access | Protection against one app reading another sandbox/container's data. |
 | `kTCCServiceSystemPolicySysAdminFiles` | System Administrator Files | Access to system administration tools, configs, and root utility caches. |

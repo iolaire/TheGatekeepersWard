@@ -17,23 +17,9 @@ import Foundation
 ///
 /// All messages go to stdout; this function never exits the process.
 func triggerDocuments() {
-    let documentsPath = NSHomeDirectory() + "/Documents"
-    do {
-        // Read-only probe: enumerating the folder makes `tccd` evaluate the
-        // Documents Folder entitlement when it has not been decided yet.
-        _ = try FileManager.default.contentsOfDirectory(atPath: documentsPath)
-        print("[WardTrigger] Documents access already granted — no prompt will appear.")
-    } catch {
-        let nsError = error as NSError
-        let isPermissionDenial = nsError.domain == NSCocoaErrorDomain
-            && (nsError.code == NSFileReadNoPermissionError
-                || nsError.code == NSFileWriteNoPermissionError)
-        if isPermissionDenial {
-            print("[WardTrigger] Documents access denied by TCC — the permission prompt should have appeared.")
-        } else {
-            print("[WardTrigger] File system error: \(error.localizedDescription)")
-        }
-    }
+    // Read-only probe: enumerating the folder makes `tccd` evaluate the
+    // Documents Folder entitlement when it has not been decided yet.
+    probeProtectedFolder(folderName: "Documents", label: "Documents")
 }
 
 /// Triggers the `kTCCServiceAddressBook` TCC dialog via

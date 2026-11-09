@@ -1,6 +1,7 @@
 import Foundation
 import Testing
 @testable import GatekeepersWard
+@testable import WardTrigger
 
 /// PBT + unit coverage for the NDJSON log-stream event parser used by
 /// `TCCWatcher` (Requirements 11.1–11.5).
@@ -145,9 +146,21 @@ struct TCCEventParserTests {
         #expect(TCCService(rawKey: "kTCCServiceAddressBook") == .addressBook)
         #expect(TCCService(rawKey: "kTCCServiceAppleEvents") == .appleEvents)
         #expect(TCCService(rawKey: "kTCCServiceMicrophone") == .microphone)
+        #expect(TCCService(rawKey: "kTCCServiceSystemPolicyDownloadsFolder") == .downloadsFolder)
+        #expect(TCCService(rawKey: "kTCCServiceCalendar") == .calendar)
+        #expect(TCCService(rawKey: "kTCCServiceReminders") == .reminders)
+        #expect(TCCService(rawKey: "kTCCServicePhotos") == .photos)
+        #expect(TCCService(rawKey: "kTCCServiceCamera") == .camera)
+        #expect(TCCService(rawKey: "kTCCServiceScreenCapture") == .screenCapture)
         // Unknown keys are never silently dropped — they round-trip as .unknown.
-        #expect(TCCService(rawKey: "kTCCServiceCamera") == .unknown("kTCCServiceCamera"))
+        #expect(TCCService(rawKey: "kTCCServiceSensorKitMotion") == .unknown("kTCCServiceSensorKitMotion"))
         #expect(TCCService(rawKey: "kTCCServiceSomethingNew") == .unknown("kTCCServiceSomethingNew"))
-        #expect(TCCService(rawKey: "kTCCServiceCamera").rawKey == "kTCCServiceCamera")
+        #expect(TCCService(rawKey: "kTCCServiceSensorKitMotion").rawKey == "kTCCServiceSensorKitMotion")
+        // Every WardTrigger catalog key must map to a named case, not .unknown.
+        for spec in wardTriggerCatalog {
+            if case .unknown = TCCService(rawKey: spec.serviceKey) {
+                Issue.record("\(spec.serviceKey) has no TCCService case")
+            }
+        }
     }
 }

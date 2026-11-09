@@ -131,6 +131,29 @@ Build the `WardTrigger` Swift CLI executable as an SPM target alongside the main
   - [x]* 11.3 Write a smoke test that invokes the built `WardTrigger` binary with no arguments and asserts it exits with code `1` and its stdout contains the strings `"docs"`, `"contacts"`, and `"mic"`.
     - _Requirements: 1.5_
 
+- [x] 12. Expand the trigger set (Requirement 13)
+
+  - [x] 12.1 Add `TriggerCatalog.swift` and move dispatch to the table-driven `WardTriggerBehaviors.triggers`; `printUsage` iterates the catalog. Update `main.swift`.
+    - _Requirements: 1.1, 1.5, 1.6, 13.1_
+
+  - [x] 12.2 Add `FolderTriggers.swift` (`probeProtectedFolder`, `triggerDesktop`, `triggerDownloads`) and route `triggerDocuments` through the shared helper.
+    - _Requirements: 13.2_
+
+  - [x] 12.3 Add `PrivacyTriggers.swift` (`triggerCalendar`, `triggerReminders`, `triggerCamera`, `triggerPhotos`).
+    - _Requirements: 13.3, 13.4_
+
+  - [x] 12.4 Add `AutomationTriggers.swift` (`triggerAppleEvents`, `triggerScreenCapture`).
+    - _Requirements: 13.5, 13.6_
+
+  - [x] 12.5 Add the usage-description keys to `WardTrigger/Info.plist` and the heredoc in `scripts/run_ward_trigger.sh`; extend `scripts/reset_ward_trigger.sh` to the eleven services.
+    - _Requirements: 7.1, 13.8_
+
+  - [x] 12.6 Update `SubcommandDispatchTests` (parameterized over the catalog, catalog well-formedness) and `DemoEchoTests` (usage lists every catalog entry).
+    - _Requirements: 1.1–1.6, 13.1_
+
+  - [x] 12.7 Manually fire each new trigger on a real Mac (`scripts/reset_ward_trigger.sh`, then `scripts/run_ward_trigger.sh <subcommand>`) and confirm the prompt appears and TCCWatcher logs the expected service key.
+    - _Requirements: 6.1–6.3, 13.2–13.6_
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for a faster MVP.

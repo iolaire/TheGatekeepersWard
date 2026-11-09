@@ -4,6 +4,40 @@ Running notes from the build. Newest entries at the top.
 
 ---
 
+## 2026-11-09 (13:56 UTC) — Day 5: WardTrigger grows to 11 services
+
+**iolaire (pairing with Kiro)**
+
+WardTrigger only covered three TCC services (Documents, Contacts, Microphone). The agents we care about trip over more than that, so we checked `docs/Planning/WhatWeAreLookingFor(TCC).md` and added eight triggers: `desktop`, `downloads`, `calendar`, `reminders`, `camera`, `photos`, `events` (Automation, via an Apple event to Finder, the same thing `osascript` does) and `screen` (Screen Recording). All eleven were fired by hand on a real Mac and the prompts appear.
+
+**Spec first.** The `ward-trigger` spec gained Requirement 13, a design section and task 12 before any code was written. All 41 tasks are ticked, including the manual check on a real Mac.
+
+**Table-driven dispatch.** The three-way `switch` would not scale to eleven triggers. `TriggerCatalog.swift` now holds one list (`name`, TCC service key, usage summary, function). Dispatch, the usage text and the tests all read from it, so the usage output cannot drift from what actually dispatches. `WardTriggerBehaviors` swapped its per-trigger closures for a `triggers` dictionary; the existing stub-injection tests were adapted. The new triggers live in `FolderTriggers.swift`, `PrivacyTriggers.swift` and `AutomationTriggers.swift` (all under 90 lines).
+
+**Trigger gotchas:**
+
+- **Folders:** `desktop` and `downloads` share one read-only directory-listing helper with `docs`. Listing is the gated operation, not `stat`.
+- **Calendar and Reminders:** use the full-access EventKit calls on macOS 14+ and the legacy ones before that. Both key families went into the plist.
+- **Screen:** `CGRequestScreenCaptureAccess()` returns immediately, so the process polls for up to 60 seconds to stay alive and inspectable while the dialog is up. A timeout is not an error, since macOS may want an app restart after a grant.
+- **Events:** `NSAppleScript` blocks while the dialog is displayed, so no semaphore is needed. Error `-1743` means TCC denied it.
+
+**Parser follow-through.** `TCCService` gained named cases for Downloads, Calendar, Reminders, Photos, Camera and Screen Capture (`AppleEvents` already existed). A test fails if any WardTrigger catalog key falls through to `.unknown`, which keeps the harness and the parser in step. Unknown keys still round-trip, so nothing is dropped.
+
+**Launcher output moved to the boot drive.** The old relay copied a staged log into the repo's `tmp/` from a background subshell, and it was unreliable on `/Volumes/Gold`: it raced the app start-up and could miss a fast trigger. `scripts/run_ward_trigger.sh` now points `open --stdout` straight at `$TMPDIR/ward-trigger.out` (per-user temp dir on the boot volume) and there is no relay. We confirmed `open --stdout` appends, so each run adds a timestamped header and its output to the same file, and `scripts/reset_ward_trigger.sh` clears it along with the TCC grants. The reset script now covers all 11 services. This supersedes the `tmp/ward-trigger.out` note in the Day 2 entry below.
+
+**Also landed this morning:**
+
+- Restored the stock Apache 2.0 `LICENSE` so GitHub detects it, with the copyright in `NOTICE`.
+- Fixed a flaky stdout-capture test by injecting an output sink (still no reproduction of the original failure).
+- Added six Kiro hooks tied to the steering docs: build/test gate, Swift standards lint, Castle Keep palette check, security-boundary guard (PreToolUse), raw-pointer review and a spec-first nudge.
+- Ran the submission review into `docs/HACKATHON_REVIEW.md`: 19/50 today, low because the inspector, watcher, HUD and menu bar are still unbuilt.
+
+**State:** 27 Swift tests and 55 Python tests pass. The code is committed to local `main` (`82695ec`) but not pushed yet.
+
+**Next up:** specs for `ProcessInspector` and `TCCWatcher`, then Phase 2 against live WardTrigger prompts. Open question: confirm in the `com.apple.TCC` log stream which service keys the new triggers actually emit, since only the Documents, Contacts and Microphone wording has been captured so far.
+
+---
+
 ## 2026-11-06 (20:01 UTC) — Day 2: WardTrigger shipped end-to-end
 
 **iolaire (pairing with ZCode)**
@@ -28,7 +62,7 @@ All findings recorded in `.kiro/steering/testing-strategy.md` §5 so Phase 2 (`T
 
 - **Planning docs** — added hackathon details (`Overview`, `Rules`, `Schedule`), `PlanReview_20261106.md`, `TestHarnessDesign.md`, and `WhatsNeeded.md`; refreshed `README`, `architecture.md`, `pitch.md`, and the project steering file from the review.
 - **Visual identity** — committed the four style explorations under `docs/Planning/Styles/` and the write-up for the chosen direction, *The Castle Keep & The Wandering Spirits*.
-- **License change** — the repo now carries an **Apache 2.0** `LICENSE` (README, CONTRIBUTING, and pitch references updated). Earlier notes and `.kiro/steering/project.md` still say MIT; Apache 2.0 is OSI-approved, so it satisfies the open-source detection requirement. Worth reconciling the remaining MIT mentions.
+- **License change** — the repo carries an **Apache 2.0** `LICENSE`. On Nov 9 it was restored to the unmodified stock text (the appended copyright lines made GitHub report "Other"); the copyright line now lives in `NOTICE`. `.kiro/steering/project.md` and older planning notes were updated to match.
 - **Steering library** — seven new steering docs: `darwin-c-interop`, `log-stream-parsing`, `macos-security-boundaries`, `swift-coding-standards`, `swift-memory-safety`, `swiftui-hud-design`, and `testing-strategy`. Plus `docs/Planning/ScoringWell.md` to keep judging criteria in view.
 - **Darwin/TCC MCP server** — wrote the `darwin-tcc-mcp-server` spec (requirements, design, tasks) and implemented it under `.kiro/tools/` in Python: SDK locator, header reader/search, C struct parser with a pre-generated known-structs table, and a TCC service registry (`tcc_services.json`). It exposes `get_darwin_struct`, `lookup_tcc_service`, and `search_darwin_headers`, is registered in `.kiro/settings/mcp.json`, and is covered by a pytest suite (including server integration tests). Usage guidance lives in `.kiro/steering/darwin-mcp-usage.md`. This lets us look up `KERN_PROCARGS2` layouts and TCC service names from the real SDK headers instead of memory.
 - **Hooks** — `.kiro/hooks/build-test-gate.json` plus `scripts/git-hooks/pre-commit` enforce build and test before commit, which covers the hackathon's active-hooks requirement.
@@ -51,7 +85,7 @@ Reviewed full plan in `docs/Planning/PlanReview_20261106.md`. Key decisions lock
 **Deadline confirmed:** December 4, 2026 at 2:00 PM PT. Internal target: submit by December 2 for safety buffer.
 
 **Hackathon compliance gaps identified and actioned:**
-- Need `LICENSE` (MIT) at repo root — README links to it but file doesn't exist yet
+- Need `LICENSE` (MIT at the time; now Apache 2.0) at repo root — README links to it but file doesn't exist yet
 - Need `.kiro/specs/` populated — judges check for spec-driven development
 - Need `.kiro/hooks/` with active hooks (pre-commit build/test)
 - Need Property-Based Testing on the `KERN_PROCARGS2` buffer parser and log parser
@@ -84,7 +118,7 @@ Reviewed full plan in `docs/Planning/PlanReview_20261106.md`. Key decisions lock
 | 7 | Dec 02–04 | Final polish + submit |
 
 **Next up (Phase 1):**
-- Add `LICENSE` (MIT) to repo root
+- Add `LICENSE` (MIT at the time; now Apache 2.0) to repo root
 - Create `.kiro/specs/mvp-spec.md`
 - Initialize `Package.swift` (macOS 13+, no external deps yet)
 - Build `WardTrigger` — three modes: filesystem access, AppleEvents, Contacts

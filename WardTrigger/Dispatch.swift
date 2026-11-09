@@ -10,20 +10,21 @@ struct WardTriggerBehaviors {
     var usage: () -> Void
     /// Prints the unrecognized-subcommand error (without the usage summary).
     var unrecognized: (String) -> Void
-    /// The Documents TCC trigger.
-    var documents: () -> Void
-    /// The Contacts TCC trigger.
-    var contacts: () -> Void
-    /// The Microphone TCC trigger.
-    var microphone: () -> Void
+    /// Trigger functions keyed by subcommand name (see `wardTriggerCatalog`).
+    var triggers: [String: () -> Void]
+
+    /// Builds the live trigger table from `wardTriggerCatalog`.
+    static var liveTriggers: [String: () -> Void] {
+        Dictionary(uniqueKeysWithValues: wardTriggerCatalog.map { ($0.name, $0.run) })
+    }
 }
 
 /// Dispatches WardTrigger command-line arguments to the matching trigger.
 ///
 /// Contract (Requirements 1.1–1.7):
 /// - No arguments → usage summary, exit code 1.
-/// - `docs` / `contacts` / `mic` → demo command line, then the one matching
-///   trigger only, exit code 0.
+/// - Any subcommand in `wardTriggerCatalog` → demo command line, then the one
+///   matching trigger only, exit code 0.
 /// - Any other first argument → demo command line, unrecognized error, usage
 ///   summary, exit code 1.
 ///
@@ -33,7 +34,7 @@ struct WardTriggerBehaviors {
 /// - Parameters:
 ///   - arguments: The full argument vector, including the executable name at
 ///     index 0 (i.e. `CommandLine.arguments`).
-///   - behaviors: The behaviors to invoke; `.live` wiring is done in main.swift.
+///   - behaviors: The behaviors to invoke; the live wiring is done in main.swift.
 /// - Returns: The process exit code: 1 for a bad invocation, 0 after a trigger
 ///   completes (regardless of the user's Allow/Deny choice).
 func runWardTriggerDispatch(
@@ -50,18 +51,11 @@ func runWardTriggerDispatch(
 
     behaviors.demoCommandLine(subcommand, extraArguments)
 
-    switch subcommand {
-    case "docs":
-        behaviors.documents()
-    case "contacts":
-        behaviors.contacts()
-    case "mic":
-        behaviors.microphone()
-    default:
+    guard let trigger = behaviors.triggers[subcommand] else {
         behaviors.unrecognized(subcommand)
         behaviors.usage()
         return 1
     }
-
+    trigger()
     return 0
 }

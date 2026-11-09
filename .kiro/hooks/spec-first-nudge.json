@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Spec-First Nudge",
+      "trigger": "UserPromptSubmit",
+      "description": "Reminds Kiro to check .kiro/specs/ for a matching spec before implementing app components.",
+      "action": {
+        "type": "agent",
+        "prompt": "Before implementing a new app component (ProcessInspector, TCCWatcher, FortressHUD, MenuBar, ProcessTree, or similar), check .kiro/specs/ for a matching spec with requirements.md, design.md and tasks.md. If none exists, tell the user and offer to draft the spec first instead of coding directly. If one exists, follow its tasks.md and update task status as you complete work. Ignore this for questions, reviews, docs, and small fixes."
+      }
+    }
+  ]
+}

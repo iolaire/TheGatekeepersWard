@@ -21,7 +21,8 @@ Because macOS TCC tracks permission grants per bundle identity, WardTrigger's is
 - **NDJSON**: Newline-delimited JSON — the output format of `/usr/bin/log stream`.
 - **Suspended_State**: The condition in which `tccd` halts the requesting thread while the TCC Dialog is displayed; the process remains in the Darwin process table and is inspectable via sysctl.
 - **Service_Key**: A TCC service identifier string (e.g., `kTCCServiceSystemPolicyDocumentsFolder`) that classifies the protected resource.
-- **subcommand**: A positional CLI argument (`docs`, `contacts`, `mic`) that selects which TCC trigger WardTrigger executes.
+- **subcommand**: A positional CLI argument that selects which TCC trigger WardTrigger executes. The valid set is `{ docs, contacts, mic }` (Requirements 3–5) plus the expansion set `{ desktop, downloads, calendar, reminders, camera, photos, events, screen }` (Requirement 13).
+- **Trigger_Catalog**: The single list (`wardTriggerCatalog`) of subcommand name, Service_Key, usage summary, and trigger function from which dispatch, usage text, and tests are all derived.
 
 ## Requirements
 
@@ -31,11 +32,11 @@ Because macOS TCC tracks permission grants per bundle identity, WardTrigger's is
 
 #### Acceptance Criteria
 
-1. THE WardTrigger SHALL accept exactly one positional subcommand argument from the set `{ "docs", "contacts", "mic" }` as its first argument, ignoring case normalization (the match is case-sensitive and lowercase only).
+1. THE WardTrigger SHALL accept exactly one positional subcommand argument from the names in the Trigger_Catalog (`docs`, `contacts`, `mic` and the Requirement 13 expansion set) as its first argument, ignoring case normalization (the match is case-sensitive and lowercase only).
 2. WHEN WardTrigger is invoked with the subcommand `docs`, THE WardTrigger SHALL execute the Documents TCC trigger and only the Documents TCC trigger.
 3. WHEN WardTrigger is invoked with the subcommand `contacts`, THE WardTrigger SHALL execute the Contacts TCC trigger and only the Contacts TCC trigger.
 4. WHEN WardTrigger is invoked with the subcommand `mic`, THE WardTrigger SHALL execute the Microphone TCC trigger and only the Microphone TCC trigger.
-5. WHEN WardTrigger is invoked with no arguments, THE WardTrigger SHALL print a usage summary to standard output that lists all three valid subcommands (`docs`, `contacts`, `mic`) with a one-line description of each, and SHALL exit with code `1`.
+5. WHEN WardTrigger is invoked with no arguments, THE WardTrigger SHALL print a usage summary to standard output that lists every Trigger_Catalog subcommand with a one-line description of each, and SHALL exit with code `1`.
 6. WHEN WardTrigger is invoked with an unrecognized first argument, THE WardTrigger SHALL print an error message to standard output that identifies the unrecognized argument by value, followed by the same usage summary as criterion 5, and SHALL exit with code `1`.
 7. THE WardTrigger SHALL exit with code `0` after a trigger function completes without a fatal system error, regardless of whether the TCC permission was granted or denied by the user.
 
@@ -99,7 +100,7 @@ Because macOS TCC tracks permission grants per bundle identity, WardTrigger's is
 
 #### Acceptance Criteria
 
-1. THE Reset_Script SHALL call `tccutil reset` for each Service_Key in `{ SystemPolicyDocumentsFolder, SystemPolicyDesktopFolder, AddressBook, AppleEvents, Microphone }` scoped to Bundle_ID.
+1. THE Reset_Script SHALL call `tccutil reset` for each Service_Key in `{ SystemPolicyDocumentsFolder, SystemPolicyDesktopFolder, SystemPolicyDownloadsFolder, AddressBook, Calendar, Reminders, Photos, Camera, Microphone, AppleEvents, ScreenCapture }` scoped to Bundle_ID.
 2. THE Reset_Script SHALL be located at `scripts/reset_ward_trigger.sh` relative to the repository root.
 3. THE Reset_Script SHALL use `set -euo pipefail` to abort on unexpected errors while tolerating individual `tccutil` failures gracefully via `|| true`.
 4. WHEN the Reset_Script completes successfully, THE Reset_Script SHALL print a confirmation message indicating permissions have been cleared and the next invocation will prompt.
@@ -158,5 +159,20 @@ Because macOS TCC tracks permission grants per bundle identity, WardTrigger's is
 #### Acceptance Criteria
 
 1. WHEN `scripts/run_ward_trigger.sh <subcommand> [args...]` is executed, THE Launcher_Script SHALL wrap the built binary in `.build/WardTrigger.app` whose CFBundleIdentifier is `com.gatekeepersward.ward-trigger` and launch the bundle via LaunchServices (`open`).
-2. WHEN WardTrigger produces standard output under the Launcher_Script, THE Launcher_Script SHALL relay the captured output to `tmp/ward-trigger.out`.
-3. WHEN the Reset_Script runs, THE Reset_Script SHALL remove `tmp/ward-trigger.out`.
+2. WHEN WardTrigger produces standard output under the Launcher_Script, THE Launcher_Script SHALL append a timestamped run header and the captured output (via `open --stdout`) to `$TMPDIR/ward-trigger.out`.
+3. WHEN the Reset_Script runs, THE Reset_Script SHALL remove `$TMPDIR/ward-trigger.out`.
+
+### Requirement 13: Expanded TCC Trigger Set
+
+**User Story:** As a developer, I want WardTrigger to cover the TCC services AI coding agents most often trip (folders, personal data, automation, capture), so that TCCWatcher, the risk tagging, and the demo are exercised against realistic services and not only Documents, Contacts, and Microphone.
+
+#### Acceptance Criteria
+
+1. THE WardTrigger SHALL provide the subcommands `desktop`, `downloads`, `calendar`, `reminders`, `camera`, `photos`, `events`, and `screen` in addition to `docs`, `contacts`, and `mic`.
+2. WHEN `desktop` or `downloads` is invoked, THE WardTrigger SHALL perform a read-only `FileManager` directory listing of `~/Desktop` or `~/Downloads` respectively, using the same outcome handling as Requirement 3 (`kTCCServiceSystemPolicyDesktopFolder`, `kTCCServiceSystemPolicyDownloadsFolder`).
+3. WHEN `calendar` or `reminders` is invoked, THE WardTrigger SHALL request access through EventKit (`requestFullAccessTo…` on macOS 14+, `requestAccess(to:)` on earlier systems), keep the process alive until the callback completes, and print a grant or denial message (`kTCCServiceCalendar`, `kTCCServiceReminders`).
+4. WHEN `camera` is invoked, THE WardTrigger SHALL call `AVCaptureDevice.requestAccess(for: .video)` (`kTCCServiceCamera`); WHEN `photos` is invoked, THE WardTrigger SHALL call `PHPhotoLibrary.requestAuthorization(for: .readWrite)` (`kTCCServicePhotos`); each SHALL keep the process alive until its callback completes.
+5. WHEN `events` is invoked, THE WardTrigger SHALL send Finder a read-only Apple event via `NSAppleScript` (`kTCCServiceAppleEvents`) and print a grant, TCC-denial (error `-1743`), or other-error message.
+6. WHEN `screen` is invoked, THE WardTrigger SHALL call `CGRequestScreenCaptureAccess()` (`kTCCServiceScreenCapture`) and poll `CGPreflightScreenCaptureAccess()` for at most 60 seconds so the process stays inspectable while the dialog is displayed; a timeout is not an error.
+7. THE WardTrigger SHALL exit with code `0` after each new trigger completes, regardless of the user's choice, and SHALL NOT modify any file or user data.
+8. THE WardTrigger Info.plist, and the plist written by the Launcher_Script, SHALL contain the usage-description keys each new trigger requires.

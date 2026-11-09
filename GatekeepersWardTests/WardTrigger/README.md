@@ -20,8 +20,8 @@ test only invokes the binary with no arguments (which prints usage and exits
 
 Shared fixtures these tests rely on live in `../Fixtures/`:
 `ProcArgsFixtures.swift` (`SeededRNG`, `generatePrintableASCIIArgv`,
-`encodeProcArgsBuffer`), `TCCLogFixtures.swift`, and `StdoutCapture.swift`
-(`captureStdout(_:)`).
+`encodeProcArgsBuffer`), `TCCLogFixtures.swift`, and `OutputCollector.swift`
+(per-test output sink).
 
 ## Running
 
@@ -53,11 +53,11 @@ scripts/run_ward_trigger.sh contacts
 scripts/run_ward_trigger.sh mic
 
 # Read the captured stdout of the trigger run:
-cat tmp/ward-trigger.out
+cat "${TMPDIR}ward-trigger.out"
 # > docs rg AWS_SECRET /Users/<you>/Documents/prod.env
 # [WardTrigger] Documents access granted/denied…
 
-# Re-arm first-prompt state and clean tmp/ward-trigger.out:
+# Re-arm first-prompt state and clean $TMPDIR/ward-trigger.out:
 scripts/reset_ward_trigger.sh
 ```
 
@@ -68,6 +68,11 @@ Behavior per subcommand:
 | `docs` | `kTCCServiceSystemPolicyDocumentsFolder` | Documents dialog (needs the canary file to exist; enumerates `~/Documents` read-only) |
 | `contacts` | `kTCCServiceAddressBook` | Contacts dialog — blocks until you click, then exits 0 either way |
 | `mic` | `kTCCServiceMicrophone` | Microphone dialog — same semaphore pattern as contacts |
+| `desktop` / `downloads` | `kTCCServiceSystemPolicyDesktopFolder` / `…DownloadsFolder` | Folder dialog (read-only listing) |
+| `calendar` / `reminders` | `kTCCServiceCalendar` / `kTCCServiceReminders` | EventKit dialog |
+| `camera` / `photos` | `kTCCServiceCamera` / `kTCCServicePhotos` | Camera / Photos dialog |
+| `events` | `kTCCServiceAppleEvents` | Automation dialog (Apple event to Finder, like `osascript`) |
+| `screen` | `kTCCServiceScreenCapture` | Screen Recording dialog — stays alive up to 60 s waiting on your answer |
 
 Extra positional arguments after the subcommand are echoed as a simulated
 command line and live in the process's argv (for `ProcessInspector`'s
@@ -86,9 +91,11 @@ Tips:
 
 ## Implementation notes
 
-- **Stdout capture is process-global.** `captureStdout(_:)` redirects file
-  descriptor 1 with `dup2`, so it is guarded by a lock — Swift Testing runs
-  tests in parallel and concurrent captures would lose each other's output.
+- **Never redirect stdout in tests.** Swift Testing runs tests in parallel and
+  file descriptor 1 is process-global, so any `dup2` capture races with every
+  other test that prints (this caused a flaky `noExtraArgsProducesMinimalOutput`).
+  The `print*` helpers take an injectable `write:` sink; tests pass an
+  `OutputCollector` so each test owns its output.
 - **Real TCC behavior is deliberately untested here.** Triggering an actual
   prompt requires LaunchServices attribution, usage-description keys, a
   code-sealed bundle, and a foreground app — all handled by
