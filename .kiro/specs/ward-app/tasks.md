@@ -74,8 +74,9 @@ Retroactive plan for the Ward App built on the `dev` branch by Dharshaneshwaran.
     - _Requirements: 3.3, 3.8_
   - [x] 8.5 Add backoff to the watcher restart loop and log `log stream` stderr. `TCCWatcher.restartDelay(afterFailures:)` with `TCCWatcherRestartTests`.
     - _Requirements: 1.6, 1.7_
-  - [ ] 8.5b Show a visible state in the UI (for example the ghost tooltip) when `log stream` cannot start.
-    - _Requirements: 1.6_
+  - [x] 8.5b Show a visible state in the UI (for example the ghost tooltip) when `log stream` cannot start.
+    - `TCCWatcherStatus` with a pure decision function and a `notice` text; a `statuses` stream published by `TCCWatcher`; `GhostIcon.Pose.unavailable` (crimson badge); `MenuBarController.setWatcherStatus(_:)` (icon, tooltip, accessibility label, menu notice); `AppDelegate` forwards the stream. Tests: `TCCWatcherStatusTests`, `GhostIconTests`.
+    - _Requirements: 1.6, 1.9, 1.10_
   - [x] 8.6 Replace the semaphore wait in `applicationWillTerminate` with a non-blocking shutdown (`applicationShouldTerminate` returning `.terminateLater`).
     - _Requirements: 11.7_
   - [ ] 8.7 Position the HUD on the screen that holds Apple's dialog instead of `NSScreen.main`. Needs a check on a multi-display Mac to see which screen Apple's dialog uses.

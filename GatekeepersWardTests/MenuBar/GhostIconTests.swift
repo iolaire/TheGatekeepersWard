@@ -6,7 +6,7 @@ import Testing
 /// look the same under light and dark appearances.
 @Suite("GhostIcon")
 struct GhostIconTests {
-    private static let poses: [GhostIcon.Pose] = [.idle, .alert, .alertBlink]
+    private static let poses: [GhostIcon.Pose] = [.idle, .alert, .alertBlink, .unavailable]
     private static let scale = 8
     private static let width = 24 * scale
     private static let height = 22 * scale
@@ -76,7 +76,7 @@ struct GhostIconTests {
         #expect(GhostIcon.image(pose).isTemplate == false)
     }
 
-    @Test("Normal frames have a light body and a Midnight Violet outline (5.3)", arguments: [GhostIcon.Pose.idle, .alert])
+    @Test("Normal frames have a light body and a Midnight Violet outline (5.3)", arguments: [GhostIcon.Pose.idle, .alert, .unavailable])
     func bodyAndOutline(pose: GhostIcon.Pose) throws {
         let bitmap = try #require(render(pose))
         #expect(bitmap.count(near: (0xD3, 0xDC, 0xFF), tolerance: 12) > 0)
@@ -166,15 +166,39 @@ struct GhostIconTests {
         }
     }
 
-    @Test("Amber lantern appears only in alert poses (5.5, 5.6)", arguments: poses)
+    @Test("Amber lantern appears only in the alert poses (5.5, 5.6)", arguments: poses)
     func amberPresence(pose: GhostIcon.Pose) throws {
         let bitmap = try #require(render(pose))
         let amber = bitmap.count(near: (0xF5, 0x9E, 0x0B))
-        if pose == .idle {
-            #expect(amber == 0)
-        } else {
+        if pose == .alert || pose == .alertBlink {
             #expect(amber > 0)
+        } else {
+            #expect(amber == 0)
         }
+    }
+
+    @Test("The crimson not-watching badge appears only in the unavailable pose (ward-app 1.10)", arguments: poses)
+    func badgePresence(pose: GhostIcon.Pose) throws {
+        let bitmap = try #require(render(pose))
+        let crimson = bitmap.count(near: (0xF4, 0x3F, 0x5E), tolerance: 12)
+        if pose == .unavailable {
+            // A disc of radius 3.6 pt at 8 px per pt is far more than a few stray pixels.
+            #expect(crimson > 300)
+            let badge = GhostIcon.badgeCenter
+            let pixel = bitmap.pixel(x: Int((badge.x + 2.0) * Double(Self.scale)),
+                                     y: Int((22 - badge.y + 1.5) * Double(Self.scale)))
+            #expect(pixel.a == 255 && pixel.r > 0xC0 && pixel.g < 0x90)
+        } else {
+            #expect(crimson == 0)
+        }
+    }
+
+    @Test("The badge sits inside the canvas (ward-app 1.10)")
+    func badgeFitsCanvas() {
+        let ring = GhostIcon.badgeRadius + 0.8
+        let center = GhostIcon.badgeCenter
+        #expect(center.x - ring >= 0 && center.x + ring <= GhostIcon.canvas.width)
+        #expect(center.y - ring >= 0 && center.y + ring <= GhostIcon.canvas.height)
     }
 
     @Test("Pixels are identical under aqua and darkAqua (5.3)", arguments: poses)

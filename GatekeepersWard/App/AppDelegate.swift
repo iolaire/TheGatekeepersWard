@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuBar: MenuBarController?
     private var hud: FortressHUDWindow?
     private var watchTask: Task<Void, Never>?
+    private var statusTask: Task<Void, Never>?
     /// Open prompts, so each result only affects its own prompt.
     private var prompts = PromptTracker<HUDContent>()
 
@@ -29,6 +30,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 await self.handle(event)
             }
         }
+        // Tell the menu bar when the watcher cannot read the log.
+        statusTask = Task { [weak self] in
+            guard let self else { return }
+            for await status in self.watcher.statuses {
+                self.menuBar?.setWatcherStatus(status)
+            }
+        }
         logger.info("Gatekeeper's Ward is watching")
     }
 
@@ -36,6 +44,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// main thread: AppKit waits for `reply(toApplicationShouldTerminate:)`.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         watchTask?.cancel()
+        statusTask?.cancel()
         let watcher = self.watcher
         Task {
             await watcher.stop()

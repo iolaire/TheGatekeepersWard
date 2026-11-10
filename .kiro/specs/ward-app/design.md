@@ -74,7 +74,8 @@ Regexes use Swift `#/.../#` literals. `TCCService` has eleven named cases plus `
 **TCCWatcher** (actor). `logArguments` is static and tested. `events` is a `nonisolated AsyncStream` with `.bufferingNewest(64)`.
 - `start()` launches the subprocess at userInitiated QoS, sets a `readabilityHandler` on stdout that feeds a `StreamReader` (one `LineBuffer` and one `TCCEventPipeline` per subprocess), drains stderr, and sets a `terminationHandler`.
 - Unexpected exit while running, or a throwing `run()`, schedules a restart. The delay is `restartDelay(afterFailures:)`: 2 s, doubling per consecutive failure, capped at 60 s. A run of 30 s or more resets the count. Stderr is written to the application log (first 500 bytes per read).
-- `stop()` clears handlers, cancels the restart and terminates the process.
+- **Status.** `statuses` is a second `nonisolated AsyncStream<TCCWatcherStatus>` with `.bufferingNewest(1)`. `TCCWatcherStatus` is `.running` or `.failing(failures:retryIn:)`. The pure `TCCWatcher.status(afterFailures:retryIn:couldNotStart:)` decides: failing when `run()` threw, or on the second consecutive failure; a single exit (for example after sleep) restarts quietly. `scheduleRestart()` publishes the status; a successful start schedules a 5 s check and publishes `.running` if that same subprocess is still alive. Only changes are published. `TCCWatcherStatus.notice` gives the title, detail and tooltip text, so the wording is testable.
+- `stop()` clears handlers, cancels the restart and the 5 s check, and terminates the process.
 - `StreamReader` is `@unchecked Sendable`. It relies on `FileHandle` never running its readability handler concurrently with itself.
 
 ### Core/
@@ -126,7 +127,7 @@ Regexes use Swift `#/.../#` literals. `TCCService` has eleven named cases plus `
 
 **GhostIcon** draws an 18 x 18 template `NSImage` in code. Poses: `.idle` (eye height 1.0, no lantern), `.alert` (eye height 2.6, lantern raised) and `.alertBlink` (wide eyes, lantern lowered). Eyes are cut with `destinationOut` compositing.
 
-**MenuBarController** (`@MainActor`). Holds up to 10 `RecentSpirit(name, vault, date)` entries. `recordPrompt` inserts at the front, rebuilds the menu and calls `startAlert`, which runs a 0.8 s repeating timer in `.common` run-loop mode that alternates `.alert` and `.alertBlink`. `endAlert` invalidates the timer and restores `.idle`.
+**MenuBarController** (`@MainActor`). Holds up to 10 `RecentSpirit(name, vault, date)` entries. `recordPrompt` inserts at the front, rebuilds the menu and calls `startAlert`, which runs a 0.8 s repeating timer in `.common` run-loop mode that alternates `.alert` and `.alertBlink`. `endAlert` invalidates the timer and restores the resting pose. The resting pose is `.idle`, or `.unavailable` (sleepy faces and a crimson `!` badge) while the watcher status is failing; `setWatcherStatus(_:)` switches it, rebuilds the menu with a disabled "Not watching for prompts" notice and its detail at the top, and updates the tooltip and accessibility label. (The icon art itself is described in `.kiro/specs/castle-keep-visual-theme`, which supersedes the 18 x 18 template drawing described here.)
 
 ### App/
 
@@ -145,7 +146,7 @@ Builds `GatekeepersWardApp`, replaces any running copy, assembles `.build/Gateke
 | Situation | Behaviour |
 |---|---|
 | Line is not JSON or not TCC | Parser returns `nil` or an `.unknown` event; the pipeline emits nothing |
-| `log stream` exits or fails to launch | Restart with backoff (2 s doubling to 60 s), indefinitely; stderr is logged |
+| `log stream` exits or fails to launch | Restart with backoff (2 s doubling to 60 s), indefinitely; stderr is logged. After a failed launch or two failures in a row the menu bar icon shows the not-watching badge until a restarted subprocess has run for 5 s |
 | Process exited before inspection | Exited snapshot, status "Slipped" |
 | Arguments unreadable (root-owned or restricted) | `inspectionDenied`, status "Veiled", path from `proc_pidpath` when available |
 | No PID known | No spirit, status "Veiled" |
@@ -180,7 +181,7 @@ These came out of the review. Items 1, 2, 5 (partly), 6 and 9 are fixed; the res
 2. ~~**Single `shownMessageID`.**~~ Fixed by `PromptTracker`.
 3. **Legacy-wording prompts have no `msgID`**, so only the 30 s timer dismisses them. They are now tracked separately and no longer block other prompts, but they still end only by timeout.
 4. **Out-of-order lines.** If `AUTHREQ_PROMPTING` arrives before its attribution, the HUD inspects the responsible app (the parent) instead of the child. Not seen in any captured log; left unimplemented until a real capture shows it.
-5. **Restart loop** now backs off and logs stderr, but there is still no visible error in the UI when `/usr/bin/log` cannot launch.
+5. ~~**Restart loop** had no visible error in the UI when `/usr/bin/log` cannot launch.~~ Fixed: the not-watching state (task 8.5b).
 6. ~~**Termination wait.**~~ Fixed with `.terminateLater`.
 7. **Placement** uses `NSScreen.main`, which may not be the screen showing Apple's dialog.
 8. **Menu times** ("2 min ago") refresh only when the menu is rebuilt.

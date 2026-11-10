@@ -4,6 +4,20 @@ Running notes from the build. Newest entries at the top.
 
 ---
 
+## 2026-11-10 (21:08 UTC) — Day 6: The Ward says so when it cannot watch
+
+**iolaire (pairing with Kiro)**
+
+Closed ward-app task 8.5b. Before this, a broken `/usr/bin/log` made the Ward retry in the background while the menu bar ghost looked healthy, so a user could believe they were protected when nothing was being watched.
+
+- **Status stream.** `TCCWatcher` now publishes `TCCWatcherStatus` (`.running` or `.failing(failures:retryIn:)`) on a second stream that keeps only the newest value. A launch that throws is reported at once. A single exit (for example after sleep) restarts quietly, and the second failure in a row is reported. A restarted subprocess must stay alive for 5 s before the status goes back to running, so one that dies straight away cannot make the icon flicker.
+- **What the user sees.** A crimson `!` badge on the menu bar icon (in the empty top-left corner), a tooltip and accessibility label that say the Ward is not watching and when it will try again, and a disabled notice at the top of the menu. A prompt alert still takes over the icon while it lasts, and the badge returns afterwards if the problem remains.
+- **Tests caught two placement bugs.** The first badge position had its ring past the canvas edge and also covered the cloaked spirit's right eye. The canvas-fit test and the existing eye-contrast test both failed, so the badge moved to the top-left corner.
+- **A real failure test.** `TCCWatcher` takes the `log` binary as an optional initialiser argument, and a test points it at a missing path and checks that a failing status arrives.
+- **Not done.** I have not seen the badge in a live run, because that needs `/usr/bin/log` to fail on a real Mac. The decision logic, the wording, the icon pixels and a real failed launch are all tested.
+
+---
+
 ## 2026-11-10 (20:57 UTC) — Day 6: First live test, four fixes
 
 **iolaire (pairing with Kiro)**

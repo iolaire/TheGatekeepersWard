@@ -25,9 +25,11 @@ enum GhostIcon {
         /// Wide eyes, lantern lowered, and the palette inverted (dark bodies, light
         /// outline and features). Alternating with `alert` makes the icon pulse.
         case alertBlink
+        /// Sleepy eyes and a crimson `!` badge: the Ward cannot read the system log.
+        case unavailable
 
         /// The expression both figures wear in this pose.
-        var expression: FaceExpression { self == .idle ? .sleepy : .surprised }
+        var expression: FaceExpression { self == .idle || self == .unavailable ? .sleepy : .surprised }
 
         /// The palette both figures are drawn with in this pose.
         var style: FigureRenderer.Style { self == .alertBlink ? .inverted : .normal }
@@ -39,8 +41,10 @@ enum GhostIcon {
             // The cloaked spirit is drawn first; the solo spirit sits in front of it.
             FigureRenderer.draw(.cloaked, pose.expression, in: cloakedFrame, detail: .compact, style: pose.style)
             FigureRenderer.draw(.solo, pose.expression, in: soloFrame, detail: .compact, style: pose.style)
-            if pose != .idle {
-                drawLantern(raised: pose == .alert)
+            switch pose {
+            case .idle: break
+            case .alert, .alertBlink: drawLantern(raised: pose == .alert)
+            case .unavailable: drawBadge()
             }
             return true
         }
@@ -51,6 +55,25 @@ enum GhostIcon {
     /// Maps a point in a figure's unit square to canvas points.
     static func canvasPoint(_ unit: CGPoint, in frame: NSRect) -> NSPoint {
         FigureRenderer.point(unit, in: frame)
+    }
+
+    /// Centre of the not-watching badge, in canvas points. It sits in the empty
+    /// top-left corner above the solo spirit, clear of both faces; the lantern
+    /// (alert poses only) uses the same area but is never shown with the badge.
+    static let badgeCenter = NSPoint(x: 4.2, y: 18.0)
+    /// Radius of the not-watching badge in points, not counting its 0.8 pt light ring.
+    static let badgeRadius: CGFloat = 3.1
+
+    /// A crimson disc with a white `!` and a light ring, so it shows on light and dark bars.
+    private static func drawBadge() {
+        let c = badgeCenter, r = badgeRadius
+        CastleNSColors.spectralEctoplasm.setFill()
+        NSBezierPath(ovalIn: NSRect(x: c.x - r - 0.8, y: c.y - r - 0.8, width: (r + 0.8) * 2, height: (r + 0.8) * 2)).fill()
+        CastleNSColors.mischiefCrimson.setFill()
+        NSBezierPath(ovalIn: NSRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)).fill()
+        NSColor.white.setFill()
+        NSBezierPath(roundedRect: NSRect(x: c.x - 0.5, y: c.y - 0.4, width: 1.0, height: 2.3), xRadius: 0.5, yRadius: 0.5).fill()
+        NSBezierPath(ovalIn: NSRect(x: c.x - 0.55, y: c.y - 1.9, width: 1.1, height: 1.1)).fill()
     }
 
     /// A small lantern hovering above (raised) or resting on (lowered) the solo

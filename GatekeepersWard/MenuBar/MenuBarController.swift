@@ -29,6 +29,8 @@ final class MenuBarController: NSObject {
     private var history: [RecentSpirit] = []
     private var alertTimer: Timer?
     private var alertFrame = false
+    /// Whether the Ward can currently see prompts; drives the not-watching state.
+    private var watcherStatus = TCCWatcherStatus.running
 
     /// Installs the status item in idle state.
     override init() {
@@ -46,11 +48,29 @@ final class MenuBarController: NSObject {
         startAlert()
     }
 
-    /// Returns the ghost to idle.
+    /// Returns the icon to its resting pose: idle, or the not-watching badge
+    /// while the watcher is failing.
     func endAlert() {
         alertTimer?.invalidate()
         alertTimer = nil
-        setIcon(.idle, description: Self.idleDescription)
+        showResting()
+    }
+
+    /// Shows or clears the not-watching state. The badge, tooltip and menu notice
+    /// follow `status`; a running prompt alert keeps the icon until it ends.
+    func setWatcherStatus(_ status: TCCWatcherStatus) {
+        guard status != watcherStatus else { return }
+        watcherStatus = status
+        rebuildMenu()
+        if alertTimer == nil { showResting() }
+    }
+
+    private func showResting() {
+        if let notice = watcherStatus.notice {
+            setIcon(.unavailable, description: notice.tooltip)
+        } else {
+            setIcon(.idle, description: Self.idleDescription)
+        }
     }
 
     private static let idleDescription = "Gatekeeper's Ward, watching"
@@ -80,6 +100,16 @@ final class MenuBarController: NSObject {
 
     private func rebuildMenu() {
         let menu = NSMenu()
+        if let notice = watcherStatus.notice {
+            let title = NSMenuItem(title: notice.title, action: nil, keyEquivalent: "")
+            title.image = NSImage(systemSymbolName: "exclamationmark.triangle.fill", accessibilityDescription: notice.title)
+            title.isEnabled = false
+            menu.addItem(title)
+            let detail = NSMenuItem(title: notice.detail, action: nil, keyEquivalent: "")
+            detail.isEnabled = false
+            menu.addItem(detail)
+            menu.addItem(.separator())
+        }
         let header = NSMenuItem(title: "Recent Spirits", action: nil, keyEquivalent: "")
         header.isEnabled = false
         menu.addItem(header)

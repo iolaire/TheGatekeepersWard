@@ -107,10 +107,11 @@ struct ArtDraftRenderer {
 
     /// Each pose on a dark and a light menu bar, enlarged 8x and at 2x (Retina) size.
     private func menuBarSheet() -> Data? {
-        let poses: [(String, GhostIcon.Pose)] = [("idle", .idle), ("alert", .alert), ("alertBlink", .alertBlink)]
+        let poses: [(String, GhostIcon.Pose)] = [("idle", .idle), ("alert", .alert), ("alertBlink", .alertBlink),
+                                                 ("unavailable", .unavailable)]
         let zoom: CGFloat = 8
         let cell = NSSize(width: 24 * zoom + 120, height: 22 * zoom + 40)
-        let width = Int(cell.width * 3), height = Int(cell.height * 2 + 130)
+        let width = Int(cell.width * 4), height = Int(cell.height * 2 + 130)
         let bars = [NSColor(white: 0.11, alpha: 1), NSColor(white: 0.93, alpha: 1)]
         return bitmap(width: width, height: height) {
             NSColor(white: 0.5, alpha: 1).setFill()

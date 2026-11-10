@@ -44,6 +44,8 @@ The Ward App informs and never intercepts. Apple's TCC dialog keeps full control
 6. IF the `log stream` subprocess exits or fails to start while the watcher is running, THEN THE TCCWatcher SHALL start it again after 2 seconds, doubling the delay on each consecutive failure up to 60 seconds, and SHALL reset the delay after the subprocess ran for 30 seconds.
 7. THE TCCWatcher SHALL write the subprocess's standard error output to the application log.
 8. WHEN `stop()` is called, THE TCCWatcher SHALL stop the subprocess and cancel any pending restart.
+9. WHEN the `log stream` subprocess could not be started, or has failed twice in a row, THE TCCWatcher SHALL publish a failing status through a second `AsyncStream` (newest value only), carrying the failure count and the seconds until the next try. WHEN a restarted subprocess has then run for 5 seconds, THE TCCWatcher SHALL publish the running status.
+10. WHILE the watcher status is failing, THE Ward_App SHALL show a not-watching state: a crimson badge on the menu bar icon, a tooltip and accessibility label that say the Ward is not watching and when it will try again, and a disabled notice at the top of the menu. A prompt alert SHALL take precedence over the badge while it lasts. WHEN the status returns to running, THE Ward_App SHALL remove the badge, the notice and the extra text.
 
 ### Requirement 2: Event Parsing Across macOS Versions
 

@@ -85,6 +85,14 @@ actor TCCWatcher {
     /// Watcher events, in log order.
     nonisolated let events: AsyncStream<TCCWatcherEvent>
     private let continuation: AsyncStream<TCCWatcherEvent>.Continuation
+    /// Whether the watcher can currently see prompts. Only changes are published,
+    /// and only the newest value is kept.
+    nonisolated let statuses: AsyncStream<TCCWatcherStatus>
+    private let statusContinuation: AsyncStream<TCCWatcherStatus>.Continuation
+    private var lastStatus = TCCWatcherStatus.running
+    /// `true` when the most recent attempt to launch the subprocess threw.
+    private var lastStartFailed = false
+    private var confirmTask: Task<Void, Never>?
     private var process: Process?
     private var isRunning = false
     private var restartTask: Task<Void, Never>?
@@ -95,6 +103,26 @@ actor TCCWatcher {
     /// A subprocess that ran at least this long counts as healthy.
     static let healthyRunTime: TimeInterval = 30
 
+    /// A restarted subprocess that is still alive after this long is reported as running again.
+    static let confirmRunningAfter: TimeInterval = 5
+
+    /// Consecutive failures before the UI is told, unless the launch itself failed.
+    /// One exit (for example after sleep) restarts quietly.
+    static let failuresBeforeWarning = 2
+
+    /// The status to publish when a restart is being scheduled.
+    ///
+    /// - Parameters:
+    ///   - failures: Consecutive failures so far.
+    ///   - delay: Seconds until the next attempt.
+    ///   - couldNotStart: `true` when launching the subprocess threw.
+    static func status(afterFailures failures: Int, retryIn delay: TimeInterval,
+                       couldNotStart: Bool) -> TCCWatcherStatus {
+        couldNotStart || failures >= failuresBeforeWarning
+            ? .failing(failures: failures, retryIn: delay)
+            : .running
+    }
+
     /// Seconds to wait before restart number `failures` (1-based): 2, 4, 8, ...
     /// capped at 60, so a broken `log` binary is not relaunched in a tight loop.
     static func restartDelay(afterFailures failures: Int) -> TimeInterval {
@@ -102,9 +130,16 @@ actor TCCWatcher {
         return min(2 * Double(1 << exponent), 60)
     }
 
+    private let executable: URL
+
     /// Creates a stopped watcher. Call `start()` to begin streaming.
-    init() {
+    ///
+    /// - Parameter executable: The `log` binary to run. Tests pass a missing
+    ///   path to check how a failed launch is reported.
+    init(executable: URL = URL(fileURLWithPath: "/usr/bin/log")) {
+        self.executable = executable
         (events, continuation) = AsyncStream.makeStream(bufferingPolicy: .bufferingNewest(64))
+        (statuses, statusContinuation) = AsyncStream.makeStream(bufferingPolicy: .bufferingNewest(1))
     }
 
     /// Starts `log stream`. Does nothing if already running.
@@ -112,7 +147,7 @@ actor TCCWatcher {
         guard process == nil else { return }
         isRunning = true
         let proc = Process()
-        proc.executableURL = URL(fileURLWithPath: "/usr/bin/log")
+        proc.executableURL = executable
         proc.arguments = Self.logArguments
         proc.qualityOfService = .userInitiated
         let output = Pipe()
@@ -145,10 +180,13 @@ actor TCCWatcher {
             try proc.run()
             process = proc
             startedAt = Date()
+            lastStartFailed = false
             logger.info("log stream started")
+            confirmRunning(after: proc)
         } catch {
             logger.error("could not start log stream: \(error.localizedDescription, privacy: .public)")
             clearHandlers(of: proc)
+            lastStartFailed = true
             consecutiveFailures += 1
             scheduleRestart()
         }
@@ -159,6 +197,8 @@ actor TCCWatcher {
         isRunning = false
         restartTask?.cancel()
         restartTask = nil
+        confirmTask?.cancel()
+        confirmTask = nil
         if let process {
             clearHandlers(of: process)
             process.terminate()
@@ -171,6 +211,9 @@ actor TCCWatcher {
         guard let process else { return }
         clearHandlers(of: process)
         self.process = nil
+        confirmTask?.cancel()
+        confirmTask = nil
+        lastStartFailed = false
         guard isRunning else { return }
         if let startedAt, Date().timeIntervalSince(startedAt) >= Self.healthyRunTime {
             consecutiveFailures = 0   // it ran fine for a while; this is a fresh failure
@@ -182,11 +225,40 @@ actor TCCWatcher {
     private func scheduleRestart() {
         let delay = Self.restartDelay(afterFailures: consecutiveFailures)
         logger.info("log stream not running; restarting in \(Int(delay)) s")
+        publish(Self.status(afterFailures: consecutiveFailures, retryIn: delay, couldNotStart: lastStartFailed))
         restartTask?.cancel()
         restartTask = Task {
             try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             guard !Task.isCancelled else { return }
             self.start()
+        }
+    }
+
+    /// Reports `.running` once `started` has stayed alive for `confirmRunningAfter`,
+    /// so a subprocess that dies straight away cannot make the UI flip back and forth.
+    private func confirmRunning(after started: Process) {
+        confirmTask?.cancel()
+        confirmTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(Self.confirmRunningAfter * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            await self?.confirmRunning(started)
+        }
+    }
+
+    private func confirmRunning(_ started: Process) {
+        guard process === started else { return }
+        publish(.running)
+    }
+
+    /// Publishes `status` if it differs from the last one.
+    private func publish(_ status: TCCWatcherStatus) {
+        guard status != lastStatus else { return }
+        lastStatus = status
+        statusContinuation.yield(status)
+        switch status {
+        case .running: logger.info("watcher status: running")
+        case .failing(let failures, let retryIn):
+            logger.error("watcher status: failing (\(failures) in a row), retry in \(Int(retryIn)) s")
         }
     }
 
