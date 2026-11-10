@@ -44,7 +44,11 @@ docs/                  pitch.md, architecture.md, devlog.md, Planning/
 
 | Token | Hex | Role |
 |---|---|---|
-| Spectral Ectoplasm | `#E0E7FF` / `#C7D2FE` | Ghost figures, translucent glow |
+| Spectral Ectoplasm | `#E0E7FF` | Ghost figures (light end of the gradient), body text |
+| Ectoplasm Shade | `#C7D2FE` | Ghost shading (dark end of the gradient), translucent glow |
+| Spirit Ink | `#2E1065` | Spirit eyes, mouth and inner outline |
+| Midnight Violet | `#3B185F` | Spirit outer outline |
+| Blush Pink | `#F472B6` | Spirit cheeks |
 | Kiro Violet | `#8B5CF6` | Portcullis bars, lineage tree nodes, primary headers |
 | Torchlight Amber | `#F59E0B` | Suspended status badge, lantern glow, elevated warnings |
 | Obsidian Slate | `#0E1013` | Background (frosted acrylic `.ultraThinMaterial`) |

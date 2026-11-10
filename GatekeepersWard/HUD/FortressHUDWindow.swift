@@ -11,6 +11,9 @@ final class FortressHUDWindow: NSPanel {
     static let autoDismissDelay: TimeInterval = 30
 
     private var dismissTask: Task<Void, Never>?
+    /// Bumped by every `present`, so a fade-out that finishes after a newer
+    /// presentation does not hide it.
+    private var presentationCount = 0
     /// In-flight alert search; cancelled on a new `present` and on `dismiss()`.
     var locateTask: Task<Void, Never>?
 
@@ -21,7 +24,7 @@ final class FortressHUDWindow: NSPanel {
     /// Creates a hidden panel.
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 360, height: 200),
+            contentRect: NSRect(x: 0, y: 0, width: HUDMetrics.width, height: 200),
             styleMask: [.nonactivatingPanel, .borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -44,6 +47,7 @@ final class FortressHUDWindow: NSPanel {
     /// Shows `content` near the top-right of the main screen without taking
     /// focus, and schedules the auto-dismiss.
     func present(_ content: HUDContent) {
+        presentationCount += 1
         let hosting = NSHostingView(rootView: FortressHUDView(content: content))
         hosting.layoutSubtreeIfNeeded()
         let size = hosting.fittingSize
@@ -69,15 +73,26 @@ final class FortressHUDWindow: NSPanel {
         locateTask?.cancel()
         locateTask = nil
         guard isVisible else { return }
+        let dismissed = presentationCount
         if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
-            orderOut(nil)
+            hide()
             return
         }
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.25
             animator().alphaValue = 0
         }, completionHandler: { [weak self] in
-            Task { @MainActor in self?.orderOut(nil) }
+            Task { @MainActor in
+                // Skip if a newer HUD was presented while this one was fading.
+                guard let self, self.presentationCount == dismissed else { return }
+                self.hide()
+            }
         })
+    }
+
+    /// Hides the panel and drops its view tree, which stops the banner's animation.
+    private func hide() {
+        orderOut(nil)
+        contentView = nil
     }
 }

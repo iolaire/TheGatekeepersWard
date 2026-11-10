@@ -10,6 +10,7 @@ enum CastlePalette {
     static func color(_ tone: CastleTone) -> Color {
         switch tone {
         case .spectralEctoplasm: return rgb(0xE0, 0xE7, 0xFF)
+        case .ectoplasmShade: return rgb(0xC7, 0xD2, 0xFE)
         case .kiroViolet: return rgb(0x8B, 0x5C, 0xF6)
         case .torchlightAmber: return rgb(0xF5, 0x9E, 0x0B)
         case .mischiefCrimson: return rgb(0xF4, 0x3F, 0x5E)

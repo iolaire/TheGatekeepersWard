@@ -4,6 +4,37 @@ Running notes from the build. Newest entries at the top.
 
 ---
 
+## 2026-11-10 (20:57 UTC) — Day 6: First live test, four fixes
+
+**iolaire (pairing with Kiro)**
+
+First run of the new HUD and icon on a real Mac, with four notes back. All four are in the spec as task 9.
+
+- **Menu bar icon too fine.** At its real size the detail was too small. Compact detail now has a 1.4 pt outline, eyes about 1.5 times larger, a longer bolder smile, and no gloss, rim light or sparkle highlight. The thicker outline was clipped at the canvas edge at first, so the two frames were moved and scaled to leave room.
+- **Alert pulse.** The two alert frames now alternate between the normal palette and an inverted one (dark bodies, light outline and features) every 0.5 s, with the lantern raised and lowered. A test samples a point inside each body to check the flip.
+- **Command box grows.** The 2-line limit is gone. The command shows up to 12 lines and the card grows with it. The old 640 pt cap became a 900 pt hard stop, and typical content is held to 720 pt by a test.
+- **Plain-language request.** People do not know the service keys, so the HUD now shows the sentence Apple's dialog shows, such as `Allow “WardTrigger” to access your microphone?`, and under it the app's own reason. Both come from the app's `Info.plist` (`CFBundleDisplayName` and the `NS…UsageDescription` keys), which is read straight from disk with no extra permission. The app named is the responsible app when it differs from the process that asked. The raw service key stays, small and dim. A first guess of reading Apple's dialog text from the window list was dropped because window titles need Screen Recording permission.
+- **Still open.** Checking all of this live again, a clearer title than "TCC EVENT DETECTED" for people who do not know the term, and the faint banding in the solo spirit.
+
+---
+
+## 2026-11-10 (20:14 UTC) — Day 6: Castle Keep visual theme, characters and HUD
+
+**iolaire (pairing with Kiro)**
+
+New spec `.kiro/specs/castle-keep-visual-theme` (requirements, design, tasks). It closes ward-app task 8.9 and restyles the HUD and the menu bar icon to match the reference mock.
+
+- **Palette.** `#C7D2FE` is now a named role (`ectoplasmShade`). Three colours from the chosen SVGs joined the palette: Spirit Ink `#2E1065`, Midnight Violet `#3B185F` and Blush Pink `#F472B6`. The emoji header is gone. The palette hook allows them, and a `palette-ok` marker exempts a line (used once, to quote Apple's own "Allow" button name).
+- **Characters.** Two tries at hand-built ghosts (chubby ghost plus skull spirit) were replaced by ports of `solo_spirit.svg` and `cloaked_spirit.svg`. The cloak is 22% wider, leans right with a curled hem, and loses its three vertical drape lines. `GhostGeometry` keeps the SVG coordinates as written, and one AppKit renderer (`FigureRenderer`) draws them at two detail levels.
+- **Shading.** Full detail adds a darker lavender interior, a soft top light, a violet hem bounce, an inner rim light, two highlights, a violet aura and a translucent fading tail. Compact detail (menu bar) stays opaque so the icon looks the same on light and dark bars.
+- **Menu bar icon.** The solo spirit sits in front of the cloaked spirit in a 24 by 22 pt image with a new lantern. The eyes are drawn opaque instead of cut out, because cut-out eyes vanished on a light bar. The old pixel tests drew at one pixel per point and passed without checking the right half of the icon; they now draw at full pixel size.
+- **HUD.** A 400 pt card: gate banner (brick wall, violet portcullis, torches, three bobbing spirits, sparkles), neon title with the ghost pair, amber audit banner, indented lineage tree, risk legend chips, command box, and two non-interactive instruction pills ("Lower Portcullis" and "Let Spirit Pass"). The Ward still only informs. The window drops its view tree on dismiss so the banner animation stops.
+- **Size.** A new test measures the unclamped height (the old size check read a value already clamped to the cap). The worst case first came out at 704 pt, so the master app moved beside the Lineage heading, lineage shows five rows, and the command shows two lines. All three test cases now stay under 640 pt.
+- **Review drafts.** `WARD_RENDER_DRAFTS=1 swift test --filter ArtDraftRenderer` writes PNGs to `docs/Planning/Styles/drafts/` (characters, pair, menu bar poses, HUD). Normal runs write nothing.
+- **Still open.** Checking the icon and HUD on a real Mac (spec tasks 4 and 8), and the faint banding in the solo spirit's lower third.
+
+---
+
 ## 2026-11-09 (17:40 UTC) — Day 5: Category and Team Representative decided
 
 **iolaire (pairing with Kiro)**

@@ -12,16 +12,20 @@ struct RecentSpirit: Equatable {
 
 /// The menu bar ghost and its dropdown (`.kiro/steering/swiftui-hud-design.md` §6).
 ///
-/// The ghost (`GhostIcon`) is a full-colour, non-template image in the Castle
-/// Keep palette, so it looks the same on light and dark menu bars and is never
-/// tinted. Idle: sleepy eyes. Alert: wide eyes, and the lantern
-/// rises and falls every 0.8 s until the prompt resolves.
+/// The icon (`GhostIcon`, a ghost and a spirit) is a full-colour, non-template
+/// image in the Castle Keep palette, so it looks the same on light and dark menu
+/// bars and is never tinted. The status item has a variable length to fit it.
+/// Idle: sleepy eyes. Alert: wide eyes, and the icon pulses every 0.5 s between
+/// its normal and inverted palette, with the lantern rising and falling, until
+/// the prompt resolves.
 @MainActor
 final class MenuBarController: NSObject {
     /// Maximum entries kept in the recent list.
     static let historyLimit = 10
+    /// Seconds between the two alert frames (normal and inverted palette).
+    static let pulseInterval: TimeInterval = 0.5
 
-    private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+    private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private var history: [RecentSpirit] = []
     private var alertTimer: Timer?
     private var alertFrame = false
@@ -56,7 +60,7 @@ final class MenuBarController: NSObject {
         alertTimer?.invalidate()
         alertFrame = false
         setIcon(.alert, description: Self.alertDescription)
-        let timer = Timer(timeInterval: 0.8, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: Self.pulseInterval, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 guard let self else { return }
                 self.alertFrame.toggle()

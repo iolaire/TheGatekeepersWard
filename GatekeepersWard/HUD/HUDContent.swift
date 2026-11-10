@@ -6,6 +6,8 @@ import Foundation
 enum CastleTone: Equatable, Sendable {
     /// Ghosts, body text.
     case spectralEctoplasm
+    /// Secondary ectoplasm tone (`#C7D2FE`) for ghost shading and gradients.
+    case ectoplasmShade
     /// Headers, lineage nodes.
     case kiroViolet
     /// "Paused" badge, lantern glow.
@@ -110,6 +112,9 @@ struct HUDContent: Equatable, Sendable {
     let riskTags: [RiskTag]
     /// The status line.
     let status: HUDStatus
+    /// The plain-language sentence and the app's stated reason. `nil` in
+    /// hand-built content; use `displayedRequest` to always get text.
+    var requestText: RequestText?
 
     /// Builds the content, inspecting the client (or, if unknown, the
     /// responsible) process.
@@ -117,12 +122,15 @@ struct HUDContent: Equatable, Sendable {
     /// - Parameters:
     ///   - prompt: The detected prompt.
     ///   - inspect: The inspection function; injectable for tests.
+    ///   - bundleInfo: Reads an app's `Info.plist` for an executable path; injectable for tests.
     static func build(
         prompt: TCCPrompt,
-        inspect: (pid_t) -> ProcessSnapshot = ProcessInspector.inspect
+        inspect: (pid_t) -> ProcessSnapshot = ProcessInspector.inspect,
+        bundleInfo: (String) -> AppBundleInfo? = AppBundleInfo.read(forExecutable:)
     ) -> HUDContent {
         guard let pid = prompt.clientPID ?? prompt.responsiblePID else {
-            return HUDContent(prompt: prompt, spirit: nil, masterApp: nil, riskTags: [], status: .veiled)
+            return HUDContent(prompt: prompt, spirit: nil, masterApp: nil, riskTags: [], status: .veiled,
+                              requestText: PromptSummary.requestText(service: prompt.service, appName: nil, info: nil))
         }
         let spirit = inspect(pid_t(pid))
         var masterApp: ProcessNode?
@@ -139,7 +147,27 @@ struct HUDContent: Equatable, Sendable {
         } else {
             status = tags.isEmpty ? .paused : .suspicious
         }
-        return HUDContent(prompt: prompt, spirit: spirit, masterApp: masterApp, riskTags: tags, status: status)
+        // Apple's dialog names the responsible app, or the process itself when there is no other.
+        let namedPath = masterApp?.executablePath ?? spirit.executablePath
+        let info = bundleInfo(namedPath)
+        let appName = info?.displayName ?? masterApp?.name ?? spirit.name
+        let request = PromptSummary.requestText(service: prompt.service, appName: appName, info: info)
+        return HUDContent(prompt: prompt, spirit: spirit, masterApp: masterApp, riskTags: tags, status: status,
+                          requestText: request)
+    }
+}
+
+extension HUDContent {
+    /// The request text, or a generic sentence for the service when none was built.
+    var displayedRequest: RequestText {
+        requestText ?? PromptSummary.requestText(service: prompt.service, appName: nil, info: nil)
+    }
+
+    /// The responsible app, unless it is already the first process of the
+    /// lineage (then the lineage shows it and a separate line would repeat it).
+    var visibleMasterApp: ProcessNode? {
+        guard let master = masterApp else { return nil }
+        return master.pid == spirit?.lineage.first?.pid ? nil : master
     }
 }
 

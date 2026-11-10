@@ -82,7 +82,7 @@ Retroactive plan for the Ward App built on the `dev` branch by Dharshaneshwaran.
     - _Requirements: 8.4_
   - [x] 8.8 Make the Command Line Tools plugin path in `Package.swift` conditional on the file existing, and skip the root-owned process test when running as root.
     - _Requirements: 13.1_
-  - [ ] 8.9 Decide on the Spectral Ectoplasm secondary tone (`#C7D2FE`) and the emoji header, then update `CastlePalette` or the steering file. Needs a design decision.
+  - [x] 8.9 Decide on the Spectral Ectoplasm secondary tone (`#C7D2FE`) and the emoji header, then update `CastlePalette` or the steering file. Decided: `#C7D2FE` is the named role `CastleTone.ectoplasmShade`, and the emoji header is replaced by a vector ghost pair. See `.kiro/specs/castle-keep-visual-theme`.
     - _Requirements: 9.1_
   - [ ] 8.10 Run the new behaviour on a real Mac: open two prompts at once (for example `docs` and `mic`) and answer them in both orders; let one time out; quit with `scripts/run_ward.sh --stop` and confirm no `log stream` is left.
     - _Requirements: 11.2 to 11.7_

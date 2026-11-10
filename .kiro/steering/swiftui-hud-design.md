@@ -19,7 +19,11 @@ defined in `Resources/Colors.xcassets`. The canonical mapping:
 
 | Asset name | Hex | Role |
 |---|---|---|
-| `SpectralEctoplasm` | `#E0E7FF` / `#C7D2FE` (light/dark) | Ghost figures, soft glow, body text on dark backgrounds |
+| `SpectralEctoplasm` | `#E0E7FF` | Ghost figures (light end of the gradient), body text on dark backgrounds |
+| `EctoplasmShade` | `#C7D2FE` | Ghost shading (dark end of the gradient), soft glow. In code: `CastleTone.ectoplasmShade` |
+| `SpiritInk` | `#2E1065` | Spirit eyes, mouth and inner outline (AppKit: `CastleNSColors.spiritInk`) |
+| `MidnightViolet` | `#3B185F` | Spirit outer outline (`CastleNSColors.midnightViolet`) |
+| `BlushPink` | `#F472B6` | Spirit cheeks (`CastleNSColors.blushPink`) |
 | `KiroViolet` | `#8B5CF6` | Portcullis bars, lineage tree nodes, primary headers, focus rings |
 | `TorchlightAmber` | `#F59E0B` | Suspended status badge, lantern glow, elevated warnings |
 | `ObsidianSlate` | `#0E1013` | Panel background (paired with `.ultraThinMaterial`) |
@@ -81,7 +85,9 @@ The HUD card has three fixed zones. Keep them in this order; do not reorganise.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ HEADER: ghost icon  ·  "GATEKEEPER'S WARD"  ·  service  │  ← KiroViolet header bar
+│ HEADER: ghost pair (vector, no emoji) · title · service  │  ← KiroViolet header bar
+│ (see .kiro/specs/castle-keep-visual-theme for the full  │
+│  illustrated layout: gate banner, audit banner, pills)   │
 ├──────────────────────────────────────────────────────────┤
 │ LINEAGE TREE                                             │  ← spirit nodes
 │  cursor (PID 14201)  ➔  node  ➔  zsh  ➔  rg (14582)    │
