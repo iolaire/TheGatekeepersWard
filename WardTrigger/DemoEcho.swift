@@ -4,7 +4,7 @@ import Foundation
 ///
 /// The default sink writes to standard output via `print`. Tests inject their
 /// own sink so they never have to redirect the process-global stdout.
-typealias OutputSink = (String) -> Void
+typealias OutputSink = @Sendable (String) -> Void
 
 /// The live sink: one line to standard output.
 let standardOutputSink: OutputSink = { print($0) }

@@ -4,6 +4,45 @@ Running notes from the build. Newest entries at the top.
 
 ---
 
+## 2026-11-12 (17:53 UTC) — Day 8: Swift 6 strict concurrency, found with the swift-expert power
+
+**iolaire (pairing with Kiro)**
+
+Installed the `swift-expert` Kiro power (a Swift Concurrency guide) and used it to audit the whole package. The result: the project now builds in Swift 6 language mode with `StrictConcurrency=complete`, and all 166 tests pass.
+
+**How the power was used**
+
+- **Settings first.** The power's rule is to read the build settings before giving any concurrency advice. `Package.swift` showed Swift 5 mode, no strict concurrency flag and no default isolation, on a Swift 6.4.2 toolchain. That meant the compiler was not reporting data-race problems that Swift 6 would.
+- **Review against its guardrails.** `TCCWatcher`, `AppDelegate` and `ProcessInspector` were read against the power's checklist: is `@MainActor` justified, are escape hatches documented, are long-lived tasks cancelled. Most of it held up. `TCCWatcher` is an actor with `nonisolated` streams, `AppDelegate` is `@MainActor` because it owns AppKit objects, and both restart tasks are cancelled in `stop()`.
+- **Migration loop.** The power's build, fix one category, rebuild, test cycle was followed in three steps: `targeted`, then `complete`, then Swift 6 language mode. The test suite was run after each step.
+- **Steering guide.** `swift-general.md` reinforced rules we already follow: Swift Testing over XCTest, Swift Concurrency over Dispatch, and macOS-only APIs. Where it differs from our project steering, the project steering wins.
+
+**What it helped us find and fix**
+
+1. **`AppDelegate` SIGTERM handler (found at `targeted`).** The `RunLoop.main.perform` block is nonisolated but called `NSApp.terminate(nil)`, which is main-actor work. It is now wrapped in `MainActor.assumeIsolated`. That is safe because the block runs on the main run loop. The existing comment about the `.terminateLater` deadlock was kept.
+2. **`WardTrigger` globals (found in Swift 6 mode).** `standardOutputSink` and `wardTriggerCatalog` were global values of non-`Sendable` type. `OutputSink` is now `@Sendable`, `TriggerSpec` is `Sendable`, and its `run` closure is `@Sendable`.
+3. **`OutputCollector` test helper (found in Swift 6 mode).** It captured a mutable array in a closure. Its lines are now behind an `OSAllocatedUnfairLock` and the class is `Sendable`.
+4. **`ProcessInspector` main-thread question, resolved.** The worry was that `sysctl` work in `hudContent(for:)` could run on the main actor. It cannot: `ProcessInspector` is an actor and `hudContent` is one of its methods, so the work runs on the actor's executor and `AppDelegate` only awaits it. No change needed.
+
+**Package changes**
+
+- `StrictConcurrency=complete` on the `GatekeepersWard` target.
+- `swiftLanguageVersions: [.version("6")]` for the whole package. Tools version 5.9 has no `.v6` shorthand, so `.version("6")` is used. The tools version stays at 5.9.
+
+**Noted, not changed**
+
+- `StreamReader` in `TCCWatcher` is still `@unchecked Sendable`. Its safety reason is documented (`FileHandle` runs the readability handler serially). The power asks for a removal plan: switch to `Mutex` once the deployment target reaches macOS 15 (it is macOS 13 now).
+- `Task.sleep(nanoseconds:)` could become `Task.sleep(for:)`. This is style only.
+- `errno` is read inside a log call in `ProcessInspector.processArguments`. Copying it to a local first would be stricter.
+
+**Open**
+
+- Swift 6 mode now requires a Swift 6 toolchain to build the package. If judges may use Swift 5.9 or 5.10, we should decide whether to keep it. The fallback is to drop `swiftLanguageVersions` and keep `StrictConcurrency=complete`.
+- Not verified: the new strict flag was confirmed to take effect at `targeted` (it produced a warning), but the `complete` build was clean, so I did not see it flag anything. The Swift 6 build did find real errors, which shows checking is on.
+- Nothing is committed yet.
+
+---
+
 ## 2026-11-10 (21:08 UTC) — Day 6: The Ward says so when it cannot watch
 
 **iolaire (pairing with Kiro)**

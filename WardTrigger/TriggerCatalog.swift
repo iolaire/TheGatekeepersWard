@@ -2,7 +2,7 @@ import Foundation
 
 /// One TCC trigger: its CLI subcommand, the TCC service it exercises, a
 /// usage-line description, and the function that fires it.
-struct TriggerSpec {
+struct TriggerSpec: Sendable {
     /// The lowercase CLI subcommand (e.g. `docs`).
     let name: String
     /// The `kTCCService*` key the trigger is expected to produce.
@@ -10,7 +10,7 @@ struct TriggerSpec {
     /// One-line description shown in the usage summary.
     let summary: String
     /// Fires the trigger.
-    let run: () -> Void
+    let run: @Sendable () -> Void
 }
 
 /// Every TCC trigger WardTrigger supports, in usage-summary order. The

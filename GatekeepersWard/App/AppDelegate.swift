@@ -101,7 +101,10 @@ public enum GatekeepersWardApp {
         // main-queue handler deadlocks: `.terminateLater` waits for a main-actor
         // Task, which cannot run while the main queue is still inside this handler.
         termSource.setEventHandler {
-            RunLoop.main.perform(inModes: [.common]) { NSApp.terminate(nil) }
+            // The block runs on the main run loop, so main-actor isolation holds.
+            RunLoop.main.perform(inModes: [.common]) {
+                MainActor.assumeIsolated { NSApp.terminate(nil) }
+            }
         }
         termSource.resume()
         withExtendedLifetime(termSource) { app.run() }

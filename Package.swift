@@ -16,7 +16,11 @@ let package = Package(
     platforms: [.macOS(.v13)],
     targets: [
         // Main library: Core/, Permissions/, HUD/, MenuBar/ sources.
-        .target(name: "GatekeepersWard", path: "GatekeepersWard"),
+        .target(
+            name: "GatekeepersWard",
+            path: "GatekeepersWard",
+            swiftSettings: [.enableExperimentalFeature("StrictConcurrency=complete")]
+        ),
         // The menu bar app. A thin launcher; wrapped into an .app bundle by
         // scripts/run_ward.sh.
         .executableTarget(
@@ -47,5 +51,7 @@ let package = Package(
             exclude: ["WardTrigger/README.md"],
             swiftSettings: testingPluginFlags.isEmpty ? [] : [.unsafeFlags(testingPluginFlags)]
         ),
-    ]
+    ],
+    // Tools version 5.9 has no `.v6` shorthand; `.version("6")` is the same mode.
+    swiftLanguageVersions: [.version("6")]
 )
