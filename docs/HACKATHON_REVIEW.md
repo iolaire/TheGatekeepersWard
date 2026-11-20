@@ -1,83 +1,81 @@
 # Kiroween 2026 Submission Review: Gatekeeper's Ward
 
-Review date: 2026-11-09
-Days until deadline (Dec 4, 2026 2:00 PM PT): 25
+Review date: 2026-11-20
+Days until deadline (Dec 4, 2026 2:00 PM PT): 14
 
-Scope note: reviewed at commit `670cf4d` on `main`. `git status -sb` shows `main...origin/main` with nothing ahead or behind. The working tree has one uncommitted change, `docs/devlog.md` (not part of this review). Devpost pages return 403 to tooling, so the rules were read from `docs/Planning/HackathonDetails/Rules.md` and the saved review prompt. I ran `swift build`, `swift test` and the MCP server's `pytest` myself (macOS 27.0.1, Swift 6.4). I did not run the app, fire a real TCC prompt, or look at the GitHub About sidebar in a browser. Runtime behaviour is taken from the devlog and ticked spec tasks. No demo video, Devpost text, blog post or social post exists yet, so Presentation is scored on what is observable.
+Scope note: reviewed at commit `20f0d42` on `main`. `git fetch` then `git status -sb` shows `main...origin/main` with nothing ahead or behind; 34 commits, first on 2026-11-05. This review ran on a **Linux** machine with no Swift toolchain, so `swift build` and `swift test` could not be executed here (the package is macOS-only: AppKit, `platforms: [.macOS(.v13)]`). What was verified directly: `gh repo view` (visibility, license), `git` history and `.kiro` tracking, all 6 hook JSON files parse, README/docs contents, force-unwrap and file-size scans, spec task counts, and the MCP server's Python suite in a fresh venv (**41 passed, 12 skipped, 3 failed** — the 3 failures are `test_sdk_locator` fallback tests that hard-require `/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk`, a macOS path; they are environment failures on Linux, not product defects, but they were therefore not proven passing here). Swift test status rests on the devlog Day 8 claim (2026-11-12: "all 166 tests pass" after the Swift 6 migration), corroborated statically by exactly 166 `@Test` declarations in `GatekeepersWardTests/`. The previous review ran the Swift suite on macOS 27.0.1 at `670cf4d`; that evidence is 5 commits old. No demo video, Devpost text, Kiro write-up, blog or social post exists yet, so Presentation is scored on what is observable.
 
-## Overall Score: 32/50
+## Overall Score: 33/50
 
-This replaces the 30/50 snapshot taken at `f2c2567`. Since then the HUD placement and menu bar theme spec landed (HUD opens beside Apple's alert, full-colour ghost) and the Swift test count went from 81 to 108. The product and the Kiro story are strong. The remaining gap is submission material: video, write-up, screenshots, posts, and one real-agent run on record.
+Up 0.5 from the 32/50 snapshot at `670cf4d` (2026-11-09). Since then: the Castle Keep visual theme landed as a full spec-then-code cycle (`castle-keep-visual-theme`, 39/39 tasks), the MCP spec closed its last 2 tasks (36/36), ward-app dropped from 9 open tasks to 4, tests grew 108 → 166, a Kiro **power** (`swift-expert`) was used to drive the Swift 6 strict-concurrency migration, and the first live run on a real Mac produced four concrete fixes. Product quality is up; submission material (video, write-up, Devpost text, README screenshots) is unchanged and remains the whole remaining gap.
 
 ## Stage One: Category and Kiro Fit
 
-**Pass.** Chosen category: Frankenstein. Darwin `sysctl`/`proc_pidinfo`, unified log streaming, SwiftUI/AppKit and AI-agent workflows are stitched into one tool, which fits "seemingly incompatible elements." Kiro use is substantial and visible in `.kiro/`: 4 specs, 9 steering files, 6 hooks, a custom MCP server and a committed review prompt. `docs/devlog.md` and `docs/pitch.md` still list Costume Contest as a secondary target. Devpost takes one category, so pick Frankenstein and make the video and text say so.
+**Pass.** Chosen category: **Frankenstein**, decided and recorded (devlog 2026-11-09 "Category and Team Representative decided": Costume Contest dropped as secondary; `docs/pitch.md` updated; README line 108 states Frankenstein). Kiro use is substantial and visible in `.kiro/`: **5 specs** (`ward-trigger` 41/41, `castle-keep-visual-theme` 39/39, `hud-placement-and-menubar-theme` 22/22, `darwin-tcc-mcp-server` 36/36, `ward-app` 39 done / 4 open), 9 steering files, 6 hooks, a custom MCP server, a committed review prompt, and now documented **power** usage (devlog Day 8: `swift-expert` audited the package and drove the Swift 6 migration, finding three real issues). Darwin `sysctl`/`proc_pidinfo`, unified log streaming, SwiftUI/AppKit and AI-agent workflows remain stitched together — the Frankenstein fit is genuine.
 
 ## Hard Requirements
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| Public GitHub repo | Pass | `gh repo view`: `visibility: PUBLIC`, `https://github.com/iolaire/TheGatekeepersWard`, default branch `main` |
-| License detected by GitHub | Pass (About sidebar not checked) | `gh repo view --json licenseInfo` returns key `apache-2.0`. `LICENSE` (11,358 bytes) at root, copyright in `NOTICE` |
-| `/.kiro` committed, not ignored | Pass | `git ls-files .kiro` lists hooks, prompts, settings, specs, steering, tools. `.gitignore` excludes only `.kiro/sessions/` and `.kiro/tools/.venv/` |
-| Source, assets, run instructions | Pass with gaps | `swift build` completes; `swift test` passes. README Quick Start lists build, test, `scripts/run_ward.sh`, WardTrigger steps. `GatekeepersWard/Resources/` is empty (README still lists "Assets & gothic iconography"; the ghost is drawn in `GhostIcon.swift`). The MCP server needs a gitignored venv, documented in `.kiro/tools/README.md` but not in the root README. README says "81 tests"; the real count is 108 |
-| Built in Submission Period | Pass | First commit 2026-11-05 (`70a9194`), 29 commits, none before Oct 30. No pre-existing code to disclose |
-| Runs as depicted | Partly verified | Build and tests verified here. HUD beside Apple's dialog is claimed in the devlog, but it says placement and the larger ghost are "not yet verified by eye on a real Mac". Spec tasks 7.6, 8.3, 8.4, 8.5b, 8.7, 8.9, 8.10 in `ward-app` are open |
-| Demo video (<3 min, public YouTube) | Missing | Phase 6; nothing in repo or README links to one |
-| Text description | Missing | README covers most of it; Devpost text not written |
-| Kiro write-up | Missing | Raw material exists in specs, steering, hooks, devlog |
-| Category | Pass | Frankenstein (decide against Costume Contest) |
-| Team of 3 or fewer, one Representative | Pass (confirm) | 2 members. `git shortlog -sn`: iolaire 24 commits, Dharshaneshwaran 5. Representative not recorded anywhere I found |
-| English | Pass | |
-| Third-party IP | Pass (check) | Swift package has no external dependencies. The Python MCP tool has `.kiro/tools/requirements.txt`; confirm those licenses. README and mock text name Cursor and Claude Code and use emoji; keep third-party logos and trademarks out of the video visuals |
+| Public GitHub repo | Pass | `gh repo view --json visibility,licenseInfo` on 2026-11-20: `visibility: PUBLIC`, `https://github.com/iolaire/TheGatekeepersWard`, default branch `main` |
+| License detected by GitHub | Pass | `licenseInfo.key: apache-2.0`; `LICENSE` (11,358 bytes) at root; copyright in `NOTICE` |
+| `/.kiro` committed, not ignored | Pass | `git ls-files .kiro` = 58 files (hooks, prompt, settings, 5 specs, 9 steering, tools). `.gitignore` excludes only `.kiro/sessions/` and `.kiro/tools/.venv/`; `git check-ignore` confirms steering/specs/hooks/prompts not ignored |
+| Source, assets, run instructions | **Pass with gaps** | Scripts present and executable (`scripts/run_ward.sh`, `run_ward_trigger.sh`, `git-hooks/pre-commit`). **Cannot re-verify `swift build`/`swift test` on this Linux reviewer machine** (see scope note). README drift has grown: line 86 says "81 tests" (actual: 166 `@Test`, devlog claims 166 pass); line 71 lists `GatekeepersWard/Resources/` which does not exist; line 56/80 say "Swift 5.9+ / Xcode 15+" but commit `20f0d42` set `swiftLanguageVersions: [.version("6")]`, so a **Swift 6 toolchain (Xcode 16+) is now required** — devlog Day 8 flags this as an open decision; root README still has no MCP venv setup (documented only in `.kiro/tools/README.md`) |
+| Built in Submission Period | Pass | First commit 2026-11-05 (`70a9194`), 34 commits, none before Oct 30. No pre-existing code to disclose |
+| Runs as depicted | Partly verified | Devlog Day 6 (2026-11-10): first live run of HUD + icon on a real Mac, four issues found and fixed. Swift 6 build + 166 tests claimed passing 2026-11-12 (not re-run here). Still open by the repo's own account: `ward-app` 8.7 (multi-display placement), 8.10 (two concurrent prompts live, timeout, clean quit), castle-keep tasks 4/8 (icon and HUD eye-check), and Day 5's "placement beside a live dialog not yet verified by eye" |
+| Demo video (<3 min, public YouTube) | **Missing** | Nothing in repo or README links to a video; `docs/pitch.md` checklist item "Demo video ≤3 minutes" unchecked; plan schedules it Phase 6 (Nov 28 – Dec 01) |
+| Text description | **Missing** | README covers the content; no Devpost text written (`find` for write-up/devpost/submission files returns nothing) |
+| Kiro write-up | **Missing** | Raw material is now rich: 5 specs, 9 steering, 6 hooks, MCP server, PBT, devlog with a power-usage story (Day 8) and a natural spec-first (`castle-keep`, `hud-placement`) vs spec-later (`ward-app`) comparison — none of it assembled |
+| Category | Pass | Frankenstein (README, pitch, devlog Day 5; Costume Contest explicitly dropped) |
+| Team of 3 or fewer, one Representative | Pass (confirm on form) | 2 members (README Team). **Fixed since last review:** Representative = Iolaire McFadden, recorded in README line 114. Must match the Devpost form exactly |
+| English | Pass | All repo materials in English |
+| Third-party IP | Pass (check) | Swift package has no external dependencies. Python `requirements.txt`: `mcp` (MIT), `pycparser` (BSD-3-Clause), `hypothesis` (MPL-2.0), `pytest` (MIT) — all permissive, but licenses are not stated anywhere in the repo. **New finding:** four mood-board JPGs (2.6–4.4 MB) sit in `docs/Planning/Styles/` (`Darwin's Beagle & The Specimen Cabinet.jpg`, `Phosphor Morgue.jpg`, etc.) — confirm the team has the right to redistribute them in a public repo, or remove them before submission |
 
 ## Stage Two Scoring
 
 ### Potential Impact (7/10)
-- **Justification:** The pain is real and easy to state: agents trigger opaque TCC prompts and the user cannot tell which command asked. The pipeline exists end to end: `TCCWatcher.swift` (222 lines) streams `log stream`, `TCCEventParser` and `TCCRequestCorrelator` match prompts and PIDs, `ProcessInspector` (149 lines) reads argv, cwd and lineage, `RiskTagger` flags suspicious arguments, and `FortressHUDView` presents them. WardTrigger fires 11 real prompts, and every service has its own vault copy in the HUD.
-- **Strengths:** Honest scope ("we inform, we don't intercept"; HUD has no buttons). Zero entitlements. Accessibility basics: Reduce Motion handled in the HUD window, accessibility labels in `FortressHUDView.swift` and `MenuBarController.swift`. `AlertLocator` finds Apple's dialog without Screen Recording or Accessibility permission. `PromptTracker` handles concurrent prompts, and the watcher has restart backoff.
+- **Justification:** The pain is still real and well stated in the README, and the pipeline is complete: `TCCWatcher.swift` (294 lines) streams `log stream`, `TCCEventParser` + `TCCRequestCorrelator` match prompts and PIDs, `ProcessInspector` reads argv/cwd/lineage, `RiskTagger` flags suspicious arguments, `FortressHUDView` presents them. New since the last review: a plain-language request line (Day 6 — the HUD now shows the sentence Apple shows, read from `Info.plist`, instead of a raw service key), a "not watching" crimson badge with retry timing when `log stream` fails (task 8.5b, closes an honesty gap), and accessibility labels on the badge.
+- **Strengths:** Honest scope ("we inform, we don't intercept"; HUD has no buttons). Zero entitlements. Reduce Motion handled; `AlertLocator` finds Apple's dialog without Screen Recording or Accessibility permission; `PromptTracker` handles concurrent prompts.
 - **Gaps:**
-  - Only exercised with WardTrigger and one Kiro CLI session in Zed (devlog, Day 4). No recorded run with Cursor or Claude Code.
-  - Verified on macOS 27.0.1 only. The "macOS 13+" target is unbacked: no Ventura or Sonoma log capture exists (task 8.3), and the alert window owner name `UserNotificationCenter` is recorded for macOS 27 only.
-  - Single-screen placement is unchecked on multi-display (8.7). No visible state when `log stream` cannot start (8.5b).
-  - Install story is "build from source". No first-run guidance.
-- **Improve:** Record one run with a real agent and its macOS version (task 7.6). That is about an hour and moves this to 8.
+  - Still only exercised with WardTrigger and one Kiro CLI session in Zed (devlog Day 4). **No recorded run with Cursor or Claude Code** — the single fastest way to move this score.
+  - Verified on macOS 27.0.1 only; the "macOS 13+" target is unbacked (task 8.3 needs a Ventura/Sonoma capture).
+  - Multi-display placement unchecked (8.7); two-prompt/timeout live run unchecked (8.10).
+  - Install story is still "build from source" with no first-run guidance — and the build instructions themselves are now stale (Swift 6 toolchain requirement, below).
+- **Improve:** Record one run with Cursor or Claude Code and close 8.10 (~half a day with the demo harness ready) → 8. Add a short "Install on a clean Mac" section → 8.5.
 
-### Technological Implementation (8/10)
-Strongest area. `swift build` passes. `swift test` passes: 108 tests in 17 suites. MCP server `pytest` passes: 55 passed, 1 skipped (venv present locally). Spec-first work is visible in the history: `ward-trigger` Requirement 13 was written before the code, `hud-placement-and-menubar-theme` was specced before commit `670cf4d`, and the missing `ward-app` spec was caught in review and written with review findings recorded as open tasks.
+### Technological Implementation (8.5/10)
+Strongest and fastest-improving area. New since `670cf4d`: a fifth spec written **before** its code (`castle-keep-visual-theme`, 39/39), the MCP spec closed (36/36), `ward-app` down to 4 open tasks, tests 108 → 166, and a documented Kiro **power** workflow — `swift-expert` audited build settings first, then drove `targeted` → `complete` → Swift 6 language mode, catching a real main-actor bug in `AppDelegate`, non-`Sendable` globals in `WardTrigger`, and a capture-in-closure bug in `OutputCollector` (devlog Day 8). That is the "powers" question in the rules answered with evidence.
 
 | Kiro feature | Present? | Evidence | Gap |
 |---|---|---|---|
-| Specs | Yes | 4 specs: `ward-trigger` (41/41 tasks), `darwin-tcc-mcp-server` (34 done, 2 open), `ward-app` (35 done, 9 open), `hud-placement-and-menubar-theme` (22/22). Requirements, design and tasks each | `ward-app` spec was written after the code landed (devlog says so). No written spec-driven vs vibe comparison. `ward-app` and `darwin-tcc-mcp-server` lack `.config.kiro` (minor) |
-| Steering | Yes, strong | 9 files in `.kiro/steering/` (Darwin interop, memory safety, log parsing, security boundaries, HUD design, testing, coding standards, MCP usage, project) | Show 2 or 3 concrete cases where steering changed output. The code matches it: grep found no force-unwraps in `GatekeepersWard`, `GatekeepersWardApp` or `WardTrigger`; the largest file is 222 lines |
-| Hooks | Yes, 6 | `build-test-gate` (PostTaskExec), `swift-standards-lint` and `castle-keep-palette-check` (PostFileSave), `raw-pointer-review` (PostFileSave on `Core/`), `security-boundary-guard` (PreToolUse), `spec-first-nudge` (UserPromptSubmit). All 6 JSON files parse with valid triggers and matchers; helper scripts in `scripts/hooks/` | I did not run them inside Kiro, so firing is unverified. No recorded case of a hook catching something. Capture one for the video |
-| MCP | Yes, strong | Custom `darwin-tcc-docs` server in `.kiro/tools/`, configured in `.kiro/settings/mcp.json`; Hypothesis and pytest tests pass | No documented case of it preventing a wrong struct layout or service name. Config needs the gitignored venv, so judges must run setup |
-| Property-based testing | Yes | Swift Testing property tests: `KERN_PROCARGS2` buffer parser, NDJSON decode/encode round trip, extractor never traps, chunked-stream equivalence, `PlacementCalculator`, `AlertMatcher`. Hypothesis on the Python side | No record that PBT found a real bug. If it did, write it up |
-| Custom agents / powers | No | None in repo | State why not in the write-up |
-| IDE vs CLI vs Web vs Crew | Not documented | Devlog mentions a Kiro CLI session in Zed and "pairing with Kiro" | One paragraph on what was used and where |
-| Experimentation | Good | `docs/devlog.md` (dated entries with decisions), `PlanReview_20261106.md`, macOS 27 `msgID` attribution fix (`8de0079`), launcher relay removed, LICENSE fix (`aa07d0e`), flaky-test fix | Gather dead ends and course corrections in one place |
-| Required write-up | No | | Missing |
+| Specs | Yes, 5 | `ward-trigger` 41/41, `castle-keep-visual-theme` 39/39, `hud-placement` 22/22, `darwin-tcc-mcp-server` 36/36, `ward-app` 39/43 (open: 8.3, 8.4, 8.7, 8.10). `castle-keep` and `hud-placement` were specced before their code (devlog) — a clean counter-example to `ward-app` (written after the code, devlog says so) | The spec-driven vs vibe-coding comparison is now *evidenced in the history* but still not written up. `ward-app` lacks `.config.kiro` (only spec missing one) |
+| Steering | Yes, strong | 9 files; 8 carry `inclusion:` frontmatter (7 `auto`, `darwin-mcp-usage` `manual`); `project.md` has none. Code matches it: no force-unwrap found in `GatekeepersWard/`, `GatekeepersWardApp/` or `WardTrigger/`; largest file 301 lines (`GhostGeometry.swift`, 1 line over the steering's 300-line limit — trivial) | Show 2–3 concrete cases where steering changed output (write-up) |
+| Hooks | Yes, 6 | All 6 JSON files parse with valid triggers/matchers; helpers in `scripts/hooks/`; opt-in `scripts/git-hooks/pre-commit` runs `swift build` + `swift test --skip integration` | Still no recorded case of a hook catching something **inside Kiro**; pre-commit requires manual `ln -sf` install; no CI (`.github/workflows` absent), so nothing enforces build/test on push |
+| MCP | Yes | `darwin-tcc-docs` in `.kiro/settings/mcp.json` (`disabled: false`); pytest run here in a fresh venv: 41 passed, 12 skipped, 3 macOS-SDK-path failures on Linux (environment, not defect); requirements pinned (`mcp==1.30.0`, `pycparser`, `hypothesis`, `pytest`) | No documented case of it preventing a wrong struct layout or service name; venv still gitignored and absent from the root README, so judges must find setup themselves |
+| Property-based testing | Yes | 166 `@Test` declarations (KERN_PROCARGS2 buffer, NDJSON round trip, extractor never traps, chunked-stream equivalence, placement geometry, alert matching, ghost pixel/geometry); Hypothesis on the Python side | No record that PBT found a real bug — if it ever did, write it up |
+| Custom agents / powers | **Powers: yes.** Agents: no | `swift-expert` power used Day 8 with concrete findings (see above). No custom agents in repo | State in the write-up why no custom agents; the rules ask directly which powers were leveraged |
+| IDE vs CLI vs Web vs Crew | Not documented | Devlog: Kiro CLI session in Zed; "pairing with Kiro" throughout | One paragraph on what was used and where |
+| Experimentation | Strong | Devlog (dated, decisions + dead ends), Day 6 four-fix live-test loop, Day 8 migration loop, macOS 27 `msgID` attribution fix (`8de0079`), dropped window-title approach (would have needed Screen Recording) | Gather dead ends and course corrections in one place for the write-up |
+| Required write-up | **No** | | Missing — hard requirement |
 
-### Design (7/10)
-- **Justification:** There is a coherent product, not a proof of concept: a menu bar ghost with idle and alert poses (`GhostIcon.swift`, `MenuBarController.swift`), a non-activating floating HUD (`FortressHUDWindow.swift`, test "Panel never steals focus: style mask, level, key and main flags" passes), placement beside Apple's alert (`PlacementCalculator`, `AlertLocator`), a history of the last 10 spirits, and states for exited and denied processes.
-- **Strengths:** Castle Keep palette is centralised in `CastlePalette.swift` and enforced by a hook. Theme copy ("Spirit Paused at the Gate", vault names) adds flavour while the facts (PID, path, argv, lineage, risk tags) stay legible. Pure, tested geometry for placement.
+### Design (7.5/10)
+- **Justification:** Materially stronger than the 7 at `670cf4d`. The Castle Keep theme is no longer a plan but a shipped, spec-driven implementation: gate banner with torches and portcullis (`GateScene.swift`), vector spirits ported from the chosen SVGs (`GhostGeometry.swift`, `FigureRenderer.swift`), neon title, audit banner, lineage tree, risk legend chips, command box, and two non-interactive instruction pills (`FortressHUDView` and friends), all under the palette hook (`castle-keep-palette-check`, with a documented `palette-ok` exemption used once for Apple's own "Allow" string). The emoji header was replaced by a vector ghost pair (8.9 closed). First live test on a real Mac (Day 6) found and fixed four real issues: icon legibility at 1 pt detail, an alert pulse, unbounded command growth (now 12-line/900 pt cap, 720 pt typical enforced by test), and plain-language request text. The "not watching" failure state (8.5b) is exactly the honest error-state polish this criterion wants. Geometry, pixel and size-budget behaviour is tested (worst-case HUD height clamped and asserted under 640 pt).
 - **Gaps:**
-  - HUD placement and the 22 pt ghost are not yet confirmed on a real screen (devlog says so).
-  - Spectral Ectoplasm secondary tone and emoji header undecided (8.9).
-  - No screenshot or GIF anywhere in the README. Judges cannot see the design without running it.
-  - README mock shows a cursor/ripgrep example; make sure it matches what the HUD actually renders.
-- **Improve:** Add 2 screenshots to the README and tidy the one-screen edge case.
+  - **No screenshot or GIF in the README** — `docs/screenshots/Screenshot.png` (938 KB) exists but is referenced by nothing (`grep` finds no links); judges still cannot see the design without running it. This is now a one-line fix, not a content problem.
+  - The README ASCII mock (lines 36–48) predates the 400 pt gate-banner HUD and may no longer match what renders.
+  - Eye-checks still open: castle-keep tasks 4/8, placement beside a live dialog (Day 5), multi-display (8.7).
+  - Known polish items by the repo's own account: faint banding in the solo spirit's lower third; "TCC EVENT DETECTED" title is jargon (Day 6 notes a clearer title as open).
+- **Improve:** Embed `Screenshot.png` + one HUD shot in the README and tidy the ASCII mock → 8.5. Close the eye-checks with a 10-minute live pass → 9.
 
 ### Innovation / Idea (8/10)
-- **Justification:** Existing tools (Little Snitch, Santa, Objective-See utilities, hand-run `log stream`) either block or log at a system level. None that I know of correlates a TCC prompt to the exact child process, its argv and its lineage while the dialog is still on screen. That comparison is my own knowledge and was not checked against the web in this review.
-- **Strengths:** Zero entitlements, no SIP bypass. The macOS 27 attribution work (`AUTHREQ_ATTRIBUTION` joined to `AUTHREQ_PROMPTING` by `msgID`) is original and reported honestly. The Frankenstein fit is genuine: 20-year-old `sysctl` plus unified log plus SwiftUI plus agent workflows. The gothic theme explains the function.
-- **Gaps:** The novelty only lands if the video shows the real prompt and HUD side by side with a recognisable agent.
+- **Justification:** Unchanged and still defensible: no known tool correlates a TCC prompt to the exact child process, its argv and its lineage *while the dialog is on screen* (Little Snitch/Santa/Objective-See block or log at system level; hand-run `log stream` shows no process forensics). The macOS 27 `AUTHREQ_ATTRIBUTION` → `AUTHREQ_PROMPTING` `msgID` join is original, non-obvious work, reported honestly. Zero entitlements, no SIP bypass. The Frankenstein fit is now even more concrete: 20-year-old `sysctl` + unified log + SwiftUI + agentic IDE workflows + a gothic theme that explains the function, with a Kiro power guiding the Swift 6 migration.
+- **Gaps:** The novelty only lands publicly once the video shows the real prompt and HUD side by side with a recognisable agent. The "novelty vs existing tools" comparison was not web-checked in this review (same caveat as before).
 
 ### Presentation (2/10)
-- **Justification:** Observable material only. README is clear on problem, approach and run steps, but has no screenshot, no video link and a stale test count. No video, Devpost text, blog or social post exists. Devlog and pitch are good raw material (`docs/pitch.md` has a storyboard and a video checklist).
-- **Strengths:** Strong story and a concrete demo path (`scripts/run_ward.sh`, then `scripts/run_ward_trigger.sh docs rg ...`).
+- **Justification:** Nothing that is scored here has shipped since the last review. No video (pitch checklist still unchecked; plan puts it Nov 28 – Dec 01), no Devpost text, no Kiro write-up, no blog or social post. README gained a screenshot *file* but embeds none, still claims 81 tests, and still omits MCP setup and the Swift 6 toolchain reality.
+- **Strengths:** The raw material keeps improving: a full storyboard with timecodes and narration (`docs/pitch.md` "Demo Flow (≤3 Minutes)"), a demo path that works (`scripts/run_ward.sh`, then `scripts/run_ward_trigger.sh docs rg ...`), rendered HUD/menu-bar drafts (`docs/Planning/Styles/drafts/`, reproducible via `WARD_RENDER_DRAFTS=1 swift test --filter ArtDraftRenderer`), and now a real screenshot ready to embed.
 - **Gaps:** Everything that is scored here: video under 3 minutes on YouTube, Kiro walkthrough, Devpost text.
-- **Improve:** Script and record the video; this is the biggest available gain (up to 6 points).
+- **Improve:** Script and record the video; embed the screenshots; write the text. This remains the biggest available gain (up to +6) and gates Best Demo.
 
 ## Bonus Prize Eligibility
 
@@ -96,24 +94,26 @@ A project can win one Overall or Category prize plus any number of bonus prizes.
 ## Summary
 
 **Top Strengths:**
-- Working end-to-end pipeline from TCC log event to process forensics to HUD, built with zero entitlements.
-- 108 Swift tests (including property-based suites for the buffer and NDJSON parsers) and 55 Python tests pass; build is clean.
-- Broad, real Kiro usage: 4 specs, 9 steering files, 6 valid hooks, a custom MCP server, and code that visibly follows the steering rules.
-- Honest devlog that records dead ends, a macOS 27 log-format discovery and open follow-ups.
-- Clear, defensible Frankenstein fit and a clear problem statement.
+- Working end-to-end pipeline from TCC log event to process forensics to HUD, built with zero entitlements, now with honest failure states (the "not watching" badge) and plain-language prompt text.
+- 166 Swift tests claimed passing under Swift 6 language mode with `StrictConcurrency=complete` (devlog Day 8; statically corroborated: exactly 166 `@Test` declarations); Python suite green on macOS per prior review, re-run here on Linux with only macOS-path failures.
+- Broad, real Kiro usage now covering every feature the rules name: 5 specs (two written before their code), 9 steering files, 6 valid hooks, a custom MCP server, property-based testing, and a documented **power** (`swift-expert`) that found real concurrency bugs.
+- A spec-first design cycle (`castle-keep-visual-theme`) that produced a shipped theme, a first live Mac test that surfaced four real fixes, and an honest devlog that records dead ends and open items.
+- Decisions closed since the last review: category (Frankenstein only), Team Representative (Iolaire McFadden), secondary tone (8.9), watcher-failure UX (8.5b).
 
 **Critical Issues (disqualification or major score risk):**
-- No demo video, Devpost text or Kiro write-up yet. These are hard requirements and cover a whole scoring criterion.
-- "Runs as depicted" is only partly verified: HUD placement and ghost size have not been checked by eye, and no run with a real coding agent is recorded.
-- The macOS 13+ support claim has no evidence; only macOS 27.0.1 has been captured.
-- No screenshot or GIF in the README.
-- Team Representative and Costume Contest versus Frankenstein are undecided in the repo.
+- No demo video, Devpost text or Kiro write-up. These are hard requirements (video, text description, write-up are each separately required) and they cover a whole scoring criterion; 14 days remain and the plan schedules the video for Nov 28 – Dec 01, leaving almost no buffer.
+- Build instructions may no longer match the code: README promises Swift 5.9+/Xcode 15+, but `20f0d42` put the package in Swift 6 language mode, which needs a Swift 6 toolchain. A judge following the README could fail to build — the "runs as depicted / instructions work" requirement.
+- "Runs as depicted" is still only partly verified by the repo's own account: multi-display (8.7), two-prompt live run (8.10), and the visual eye-checks (castle-keep 4/8) are open.
+- The macOS 13+ support claim still has no evidence; only macOS 27.0.1 has been captured (8.3).
+- The one screenshot in the repo is referenced nowhere; README shows no design at all.
+- Third-party mood-board JPGs (up to 4.4 MB) are committed to a public repo — confirm redistribution rights.
 
 **Prioritized Recommendations (highest score gain per effort first):**
-1. Script and record the demo video (under 3:00, public on YouTube): the real prompt and HUD side by side, a recognisable agent, a short `.kiro` walkthrough.
-2. Write the Kiro write-up and Devpost text from the specs, steering, hooks, MCP server and devlog. Cover IDE vs CLI, spec-driven vs vibe, hooks, MCP, PBT, and say why no custom agents or powers.
-3. Run a real agent (Cursor or Claude Code) against the HUD, tick `ward-app` 7.6 and 8.10, and log the macOS version. Add 2 screenshots or a GIF to the README.
-4. Fix README drift: test count (108), the empty `Resources/` line, the MCP venv setup, and a link to the video once it exists. Add a "Known limits" note (tested on macOS 27.0.1 only).
-5. Publish the blog post (written for Kiroween 2026) and the `#KiroweenHackathon26` social post for the bonus prizes. Capture one real hook catch and one case where the MCP server saved a mistake to strengthen the Technological Implementation story.
+1. **Script and record the demo video** (≤3:00, public YouTube): real prompt and HUD side by side with a recognisable agent (a Cursor/Claude Code run doubles as the missing Potential Impact evidence), a short `.kiro` walkthrough, use the storyboard already in `docs/pitch.md`. Up to +6, and gates Best Demo.
+2. **Write the Kiro write-up and Devpost text** from the raw material: the `swift-expert` power story, spec-first (`castle-keep`, `hud-placement`) vs spec-later (`ward-app`) comparison, hooks, MCP, PBT, and why no custom agents — the rules ask these questions verbatim. Hard requirement, ~+1–2 directly and it feeds the video narrative.
+3. **Embed the screenshots** (`docs/screenshots/Screenshot.png` + one HUD shot) in the README and refresh the ASCII mock to match the 400 pt HUD: cheapest Design point on the board (~10 minutes → +1).
+4. **Run one real agent (Cursor or Claude Code) against the HUD**, close `ward-app` 8.10 and the eye-checks, log the macOS version: → Potential Impact 8 and removes the biggest "runs as depicted" doubt.
+5. **Truth-up the README**: 166 tests, drop the nonexistent `Resources/` line, require Swift 6 toolchain (Xcode 16+) or decide to keep `swiftLanguageVersions` 5.9-compatible, add MCP venv setup, add a "Known limits: tested on macOS 27.0.1 only" note. Protects the hard-requirement table.
+6. **Bonus prizes**: publish the blog post (written for Kiroween 2026) and the `#KiroweenHackathon26` social post. Capture one real hook catch and one MCP-server save for the Technological Implementation story. Confirm the mood-board JPG rights.
 
 **Hackathon Readiness:** Needs Work
