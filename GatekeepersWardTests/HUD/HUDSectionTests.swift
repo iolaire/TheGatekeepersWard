@@ -47,6 +47,11 @@ struct HUDSectionTests {
             ("long chain and command", withRequest(content(
                 lineage: chain(14), arguments: risky + Array(repeating: "--flag-value", count: 40),
                 master: ProcessNode(pid: 500, name: "Terminal", executablePath: nil))), HUDMetrics.maxHeight),
+            // Every risk category at once, each with its reason line (hud-plain-language-copy 2.7).
+            ("long chain, all four risk categories", withRequest(content(
+                lineage: chain(14), arguments: ["curl", "base64", "/Users/dev/.ssh/id_rsa", "prod.env"]
+                    + Array(repeating: "--flag-value", count: 40),
+                master: ProcessNode(pid: 500, name: "Terminal", executablePath: nil))), HUDMetrics.maxHeight),
         ]
         for (name, content, limit) in cases {
             let size = naturalSize(of: content)
@@ -137,6 +142,26 @@ struct HUDSectionTests {
     func legendEmpty() {
         #expect(RiskLegend.rows(for: []).isEmpty)
         #expect(RiskLegend.rows(for: RiskTagger.tags(for: ["rg", "hello"])).isEmpty)
+    }
+
+    @Test("Every category has a short, distinct reason (hud-plain-language-copy 2.2, 2.3)")
+    func legendReasons() {
+        let reasons = RiskLegend.order.map { RiskLegend.row(for: $0).reason }
+        for reason in reasons {
+            #expect(!reason.isEmpty)
+            #expect(reason.count <= 40, "too long to share a line with its label: \(reason)")
+        }
+        #expect(Set(reasons).count == reasons.count)
+        #expect(RiskLegend.row(for: .credentialFile).reason == "Usually holds passwords or API keys.")
+    }
+
+    @Test("Reasons follow the chip order and VoiceOver reads each with its label (hud-plain-language-copy 2.1, 2.6)")
+    func legendReasonOrder() {
+        let rows = RiskLegend.rows(for: RiskTagger.tags(for: ["curl", "prod.env"]))
+        #expect(rows.map(\.category) == [.credentialFile, .networkTool])
+        #expect(RiskLegend.accessibilityLabel(for: rows) ==
+            "Risks: CREDENTIAL FILE, Usually holds passwords or API keys.; "
+            + "NETWORK TOOL, Can send data off your Mac.")
     }
 
     // MARK: Instruction pills (4.1 to 4.5)

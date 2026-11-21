@@ -10,7 +10,7 @@ This feature makes two copy changes to the Fortress HUD so that people who do no
 - **Audit_Banner**: The amber panel under the header (`AuditBannerView`).
 - **Banner_Title**: The first line of the Audit_Banner.
 - **Vault_Name**: The lore name of the requested service, `TCCService.vaultName` (for example "Documents Vault", "Contacts Registry", "Voice Chamber").
-- **Risk_Legend**: The crimson chips for the `RiskCategory` values present in the event (`RiskLegendView`).
+- **Risk_Legend**: The crimson lines for the `RiskCategory` values present in the event (`RiskLegendView`).
 - **Risk_Reason**: A one-line, plain-language explanation of why a `RiskCategory` is risky.
 - **Height_Budget**: Requirement 3.9 of `castle-keep-visual-theme`: typical content at most 720 pt tall, any content at most 900 pt.
 
@@ -34,15 +34,15 @@ This feature makes two copy changes to the Fortress HUD so that people who do no
 
 #### Acceptance Criteria
 
-1. THE Risk_Legend SHALL show one Risk_Reason line for each `RiskCategory` it shows, in the same order as the chips.
+1. THE Risk_Legend SHALL show one Risk_Reason for each `RiskCategory` it shows, in the fixed legend order.
 2. THE Risk_Reasons SHALL be:
-   - credential file: "Key and .env files usually hold passwords or API keys."
-   - secret path: "This path or word often points to stored secrets."
-   - network tool: "This tool can send data off your Mac."
-   - encoding tool: "Encoding can disguise data before it is sent out."
-3. EACH Risk_Reason SHALL be at most 60 characters, so that it fits on one line at the 400 pt card width.
-4. THE Risk_Reason text SHALL be 11 pt in Spectral Ectoplasm at 75% opacity, with the category's icon in Mischief Crimson.
-5. WHEN no argument is flagged, THE Risk_Legend SHALL show no chips and no Risk_Reason.
+   - credential file: "Usually holds passwords or API keys."
+   - secret path: "Often points to stored secrets."
+   - network tool: "Can send data off your Mac."
+   - encoding tool: "Can hide data before it is sent."
+3. EACH Risk_Reason SHALL be at most 40 characters, so that it fits on one line beside its category label at the 400 pt card width.
+4. THE Risk_Legend SHALL show one line per category: the icon and label in Mischief Crimson, then the Risk_Reason at 11 pt in Spectral Ectoplasm at 75% opacity.
+5. WHEN no argument is flagged, THE Risk_Legend SHALL show nothing.
 6. THE Risk_Legend's VoiceOver label SHALL include each category label and its Risk_Reason.
 7. THE Fortress_HUD SHALL stay within the Height_Budget with the Risk_Reasons added.
 

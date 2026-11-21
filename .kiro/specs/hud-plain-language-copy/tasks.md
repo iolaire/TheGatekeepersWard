@@ -18,18 +18,18 @@ Swift 6, Swift Testing. The banner title ships first, then the risk reasons, as 
     - Add the title to steering §7; amend `castle-keep-visual-theme` Requirement 3.3 and the `AuditBannerView` line in its design
     - _Requirements: 3.1, 3.2_
 
-- [ ] 2. Risk reasons
-  - [ ] 2.1 Add `reason` to `RiskLegendRow` and render reason lines in `RiskLegendView`
-    - Keep the `FlowLayout` chip row; add one 11 pt line per category below it, icon in Mischief Crimson, text in Spectral Ectoplasm at 75%
+- [x] 2. Risk reasons
+  - [x] 2.1 Add `reason` to `RiskLegendRow` and render reason lines in `RiskLegendView`
+    - One `RiskLegendLine` per category: icon and label in Mischief Crimson, then the reason at 11 pt in Spectral Ectoplasm at 75%, on a faint crimson panel (replaces the chip row, see design)
     - Include label and reason in the VoiceOver label
     - _Requirements: 2.1, 2.2, 2.4, 2.5, 2.6_
-  - [ ] 2.2 Unit tests for the reasons
-    - Every category has a distinct, non-empty reason of at most 60 characters; rows keep chip order
+  - [x] 2.2 Unit tests for the reasons
+    - Every category has a distinct, non-empty reason of at most 40 characters; rows keep legend order; VoiceOver label pairs label and reason
     - _Requirements: 2.1, 2.2, 2.3, 2.5_
-  - [ ] 2.3 Check the Height_Budget
-    - Run `fitsTheBudget` unchanged and record the measured heights below
+  - [x] 2.3 Check the Height_Budget
+    - Run `fitsTheBudget` with unchanged limits, add an all-four-categories case, and record the measured heights below
     - _Requirements: 2.7_
-  - [ ] 2.4 Update the copy docs
+  - [x] 2.4 Update the copy docs
     - Add the four reasons to steering §7; amend `castle-keep-visual-theme` Requirement 3.7 and the `RiskLegendView` line in its design
     - _Requirements: 3.1, 3.2_
 
@@ -41,9 +41,10 @@ Swift 6, Swift Testing. The banner title ships first, then the risk reasons, as 
 
 | Case | Before | After task 1 | After task 2 | Limit |
 |---|---|---|---|---|
-| no process | 375 pt | 375 pt | | 720 pt |
-| typical | 665 pt | 665 pt | | 720 pt |
-| long chain and command | 832 pt | 832 pt | | 900 pt |
+| no process | 375 pt | 375 pt | 375 pt | 720 pt |
+| typical | 665 pt | 665 pt | 686 pt | 720 pt |
+| long chain and command | 832 pt | 832 pt | 853 pt |
+| long chain, all four risk categories | n/a | n/a | 892 pt | 900 pt | 900 pt |
 
 ## Notes
 

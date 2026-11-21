@@ -212,6 +212,10 @@ These are the canonical strings. Do not paraphrase them in code.
 | Allow button label | "Let Spirit Pass" |
 | Deny button label | "Lower Portcullis" |
 | History empty state | "No Spirits Detected" |
+| Risk reason — credential file | "Usually holds passwords or API keys." |
+| Risk reason — secret path | "Often points to stored secrets." |
+| Risk reason — network tool | "Can send data off your Mac." |
+| Risk reason — encoding tool | "Can hide data before it is sent." |
 | Service: Documents | "Documents Vault" |
 | Service: Contacts | "Contacts Registry" |
 | Service: Camera | "Seeing-Glass" |
