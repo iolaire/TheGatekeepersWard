@@ -49,7 +49,7 @@ Each step in a process chain has its own spirit icon carrying a tiny tool. The m
 
 The real Fortress HUD:
 
-![Fortress HUD for a Documents folder prompt from WardTrigger, with the executed command and risk tags](docs/screenshots/Screenshot.png)
+![Fortress HUD beside Apple’s Documents folder prompt from WardTrigger, with the plain-language banner, risk reasons and the executed command](docs/screenshots/Screenshot.png)
 
 ## The Kiroween Spirit
 
