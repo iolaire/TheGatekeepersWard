@@ -85,4 +85,14 @@ struct HUDContentTests {
         #expect(TCCService(rawKey: "kTCCServiceCamera").vaultName == "Seeing-Glass")
         #expect(TCCService(rawKey: "kTCCServiceNew").vaultName == "Unknown Vault")
     }
+
+    @Test("The banner title names the requested vault in plain words (hud-plain-language-copy 1.1-1.3)",
+          arguments: ["kTCCServiceSystemPolicyDocumentsFolder", "kTCCServiceAddressBook",
+                      "kTCCServiceMicrophone", "kTCCServiceAppleEvents", "kTCCServiceNew"])
+    func bannerTitle(rawKey: String) {
+        let service = TCCService(rawKey: rawKey)
+        let title = AuditBannerCopy.title(for: service)
+        #expect(title == "A spirit is knocking at your \(service.vaultName)")
+        #expect(!title.localizedCaseInsensitiveContains("TCC EVENT"))
+    }
 }

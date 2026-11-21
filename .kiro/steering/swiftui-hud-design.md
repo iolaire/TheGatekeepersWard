@@ -204,6 +204,7 @@ These are the canonical strings. Do not paraphrase them in code.
 
 | Context | String |
 |---|---|
+| HUD banner title | "A spirit is knocking at your \<vault name\>" (built from `TCCService.vaultName`) |
 | HUD status — process waiting | "Spirit Paused at the Gate" |
 | HUD status — risky args | "Suspicious Spirit at the Gate" |
 | HUD status — process exited early | "Spirit Slipped Through Before Inspection" |

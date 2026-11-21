@@ -6,15 +6,15 @@ Swift 6, Swift Testing. The banner title ships first, then the risk reasons, as 
 
 ## Tasks
 
-- [ ] 1. Plain-language banner title
-  - [ ] 1.1 Add `AuditBannerCopy.title(for:)` and use it in `AuditBannerView`
+- [x] 1. Plain-language banner title
+  - [x] 1.1 Add `AuditBannerCopy.title(for:)` and use it in `AuditBannerView`
     - Build the title from `TCCService.vaultName`; remove "SECURITY AUDIT: TCC EVENT DETECTED"
     - 13 pt bold rounded, Torchlight Amber, `lineLimit(2)`, wraps vertically, no `minimumScaleFactor`
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
-  - [ ] 1.2 Unit tests for the title
+  - [x] 1.2 Unit tests for the title
     - Title contains the vault name for documents, contacts, microphone and an unknown key; never contains "TCC EVENT"
     - _Requirements: 1.1, 1.2, 1.3_
-  - [ ] 1.3 Update the copy docs
+  - [x] 1.3 Update the copy docs
     - Add the title to steering §7; amend `castle-keep-visual-theme` Requirement 3.3 and the `AuditBannerView` line in its design
     - _Requirements: 3.1, 3.2_
 
@@ -41,9 +41,9 @@ Swift 6, Swift Testing. The banner title ships first, then the risk reasons, as 
 
 | Case | Before | After task 1 | After task 2 | Limit |
 |---|---|---|---|---|
-| no process | 375 pt | | | 720 pt |
-| typical | 665 pt | | | 720 pt |
-| long chain and command | 832 pt | | | 900 pt |
+| no process | 375 pt | 375 pt | | 720 pt |
+| typical | 665 pt | 665 pt | | 720 pt |
+| long chain and command | 832 pt | 832 pt | | 900 pt |
 
 ## Notes
 

@@ -61,7 +61,7 @@ This feature restyles Gatekeeper's Ward to match the reference mock `docs/Planni
 
 1. THE Fortress_HUD SHALL show a Gate_Banner at the top, drawn with `Canvas` or `Shape`, containing a violet portcullis with spikes and scroll work, two torches with amber flames, a brick wall in Obsidian Slate tones, at least two floating Ghost_Figures, and small sparkles around the figures.
 2. THE Fortress_HUD SHALL show the Neon_Title with the Ghost_Pair at its right.
-3. THE Fortress_HUD SHALL show an Audit_Banner with the heading "SECURITY AUDIT: TCC EVENT DETECTED" and the raw TCC service key, on an amber-tinted background with an amber border.
+3. THE Fortress_HUD SHALL show an Audit_Banner with the heading "A spirit is knocking at your " followed by the requested vault's name (amended by `.kiro/specs/hud-plain-language-copy` Requirement 1; previously "SECURITY AUDIT: TCC EVENT DETECTED") and the raw TCC service key, on an amber-tinted background with an amber border.
 4. THE Fortress_HUD SHALL keep the status text "Spirit Paused at the Gate" visible.
 5. THE Fortress_HUD SHALL draw the Lineage_Tree with indentation per depth, a connector arrow between parent and child, and a rounded terminal-style tile holding the spirit icon for each process, and SHALL highlight the asking process.
 6. THE Fortress_HUD SHALL keep the per-process spirit icons that the lineage already shows.
