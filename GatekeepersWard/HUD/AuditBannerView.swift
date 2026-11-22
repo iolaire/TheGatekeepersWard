@@ -1,6 +1,18 @@
 import SwiftUI
 
-/// The amber panel that names the event, shows the raw TCC service key and
+/// The plain-language banner title (spec `hud-plain-language-copy`, Requirement 1).
+enum AuditBannerCopy {
+    /// The title naming the requested vault, such as
+    /// "A spirit is knocking at your Documents Vault".
+    ///
+    /// - Parameter service: The protected resource being requested.
+    static func title(for service: TCCService) -> String {
+        "A spirit is knocking at your \(service.vaultName)"
+    }
+}
+
+/// The amber panel that names the event in plain words ("A spirit is knocking
+/// at your Documents Vault"), shows the raw TCC service key and
 /// the status line ("Spirit Paused at the Gate"). The border turns crimson
 /// when the status is suspicious.
 struct AuditBannerView: View {
@@ -18,11 +30,13 @@ struct AuditBannerView: View {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(borderTone.color)
-                Text("SECURITY AUDIT: TCC EVENT DETECTED")
+                // Wraps to a second line instead of shrinking, so it never drops below 11 pt.
+                Text(AuditBannerCopy.title(for: service))
                     .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .tracking(0.4)
+                    .tracking(0.2)
                     .foregroundStyle(CastleTone.torchlightAmber.color)
-                    .lineLimit(1).minimumScaleFactor(0.8)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             // The sentence people will recognise from Apple's dialog.
             Text(request.headline)

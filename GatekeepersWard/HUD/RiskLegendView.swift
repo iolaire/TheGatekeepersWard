@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// One legend entry: an icon and a short label for a kind of risk.
+/// One legend entry: an icon, a short label and a plain-language reason for a kind of risk.
 struct RiskLegendRow: Equatable {
     /// The risk this row explains.
     let category: RiskCategory
@@ -8,6 +8,9 @@ struct RiskLegendRow: Equatable {
     let symbol: String
     /// Short label in capitals.
     let label: String
+    /// Why this kind of argument is risky, short enough to share one line with
+    /// the label (spec `hud-plain-language-copy`, Requirement 2).
+    let reason: String
 }
 
 /// Builds the legend from the risk tags of the current event.
@@ -21,20 +24,32 @@ enum RiskLegend {
         return order.filter(present.contains).map(row(for:))
     }
 
-    /// The icon and label for a category.
+    /// The icon, label and reason for a category.
     static func row(for category: RiskCategory) -> RiskLegendRow {
         switch category {
-        case .credentialFile: return RiskLegendRow(category: category, symbol: "key.fill", label: "CREDENTIAL FILE")
-        case .secretPath: return RiskLegendRow(category: category, symbol: "folder.fill", label: "SECRET PATH")
+        case .credentialFile:
+            return RiskLegendRow(category: category, symbol: "key.fill", label: "CREDENTIAL FILE",
+                                 reason: "Usually holds passwords or API keys.")
+        case .secretPath:
+            return RiskLegendRow(category: category, symbol: "folder.fill", label: "SECRET PATH",
+                                 reason: "Often points to stored secrets.")
         case .networkTool:
-            return RiskLegendRow(category: category, symbol: "antenna.radiowaves.left.and.right", label: "NETWORK TOOL")
-        case .encoding: return RiskLegendRow(category: category, symbol: "textformat.123", label: "ENCODING TOOL")
+            return RiskLegendRow(category: category, symbol: "antenna.radiowaves.left.and.right",
+                                 label: "NETWORK TOOL", reason: "Can send data off your Mac.")
+        case .encoding:
+            return RiskLegendRow(category: category, symbol: "textformat.123", label: "ENCODING TOOL",
+                                 reason: "Can hide data before it is sent.")
         }
+    }
+
+    /// What VoiceOver reads: each label with its reason.
+    static func accessibilityLabel(for rows: [RiskLegendRow]) -> String {
+        "Risks: " + rows.map { "\($0.label), \($0.reason)" }.joined(separator: "; ")
     }
 }
 
-/// Explains the flagged arguments as a wrapped row of crimson chips. Shows
-/// nothing when no argument was flagged.
+/// Explains the flagged arguments: one line per risk category, the crimson
+/// icon and label followed by the reason. Shows nothing when no argument was flagged.
 struct RiskLegendView: View {
     /// The flagged arguments of the current event.
     let tags: [RiskTag]
@@ -42,17 +57,37 @@ struct RiskLegendView: View {
     var body: some View {
         let rows = RiskLegend.rows(for: tags)
         if !rows.isEmpty {
-            FlowLayout(spacing: 6) {
+            VStack(alignment: .leading, spacing: 3) {
                 ForEach(rows, id: \.category) { row in
-                    Label(row.label, systemImage: row.symbol)
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(CastleTone.mischiefCrimson.color)
-                        .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(Capsule().fill(CastleTone.mischiefCrimson.color.opacity(0.14)))
+                    RiskLegendLine(row: row)
                 }
             }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Risks: \(rows.map(\.label).joined(separator: ", "))")
+            .padding(.horizontal, 8).padding(.vertical, 5)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 8).fill(CastleTone.mischiefCrimson.color.opacity(0.10)))
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(RiskLegend.accessibilityLabel(for: rows))
         }
+    }
+}
+
+/// One legend line: the category icon and label in crimson, then the reason in dim ectoplasm.
+struct RiskLegendLine: View {
+    /// The row to draw.
+    let row: RiskLegendRow
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 5) {
+            Image(systemName: row.symbol)
+                .foregroundStyle(CastleTone.mischiefCrimson.color)
+                .frame(width: 14)
+            Text(row.label)
+                .fontWeight(.semibold)
+                .foregroundStyle(CastleTone.mischiefCrimson.color)
+            Text(row.reason)
+                .foregroundStyle(CastleTone.spectralEctoplasm.color.opacity(0.75))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .font(.system(size: 11))
     }
 }

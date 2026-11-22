@@ -204,6 +204,7 @@ These are the canonical strings. Do not paraphrase them in code.
 
 | Context | String |
 |---|---|
+| HUD banner title | "A spirit is knocking at your \<vault name\>" (built from `TCCService.vaultName`) |
 | HUD status — process waiting | "Spirit Paused at the Gate" |
 | HUD status — risky args | "Suspicious Spirit at the Gate" |
 | HUD status — process exited early | "Spirit Slipped Through Before Inspection" |
@@ -211,6 +212,10 @@ These are the canonical strings. Do not paraphrase them in code.
 | Allow button label | "Let Spirit Pass" |
 | Deny button label | "Lower Portcullis" |
 | History empty state | "No Spirits Detected" |
+| Risk reason — credential file | "Usually holds passwords or API keys." |
+| Risk reason — secret path | "Often points to stored secrets." |
+| Risk reason — network tool | "Can send data off your Mac." |
+| Risk reason — encoding tool | "Can hide data before it is sent." |
 | Service: Documents | "Documents Vault" |
 | Service: Contacts | "Contacts Registry" |
 | Service: Camera | "Seeing-Glass" |
