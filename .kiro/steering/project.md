@@ -14,7 +14,7 @@ The macOS system is a **fortified castle courtyard**. Child processes are mischi
 
 ## Tech Stack
 
-- **Language:** Swift 5.9+, macOS 13 (Ventura) minimum target
+- **Language:** Swift 6 language mode (strict concurrency), macOS 13 (Ventura) minimum target. `Package.swift` keeps `swift-tools-version: 5.9`; building needs a Swift 6 toolchain
 - **UI:** SwiftUI for the Fortress HUD; AppKit (`NSStatusItem`, `NSPanel`) for menu bar and overlay window
 - **Process inspection:** `sysctl(KERN_PROCARGS2)` + `proc_pidinfo(PROC_PIDVNODEPATHINFO)` — no kernel extensions, no restricted entitlements
 - **Event detection:** `/usr/bin/log stream` subprocess watching `com.apple.TCC`, parsing NDJSON with regex fallback
