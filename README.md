@@ -47,13 +47,17 @@ Each step in a process chain has its own spirit icon carrying a tiny tool. The m
 └──────────────────────────────────────────────────────────────┘
 ```
 
+The real Fortress HUD:
+
+![Fortress HUD for a Documents folder prompt from WardTrigger, with the executed command and risk tags](docs/screenshots/Screenshot.png)
+
 ## The Kiroween Spirit
 
 For Kiroween 2026 — a **Frankenstein** entry. We resurrect 20-year-old POSIX APIs (`sysctl KERN_PROCARGS2`), stitch them to macOS Unified Log NDJSON streaming, dress them in modern declarative SwiftUI, and deploy them against the bleeding edge of autonomous AI coding agent workflows. The lantern to inspect who is knocking before you drop the castle gates.
 
 ## Tech Stack
 
-- **Swift 5.9+** — native macOS app, menu bar utility (macOS 13+ minimum)
+- **Swift 6** (Swift 6 language mode, strict concurrency) — native macOS app, menu bar utility (macOS 13+ minimum)
 - **SwiftUI + AppKit** — gothic Fortress HUD (`NSPanel`) and menu bar (`NSStatusItem`)
 - **Darwin / POSIX** — `sysctl KERN_PROCARGS2` for process inspection; `proc_pidinfo` for working directory
 - **Unified Log** — `log stream` NDJSON listener watching `com.apple.TCC`
@@ -77,13 +81,13 @@ docs/               Planning, architecture, devlog
 
 ## Quick Start
 
-> Requires the Swift toolchain (Xcode 15+ or Command Line Tools) and macOS 13+.
+> Requires the Swift toolchain with Swift 6 (Xcode 16+ or matching Command Line Tools) and macOS 13+.
 
 ```bash
 git clone https://github.com/iolaire/TheGatekeepersWard.git
 cd TheGatekeepersWard
 swift build          # builds the GatekeepersWard library and WardTrigger CLI
-swift test           # 81 tests incl. 5 property-based suites
+swift test           # 166 tests incl. property-based suites
 scripts/run_ward.sh  # builds and launches the menu bar app (stop: scripts/run_ward.sh --stop)
 ```
 
