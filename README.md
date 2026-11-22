@@ -118,6 +118,10 @@ realism. See `docs/architecture.md` for details.
 - **Iolaire McFadden** (iolaire), Team Representative
 - **Dharshaneshwaran**
 
+## AI-Assisted Artwork
+
+The image assets, including the mood boards and the vector spirit sprites (SVG), were generated with Google Gemini (gemini.google.com). The team turned them into Swift drawing code with Kiro assistance. None of the art was hand-drawn. Google does not claim ownership of Gemini output, so the art may be used in this project. The mood-board images in `docs/Planning/Styles/` are also Google-generated. The art is released under the same Apache 2.0 licence as the code. Details and conditions: [docs/ai-asset-licensing.md](docs/ai-asset-licensing.md).
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE)

@@ -4,6 +4,49 @@ Running notes from the build. Newest entries at the top.
 
 ---
 
+## 2026-11-22 (13:30 UTC) — Day 18: Gemini image usage validated
+
+**iolaire**
+
+Closed the open question of whether Gemini-generated images may ship in the project and the submission.
+
+- Google does not claim ownership of Gemini output, so the generated art and its vector conversions can be used as app icons and UI art.
+- Conditions: disclose that the art is AI-assisted, keep third-party IP and trademarks out of outputs, and do not use the images to train competing models.
+- Kiroween IP rules (sections 4 and 7) are met because the team holds the rights it needs.
+- Added `docs/ai-asset-licensing.md` with the terms and conditions, and an "AI-Assisted Artwork" section in the README.
+- Mood-board JPG rights settled: all four JPGs in `docs/Planning/Styles/` carry Google C2PA Content Credentials (`trainedAlgorithmicMedia`), so they are Google-generated and can stay in the public repo. Keep the embedded metadata.
+- Licence decision: the art follows the repo's Apache 2.0 licence. No separate CC0 or CC BY licence.
+- Terms re-checked (2026-11-22): the Google ToS, Gemini Apps image help, the Generative AI Prohibited Use Policy and the Gemini API Additional Terms (effective March 23, 2026, text supplied by iolaire) all match the quotes. One correction: the Google ToS bans using generated content to develop any ML model, not only competing ones.
+- Asset inventory added to `docs/ai-asset-licensing.md`. The four JPGs are Google-generated (C2PA). iolaire confirmed all four SVG sprites and their generator scripts came from Gemini, and Kiro wrote only the Swift drawing code. The draft PNGs are renders from that code and the screenshot is a screen capture.
+- Source of the images: gemini.google.com (consumer Gemini app, in a notebook). The Google ToS, Prohibited Use Policy and Gemini Apps help apply, not the Gemini API terms. Same ownership result. Nothing further blocks the art. Notebook link saved in `docs/ai-asset-licensing.md`. Notebooks in Gemini Apps sit under the same Google ToS, and no notebook-specific image-rights term was found. A Google reply iolaire pasted agrees, but it is not an official document and cites the retired Generative AI Additional Terms, so it is recorded as supporting only. Nothing blocks the art.
+
+---
+
+## 2026-11-20 (08:00 UTC) — Day 16: Dharshaneshwaran re-runs the hackathon review and fixes the README
+
+**Dharshaneshwaran**
+
+Two docs-only commits arrived through PR #2 (`dev` into `main`). The first re-ran the `/code-review-hackathon` prompt and refreshed `docs/HACKATHON_REVIEW.md`. The second fixed the README items that review flagged.
+
+**Review refresh (`577b50a`)**
+- Score is now **33/50**, up from 32/50. Review date 2026-11-20, 14 days to the deadline.
+- Closed since the last review: category (Frankenstein), team Representative, `darwin-tcc-mcp-server` spec (36/36), `castle-keep-visual-theme` spec (39/39), and `ward-app` down to 4 open tasks. Tests went from 108 to 166.
+- New flags: README still said Swift 5.9 / Xcode 15, the new screenshot was not linked, the README test count was 81 against an actual 166, and four mood-board JPGs in `docs/Planning/Styles/` need a rights check before the repo goes out.
+- Remaining gaps are unchanged: demo video, Devpost text, Kiro write-up, and one real-agent run on record.
+- The review ran on a Linux machine with no Swift toolchain, so `swift build` and `swift test` were not re-run for it. The 166-test figure rests on the Day 8 entry and a count of `@Test` declarations.
+
+**README fixes (`82ee26e`)**
+- Tech Stack: "Swift 5.9+" became "Swift 6 (Swift 6 language mode, strict concurrency)".
+- Quick Start: "Xcode 15+" became "Swift 6 toolchain (Xcode 16+ or matching Command Line Tools)". This closes the open decision from Day 8 for now: the README says Swift 6 is required.
+- Test count updated from 81 to 166.
+- Linked `docs/screenshots/Screenshot.png` in the Castle Keep section.
+
+**Merge notes**
+- The Swift 6 wording in `.kiro/steering/project.md` was synced to match. The same README line had been edited on both sides, so iolaire kept the upstream text.
+- Still open from the review: the mood-board image rights check, the MCP venv setup missing from the root README, and the stale `GatekeepersWard/Resources/` entry in the README layout.
+
+---
+
 ## 2026-11-12 (17:53 UTC) — Day 8: Swift 6 strict concurrency, found with the swift-expert power
 
 **iolaire (pairing with Kiro)**

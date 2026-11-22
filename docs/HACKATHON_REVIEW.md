@@ -106,7 +106,7 @@ A project can win one Overall or Category prize plus any number of bonus prizes.
 - "Runs as depicted" is still only partly verified by the repo's own account: multi-display (8.7), two-prompt live run (8.10), and the visual eye-checks (castle-keep 4/8) are open.
 - The macOS 13+ support claim still has no evidence; only macOS 27.0.1 has been captured (8.3).
 - The one screenshot in the repo is referenced nowhere; README shows no design at all.
-- Third-party mood-board JPGs (up to 4.4 MB) are committed to a public repo — confirm redistribution rights.
+- ~~Third-party mood-board JPGs (up to 4.4 MB) are committed to a public repo — confirm redistribution rights.~~ Resolved 2026-11-22: the JPGs are Google-generated (C2PA metadata) and redistributable; see `docs/ai-asset-licensing.md`.
 
 **Prioritized Recommendations (highest score gain per effort first):**
 1. **Script and record the demo video** (≤3:00, public YouTube): real prompt and HUD side by side with a recognisable agent (a Cursor/Claude Code run doubles as the missing Potential Impact evidence), a short `.kiro` walkthrough, use the storyboard already in `docs/pitch.md`. Up to +6, and gates Best Demo.
