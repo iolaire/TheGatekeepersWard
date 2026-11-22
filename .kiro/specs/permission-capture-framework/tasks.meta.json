@@ -1,0 +1,402 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Re-measure the TCC dialog window owner and layer on this macOS": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357103950
+      },
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357108019
+      }
+    ],
+    "2.1 Create `lib/common.sh` and the `capture.sh` dispatcher": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357103992
+      }
+    ],
+    "2.2 Create the Python test harness and stub binaries": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104025
+      }
+    ],
+    "2.3 Write property test for argument quoting": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104049
+      }
+    ],
+    "2.4 Write property test for the step log line": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104067
+      }
+    ],
+    "3.1 Create `lib/validate.sh`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104089
+      }
+    ],
+    "3.2 Write property test for option validators": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104124
+      }
+    ],
+    "4.1 Create `lib/profile.sh` and wire `list`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104149
+      }
+    ],
+    "4.2 Add the shipped profiles and template": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104172
+      }
+    ],
+    "4.3 Write property test for profile round trip": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104191
+      }
+    ],
+    "4.4 Write property test for profile loading": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104207
+      }
+    ],
+    "4.5 Write property test for incomplete profiles": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104228
+      }
+    ],
+    "4.6 Write property test for profile ID and file name match": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104291
+      }
+    ],
+    "5.1 Create `lib/reset.sh` and wire `reset`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104318
+      }
+    ],
+    "5.2 Write property test for the bundle-ID guard": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104339
+      }
+    ],
+    "5.3 Write property test for the reset plan": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104357
+      }
+    ],
+    "6.1 Create `lib/json.js` and `lib/manifest.sh`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104385
+      }
+    ],
+    "6.2 Create `lib/session.sh` path and directory functions": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104423
+      }
+    ],
+    "6.3 Write property test for session paths": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104440
+      }
+    ],
+    "6.4 Write property test for existing Session_Directory safety": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104457
+      }
+    ],
+    "6.5 Write property test for manifest validity": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104478
+      }
+    ],
+    "6.6 Write property test for manifest JSON round trip": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104498
+      }
+    ],
+    "7.1 Create `lib/windows.js`, `lib/windows.sh`, and `lib/services.tbl`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104515
+      }
+    ],
+    "7.2 Create `lib/shots.sh`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104535
+      }
+    ],
+    "7.3 Write property test for prompt window matching": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104567
+      }
+    ],
+    "7.4 Write property test for HUD and menu bar item matching": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104582
+      }
+    ],
+    "7.5 Write property test for prompt text classification": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104597
+      }
+    ],
+    "7.6 Write property test for the pair crop rectangle": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104614
+      }
+    ],
+    "8.1 Create `lib/plan.sh`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104631
+      }
+    ],
+    "8.2 Write property test for planning order": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104648
+      }
+    ],
+    "8.3 Write property test for the failure policy": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104664
+      }
+    ],
+    "9. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104702
+      }
+    ],
+    "10.1 Create `lib/permcheck.swift`, `lib/setup.sh`, and wire `setup` and `doctor`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104717
+      }
+    ],
+    "10.2 Create `lib/cleanup.sh` and wire `teardown` and signal traps": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104732
+      }
+    ],
+    "10.3 Write property test for setup state merge": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104750
+      }
+    ],
+    "10.4 Write property test for teardown revoke guidance": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104765
+      }
+    ],
+    "10.5 Write unit tests for setup, doctor, and teardown": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104783
+      }
+    ],
+    "11.1 Create `lib/video.sh`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104799
+      }
+    ],
+    "11.2 Create `lib/ward.sh`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104815
+      }
+    ],
+    "11.3 Create `lib/app.sh`, `lib/ui.applescript`, and `lib/clipboard.js`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104831
+      }
+    ],
+    "11.4 Create `lib/resolve.sh`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104847
+      }
+    ],
+    "11.5 Create `lib/focus.sh` and `lib/focus.applescript`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104863
+      }
+    ],
+    "11.6 Write property test for removable-volume path extraction": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104879
+      }
+    ],
+    "11.7 Write property test for button selection": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104896
+      }
+    ],
+    "11.8 Write unit tests for the drivers with stubs": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104916
+      }
+    ],
+    "12.1 Implement the session step runner and the `prompt` and `run` subcommands": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104932
+      }
+    ],
+    "12.2 Implement `summary.md` and `export`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104948
+      }
+    ],
+    "12.3 Write property test for unknown profile or scenario": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104963
+      }
+    ],
+    "12.4 Write property test for preflight": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357104983
+      }
+    ],
+    "12.5 Write property test for dry-run": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357105011
+      }
+    ],
+    "12.6 Write property test for summary links": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357105028
+      }
+    ],
+    "12.7 Write property test for export": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357105045
+      }
+    ],
+    "12.8 Write unit tests for orchestration and security boundaries": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357105062
+      }
+    ],
+    "13.1 Write `scripts/capture/README.md`": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357105078
+      }
+    ],
+    "13.2 Add the pre-commit test hook line and the devlog entry": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357105096
+      }
+    ],
+    "14. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "ac0efd5d-809a-4b94-988c-dc58abc8ada4",
+        "chatSessionId": "sess_b1c0a18f-5ffd-4c81-95db-f34120a7b52d",
+        "timestamp": 1795357105112
+      }
+    ]
+  }
+}
