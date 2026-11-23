@@ -32,13 +32,15 @@ Product and process are strong. The score is held down by missing submission art
 | Source, assets, build and run instructions | Pass, with gaps | README Quick Start: `swift build`, `swift test`, `scripts/run_ward.sh`. No clean-Mac first-run section. MCP venv setup is not in the root README (venv is gitignored; see memory note on judges' setup) |
 | Built in Submission Period | Pass | First commit 2026-11-05, 52 commits, none before Oct 30. Two authors. No pre-existing code to disclose |
 | Runs as depicted | Partly verified | Tests pass. Real before/after captures in `docs/demo/assets/deepseek-harness/` and `qoder/`. Only macOS 27.x is evidenced. `ward-app/tasks.md` has 5 unchecked tasks, `hud-plain-language-copy/tasks.md` has 1 |
-| Demo video: under 3 min, public YouTube, on a Mac, no copyrighted music or third-party trademarks | **Missing** | Draft renders exist at `docs/demo/remotion/out/` (about 2:47, `say` narration). No YouTube link anywhere. The video shows "DeepSeek Harness" and "Qoder" windows and names, which is a trademark risk under the video rule |
+| Demo video: under 3 min, public YouTube, on a Mac, no copyrighted music or third-party trademarks | **Missing** | Draft renders exist at `docs/demo/remotion/out/` (about 2:47, `say` narration). No YouTube link anywhere. The video shows "DeepSeek Harness" and "Qoder" windows and names. Team position: brief nominative samples, no claim of affiliation, so not treated as an issue (see note below the table) |
 | Text description of features | Partly | README covers features well. No Devpost text drafted |
 | Write-up on how Kiro was used | **Missing** | Raw material exists in `docs/devlog.md`, but no document answers the rules' questions |
 | Category selected | Pass | Frankenstein, with reasoning in README and devlog 2026-11-09 |
 | Team of 3 or fewer, one Representative | Pass | 2 members; Representative Iolaire McFadden. Must match the Devpost form |
 | English | Pass | All materials in English |
-| Third-party IP, dependencies licensed | Pass, with items to confirm | No external Swift dependencies. Python deps (`mcp`, `pycparser`, `hypothesis`, `pytest`) are permissive. AI art provenance in `docs/ai-asset-licensing.md`. Third-party app names and UI in screenshots and video need a decision (see Critical Issues) |
+| Third-party IP, dependencies licensed | Pass, with items to confirm | No external Swift dependencies. Python deps (`mcp`, `pycparser`, `hypothesis`, `pytest`) are permissive. AI art provenance in `docs/ai-asset-licensing.md`. Third-party app names in screenshots and video: see the note below the table |
+
+**Note on third-party names in the video.** Rules section on the video requires that it "must not include third party trademarks, or copyrighted music or other material unless the Entrant has permission to use such material." The team's position is that the DeepSeek Harness and Qoder appearances are very short samples shown only to demonstrate the tool, with no claim of association. This review accepts that and does not count it as a critical issue. The rule text speaks of permission, not fair use, so the exposure is small but not zero. A one-line disclaimer in the README and the video end card ("Third-party product names appear only to show Gatekeeper's Ward working with them; no affiliation or endorsement") costs minutes and states the intent.
 
 ## Stage Two Scoring
 
@@ -119,7 +121,7 @@ Product and process are strong. The score is held down by missing submission art
 1. Upload the video to YouTube as public, under 3:00, and put the link in the README and Devpost. 1 hour, and it clears a disqualification item.
 2. Add a 20 to 30 second `.kiro` walkthrough (specs, steering, hooks, MCP) to the video. 1 to 2 hours, +1 on Presentation and Technology.
 3. Draft the Devpost text from `docs/pitch.md` and the README. 1 to 2 hours.
-4. Resolve third-party names in the video (see below). 1 hour.
+4. Add a no-affiliation disclaimer for third-party names to the README and video end card. 10 minutes.
 5. Replace `say` narration with a human voice-over. 1 hour, +0.5.
 6. Push the unpushed commit so the repo matches what you review. 1 minute.
 
@@ -148,12 +150,11 @@ A project can win one Overall or Category prize, not both, but any number of bon
 **Critical Issues (disqualification or major score risk):**
 - No public YouTube demo video link. A draft exists, but nothing satisfies the requirement yet.
 - No Kiro usage write-up and no Devpost description. Without them Stage One carries risk and Technological Implementation cannot reach its ceiling.
-- Third-party names and app UIs (DeepSeek Harness, Qoder, Apple dialogs) in the video and README. The video rule bars third-party trademarks. Decide: blur or replace names, or get a judgement that nominative use is acceptable. This is an inference from the rules; confirm against `docs/Planning/HackathonDetails/Rules.md` section on the video.
 - Hooks use a nonstandard schema and may not load in Kiro IDE (unverified).
 - One local commit is unpushed.
 
 **Prioritized Recommendations (highest score gain per effort first):**
-1. Push `main`. Upload a public, under-3-minute video to YouTube and link it in README and Devpost. Resolve third-party names first.
+1. Push `main`. Upload a public, under-3-minute video to YouTube and link it in README and Devpost. Add the no-affiliation line to the end card.
 2. Write `docs/KIRO_USAGE.md` answering the rules' Kiro questions; link it from the README and reuse it in Devpost.
 3. Check the hooks load in the IDE; convert to `.kiro.hook` if they do not.
 4. Add a `.kiro` walkthrough segment to the video.

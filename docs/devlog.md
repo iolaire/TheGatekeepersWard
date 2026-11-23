@@ -3,6 +3,12 @@
 Running notes from the build. Newest entries at the top.
 
 ---
+## 2026-11-23 (04:00 UTC) — Third-party names notice
+
+**iolaire (pairing with Kiro)**
+Added a no-affiliation notice for DeepSeek Harness, Qoder and Apple prompt captures in three places: a "Third-party names and captures" section in `docs/ai-asset-licensing.md`, one line in the README Potential Impact section, and one line in `NOTICE`. The text records the team's position (brief demonstration samples, no claim of association) and says it is not a licence from the owners. Still to do: the same line on the video end card.
+
+---
 ## 2026-11-23 (03:30 UTC) — Hooks converted to the Kiro IDE format
 
 **iolaire (pairing with Kiro)**

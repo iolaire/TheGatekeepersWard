@@ -50,6 +50,8 @@ The Executed Command is less readable here. The agent ran a `swift -e` one-liner
 
 A scripted draft (about 2:47) built from the real captures above lives in [docs/demo/remotion/](docs/demo/remotion/). The timed narration is in [VOICEOVER.md](docs/demo/remotion/VOICEOVER.md), and the folder README explains how to render it and swap in a final recording.
 
+*Third-party product names (DeepSeek Harness, Qoder) and Apple's macOS prompts appear in these captures only to show Gatekeeper's Ward working with them. No affiliation or endorsement is claimed. See [docs/ai-asset-licensing.md](docs/ai-asset-licensing.md#third-party-names-and-captures).*
+
 ### Who benefits right now
 
 - Developers running autonomous AI coding agents and IDEs (Kiro, Cursor, Claude Code, DeepSeek Harness) who need to know which child process is asking, and why.

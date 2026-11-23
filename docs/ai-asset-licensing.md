@@ -71,6 +71,12 @@ Checked 2026-11-22 against the repo (`git ls-files`, `exiftool`, file contents).
 
 All of these are covered by the disclosure in the README, which says the art is AI-assisted. The Swift drawing code was written with Kiro and is licensed with the rest of the code.
 
+## Third-party names and captures
+The before/after captures in `docs/demo/assets/` and the demo video show short samples of third-party software: DeepSeek Harness and Qoder (AI IDEs), and Apple's own macOS permission prompts. They appear only to show Gatekeeper's Ward working alongside them.
+- No affiliation, sponsorship or endorsement is claimed or implied. The product names, logos and window designs belong to their owners.
+- The samples are brief and unmodified apart from cropping and scaling. Nothing in them is used as part of the product itself.
+- Kiroween's video rule bars third-party trademarks "unless the Entrant has permission to use such material". The team's position is that brief, descriptive appearances for demonstration are acceptable. This note records that reasoning and is not a licence or a permission from the owners. If an owner objects, the affected capture is removed or replaced.
+
 ## Scope and open items
 
 - Applies to Gemini-generated images, the four mood-board JPGs, and the vector art derived from them.
