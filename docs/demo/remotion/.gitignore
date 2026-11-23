@@ -1,0 +1,10 @@
+node_modules/
+out/
+# Generated: scratch narration, final recordings, video proxies, copied images
+public/audio/
+public/clips/
+public/img/
+*.mp4
+*.wav
+*.m4a
+*.aiff

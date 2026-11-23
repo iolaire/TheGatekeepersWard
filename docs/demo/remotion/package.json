@@ -1,0 +1,26 @@
+{
+  "name": "gatekeepers-ward-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Remotion project for the Gatekeeper's Ward Kiroween 2026 demo video",
+  "scripts": {
+    "prepare:assets": "bash scripts/prepare-assets.sh",
+    "audio:scratch": "bash scripts/generate-scratch-vo.sh",
+    "audio:measure": "node scripts/measure-audio.mjs",
+    "dev": "remotion studio",
+    "typecheck": "tsc --noEmit",
+    "render": "remotion render GatekeepersWardDemo out/gatekeepers-ward-demo.mp4 --crf=20",
+    "render:still": "remotion still GatekeepersWardDemo --frame=300 out/still.png"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.545",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.545"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "5.9.3"
+  }
+}

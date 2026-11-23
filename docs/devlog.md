@@ -3,6 +3,20 @@
 Running notes from the build. Newest entries at the top.
 
 ---
+## 2026-11-23 (02:20 UTC) — Day 19: Remotion demo video draft
+
+**iolaire (pairing with Kiro)**
+
+Built a draft demo video in `docs/demo/remotion/` (Remotion 4.0.545, 1920x1080, 30 fps). The scratch cut runs 2:30 (4505 frames, 150.2 s), under the 3:00 limit.
+
+- Five scenes: intro and need, baseline macOS prompt, Gatekeeper's Ward in action, how it works, outro. The spoken copy stresses Potential Impact and states that Apple's finer-grained AI permissions are not released yet.
+- Real captures are used for scenes 2 and 3 (`baseline_*_flow.mov`, `ward_*_flow.mov`, `ward_*_pair.png`). The 4K sources are transcoded to 1440p proxies in `public/clips/` (gitignored). Sources are untouched.
+- Scratch narration uses macOS `say` (Samantha, 150 wpm), one WAV per scene. Scene length is the measured clip length from `afinfo` plus 0.4 s lead-in and 0.8 s tail, so narration does not clip or overlap.
+- `src/audioConfig.ts` switches between scratch audio, per-scene recordings (`public/audio/final/<scene-id>.wav`) and one master file (`public/audio/final-narration.wav`).
+- `VOICEOVER.md` has scene IDs, timecodes and visual cues. `README.md` in the same folder explains how to drop in the final recording and re-render.
+- Open items: nobody has listened to the scratch voice yet; the repo link on the last scene is a placeholder; if a synthetic voice stays in the final cut, check the contest rules and disclose it. No Swift code or `.kiro/` files changed.
+
+---
 ## 2026-11-23 (01:30 UTC) — Day 19: Before/after evidence and Potential Impact README
 
 **iolaire (pairing with Kiro)**

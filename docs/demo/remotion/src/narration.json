@@ -1,0 +1,27 @@
+[
+  {
+    "id": "scene-01-intro",
+    "title": "Intro, Hook and Immediate Need",
+    "text": "Every day, autonomous A I coding tools and random Mac apps throw up a system permission popup. It names the app. It never says what that app is about to do. One blind click on Allow can hand an autonomous agent your Desktop, your Documents, even your camera. Apple is working on finer grained permissions for A I tools, but they are not released yet. Gatekeeper's Ward fills that gap today."
+  },
+  {
+    "id": "scene-02-baseline",
+    "title": "Baseline Flow",
+    "text": "Here is the standard macOS flow, without Gatekeeper's Ward. DeepSeek Harness asks to access files in your Desktop folder. That is all the dialog says. Is it a harmless listing, or a script copying your files out? You cannot tell. You can only click Allow or Don't Allow, and hope."
+  },
+  {
+    "id": "scene-03-ward",
+    "title": "Gatekeeper's Ward in Action",
+    "text": "Now the same request, with Gatekeeper's Ward running. DeepSeek Harness asks for the Desktop folder, and the Fortress H U D slides in beside Apple's dialog. It shows the permission being requested and the target. It shows the full process lineage: DeepSeek Harness, a helper process, bash, and finally l s. And it shows the exact command and arguments, plus the working directory. Now you can tell a safe listing from a delete or a data grab, and risky arguments like dot env files or curl get flagged. Gatekeeper's Ward never blocks anything. It only informs. You stay in full control, and you still answer with Apple's own Allow or Don't Allow button. That matters most for developers running autonomous coding agents, and for anyone who gets a popup from an app they barely recognize. Informed consent, instead of a blind click."
+  },
+  {
+    "id": "scene-04-how",
+    "title": "How It Works: Zero Dark Magic",
+    "text": "How does it work? With zero dark magic. Gatekeeper's Ward streams the macOS unified log and watches the com dot apple dot T C C subsystem. When a prompt fires, it reads the paused process's arguments with sysctl K E R N underscore PROCARGS two. That is all. It runs in unprivileged user space. No kernel extensions. No S I P changes. No restricted entitlements. No security bypasses."
+  },
+  {
+    "id": "scene-05-outro",
+    "title": "Outro and Kiro Wrap-Up",
+    "text": "We built Gatekeeper's Ward for Kiroween 2026 with Kiro, using spec driven development, agent hooks, and property based testing. It is open source under Apache 2.0. Gatekeeper's Ward. Know who knocks before you drop the castle gates."
+  }
+]

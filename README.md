@@ -40,6 +40,10 @@ A real capture of DeepSeek Harness asking for the Desktop folder. Same prompt, s
 
 Original captures, flow recordings and manifests are in [docs/demo/assets/deepseek-harness/](docs/demo/assets/deepseek-harness/).
 
+### Demo video
+
+A scripted draft (about 2:30) built from the real captures above lives in [docs/demo/remotion/](docs/demo/remotion/). The timed narration is in [VOICEOVER.md](docs/demo/remotion/VOICEOVER.md), and the folder README explains how to render it and swap in a final recording.
+
 ### Who benefits right now
 
 - Developers running autonomous AI coding agents and IDEs (Kiro, Cursor, Claude Code, DeepSeek Harness) who need to know which child process is asking, and why.
