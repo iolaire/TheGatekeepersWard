@@ -3,6 +3,15 @@
 Running notes from the build. Newest entries at the top.
 
 ---
+## 2026-11-23 (01:30 UTC) — Day 19: Before/after evidence and Potential Impact README
+
+**iolaire (pairing with Kiro)**
+
+Captured real-device before/after evidence of the DeepSeek Harness Desktop Vault permission flow. The files are `baseline_deepseek_harness_desktop_prompt.png` and `ward_deepseek_harness_desktop_pair.png` (the pair is a PNG, not a JPG), both in `docs/demo/assets/deepseek-harness/`. The baseline shows only `"DeepSeek Harness" would like to access files in your Desktop folder.` The Ward capture adds the TCC service (`kTCCServiceSystemPolicyDesktopFolder`), the four-step lineage (DeepSeek Harness 40189 → DeepSeek Harness 40723 → bash 45203 → ls 45204), the command `ls -1 /Users/iolaire/Desktop`, and the working directory.
+
+`README.md` now opens with a "Why Gatekeeper's Ward Matters (Potential Impact)" section. It covers the blind-Allow problem, the gap before Apple ships finer-grained AI IDE permissions, the inform-only safety model, both screenshots, a side-by-side table, and the audience. Build steps, the Apache 2.0 license link and the AI-assisted artwork disclosure are unchanged.
+
+---
 ## 2026-11-22 — Capture framework: no per-user TCC database on this macOS
 **iolaire (pairing with Kiro)**
 Real-machine finding on macOS 27.2.1 (build 26B131): Kiro has Full Disk Access (the protected system folder lists), but the user-level `com.apple.TCC` folder under Application Support does not exist, so there is no per-user database to snapshot. `tcc_probe` now returns exit 3 for this case (exit 1 stays for sqlite3 missing or an unopenable file). `setup` and `doctor` report `full-disk-access: unavailable (...; use --no-restore)` and no longer open the pane. `reset`, `prompt` and `run` stop with the same message and still never reset without a snapshot. `--no-restore` is the way forward on this macOS.

@@ -6,6 +6,47 @@
 
 ---
 
+## Why Gatekeeper's Ward Matters (Potential Impact)
+
+### The urgent problem
+
+Autonomous AI IDEs, coding harnesses, and ordinary Mac apps trigger macOS TCC permission prompts that say which *app* wants access and nothing about *what it intends to do*. The user has to gamble on **Allow**, and that click can give an autonomous agent a shell-driven path into `~/Desktop`, `~/Documents`, Contacts, or the Camera.
+
+Apple is working on finer-grained permissions that would give users more control over AI IDEs and agents, but that capability is not released yet. Gatekeeper's Ward covers the gap **today**. It runs entirely in unprivileged user space: no kernel extensions, no SIP changes, no restricted entitlements, no security bypasses.
+
+**Safety model:** Gatekeeper's Ward only informs and never blocks. Apple's native dialog keeps full control, and the user always answers with Apple's own **Allow** or **Don't Allow** button.
+
+### Before vs. after, on a real Mac
+
+A real capture of DeepSeek Harness asking for the Desktop folder. Same prompt, same machine, with and without the Ward running.
+
+**Baseline: what macOS shows**
+
+![Baseline macOS prompt: "DeepSeek Harness" would like to access files in your Desktop folder.](docs/demo/assets/deepseek-harness/baseline_deepseek_harness_desktop_prompt.png)
+
+**With Gatekeeper's Ward: Apple's prompt (left) next to the Fortress HUD (right)**
+
+![Apple's Desktop folder prompt beside the Gatekeeper's Ward Fortress HUD showing TCC service, process lineage, command and working directory](docs/demo/assets/deepseek-harness/ward_deepseek_harness_desktop_pair.png)
+
+| | Without Gatekeeper's Ward (baseline) | With Gatekeeper's Ward running |
+|---|---|---|
+| Message | `"DeepSeek Harness" would like to access files in your Desktop folder.` | Same Apple dialog, plus the Fortress HUD ("Spirit Paused at the Gate") |
+| TCC scope | Not shown | `kTCCServiceSystemPolicyDesktopFolder` (target: `Desktop Vault`) |
+| Process lineage | Not shown | `DeepSeek Harness (PID 40189)` → `DeepSeek Harness (PID 40723)` → `bash (PID 45203)` → `ls (PID 45204)` |
+| Command | Not shown | `$ ls -1 /Users/iolaire/Desktop` |
+| Working directory | Not shown | `/Volumes/Gold/Vegrún` |
+| Can the user tell a safe listing from a delete or exfiltration? | No | Yes, from the exact command |
+| Who decides | The user, via Apple's dialog | The user, via Apple's dialog (the HUD says "Answer in Apple's dialog") |
+
+Original captures, flow recordings and manifests are in [docs/demo/assets/deepseek-harness/](docs/demo/assets/deepseek-harness/).
+
+### Who benefits right now
+
+- Developers running autonomous AI coding agents and IDEs (Kiro, Cursor, Claude Code, DeepSeek Harness) who need to know which child process is asking, and why.
+- Everyday Mac users who get an unexpected permission popup from an app they barely recognize.
+
+---
+
 ## What Is It?
 
 Gatekeeper's Ward protects your Mac from the blind spots of modern AI coding agents.
