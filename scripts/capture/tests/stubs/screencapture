@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Stub screencapture: logs argv and writes a small non-empty file to the last
+# argument (the output path) unless STUB_SCREENCAPTURE_NOFILE is set or the
+# canned exit status is non-zero.
+. "$(dirname "$0")/_stub_common.sh"
+stub_log_call screencapture "$@"
+if [ -z "${STUB_SCREENCAPTURE_NOFILE:-}" ] && [ "${STUB_SCREENCAPTURE_EXIT:-0}" = "0" ] && [ "$#" -gt 0 ]; then
+  eval "out=\${$#}"
+  case "$out" in
+    -*) ;;
+    *) printf 'stub-capture\n' >"$out" ;;
+  esac
+fi
+stub_finish screencapture ""

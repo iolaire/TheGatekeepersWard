@@ -45,6 +45,29 @@ This requires no entitlements and no special permissions.
 - Never call `TCCAccessRequest` or any `TCC.framework` private API.
 - Never read `/private/var/db/` paths (these are root-owned and SIP-protected).
 
+### Sole exception: capture tooling's `scripts/capture/lib/tccdb.sh`
+
+The prohibitions on querying or writing `TCC.db` (the "No TCC database writes"
+row in §1 and the first bullet above) have exactly one exception. It applies
+to the developer-side capture tooling, never to the Gatekeeper's Ward app.
+
+The single file `scripts/capture/lib/tccdb.sh` may open a TCC database, under
+all of these conditions:
+
+- **User-level database only:** `~/Library/Application Support/com.apple.TCC/TCC.db`.
+  The system-level database (`/Library/Application Support/com.apple.TCC/TCC.db`)
+  is never opened, read, or written.
+- **Target rows only:** rows whose `client` is the selected App_Profile's bundle
+  ID and whose `service` is one of that profile's declared services. Rows for
+  `All` or any other bundle ID are never read, changed, or deleted.
+- **Backup first:** a full backup copy of the database is taken before any write.
+- **One file:** no other file, including the app, `WardTrigger`, and every other
+  script, may reference or open a TCC database. The hook
+  `scripts/hooks/guard-security-boundaries.py` allows exactly this path.
+
+Every other TCC database prohibition in this document is unchanged. The app
+itself still never touches `TCC.db`, and nothing may bypass SIP.
+
 ### TCC service keys — display only
 
 We display the `kTCCService*` key extracted from the log message verbatim

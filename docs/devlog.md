@@ -3,6 +3,65 @@
 Running notes from the build. Newest entries at the top.
 
 ---
+## 2026-11-22 — Capture framework: no per-user TCC database on this macOS
+**iolaire (pairing with Kiro)**
+Real-machine finding on macOS 27.2.1 (build 26B131): Kiro has Full Disk Access (the protected system folder lists), but the user-level `com.apple.TCC` folder under Application Support does not exist, so there is no per-user database to snapshot. `tcc_probe` now returns exit 3 for this case (exit 1 stays for sqlite3 missing or an unopenable file). `setup` and `doctor` report `full-disk-access: unavailable (...; use --no-restore)` and no longer open the pane. `reset`, `prompt` and `run` stop with the same message and still never reset without a snapshot. `--no-restore` is the way forward on this macOS.
+
+## 2026-11-22 (21:55 UTC) — Capture framework: TCC snapshot and restore design
+
+**iolaire (pairing with Kiro)**
+
+Task 22.2 of `permission-capture-framework`. Records the TCC snapshot and restore design and what the property tests found.
+
+- Purpose: a capture run resets permissions so each prompt appears again. Snapshot saves the user's existing TCC rows for the services in scope before the run, and restore puts them back afterwards. After a capture the user's own grants and denials are as they were, and rows the run created are removed.
+- Single-file boundary: only `scripts/capture/lib/tccdb.sh` touches the user TCC database. Every other script goes through its snapshot, restore and verify functions. The one exception is the guard hook and its steering rule, which only name the database path in order to block direct access. Restore touches only rows for the declared services and bundle, so rows for other services or clients are left alone.
+- Task 15 results: the temporary copy could not be made because the session has no Full Disk Access (see the entry below). The real `access` columns, the floating point check and the real-database step (`tccutil reset`, restore, restart `tccd`) were not run. The design defaults stay: `tcc_columns` reads the column set at run time, and `tccd` is restarted after a restore.
+- Bugs found by the property tests:
+  - `INSERT OR REPLACE` silently substituted column defaults for values the snapshot had stored as NULL in NOT NULL columns, so a restored row differed from the snapshot. Fixed by using a plain `INSERT`, so a bad row now fails loudly instead.
+  - The `kTCCService` prefix mapping (`tcc_db_service`) had to accept names with or without the prefix and never double it. The property test now checks both forms.
+  - `cell_literal` mishandled empty blob and empty text cells, which must become `X''` and `''` rather than NULL, and mishandled integers at the int64 limits. Both cases now produce exact literals.
+- Pre-commit: `scripts/git-hooks/pre-commit` runs `pytest scripts/capture/tests` as a whole directory, so the new `test_tccdb_*.py`, `test_tcc_*.py` and `test_teardown_guidance.py` files are picked up without edits. It leaves `CAPTURE_PBT_PROFILE` unset, so `conftest.py` loads the fast `dev` Hypothesis profile.
+
+---
+
+## 2026-11-22 (18:25 UTC) — Capture framework: TCC database measurement not taken
+**iolaire (pairing with Kiro)**
+Task 15 of `permission-capture-framework`: measure TCC database behavior on macOS 27.2.1 (build 26B131), on a temporary copy only.
+- The copy could not be made. `cp "$HOME/Library/Application Support/com.apple.TCC/TCC.db"` into a temp directory failed with `No such file or directory`; the `com.apple.TCC` directory is not visible to this session. The most likely cause is that the process running the measurement (the Capture_Host) has no Full Disk Access, so the user database is hidden or unreadable. Nothing was opened for writing.
+- Not measured, so the design defaults stay: the `access` table columns (`PRAGMA table_info(access)`), whether any cell holds a real (floating point) value, and whether `sqlite3` can run a delete-then-`INSERT OR REPLACE` transaction on a database of this shape.
+- Not measured, by decision: the optional real-database step (`tccutil reset`, restore, `pkill -x -u "$(id -u)" tccd`) was not run, so whether `tccd` reloads after a restore is unknown. The design default (restart `tccd` after restore) stays.
+- Full Disk Access: the Capture_Host must be granted Full Disk Access before the snapshot and restore code can read the user database. macOS applies a new Full Disk Access grant only to processes started afterwards, so the Capture_Host must be restarted after the grant.
+- Still to do: grant Full Disk Access to the terminal or agent host, restart it, and rerun the copy and `PRAGMA table_info(access)` measurement.
+---
+## 2026-11-22 (15:00 UTC) — Capture framework: pre-commit test hook and first-capture asset list
+
+**iolaire (pairing with Kiro)**
+
+Task 13.2 of `permission-capture-framework`.
+
+- Purpose: the capture framework triggers each macOS permission prompt in turn and records the prompt and the Ward HUD beside it, so the README, demo video and Devpost page use real screenshots instead of mock-ups.
+- `scripts/git-hooks/pre-commit` now also runs `.kiro/tools/.venv/bin/python -m pytest scripts/capture/tests` when that virtualenv exists. Without the virtualenv the step is skipped and the Swift build and tests run as before.
+- Assets from the first successful capture (to fill in once it has run):
+  - Service captured: _TBD_
+  - Prompt screenshot: _TBD_
+  - HUD screenshot: _TBD_
+  - Combined image: _TBD_
+  - Capture date and macOS version: _TBD_
+  - Captured by: _TBD_
+
+---
+
+## 2026-11-22 (14:00 UTC) — Capture framework: TCC prompt re-measurement not taken
+
+**iolaire (pairing with Kiro)**
+
+Task 1 of `permission-capture-framework`: re-measure the TCC prompt window on macOS 27.2.1 (build 26B131).
+
+- `scripts/dump_window_list.swift` ran with no TCC prompt on screen and Ward not running, so no prompt owner, layer, size, button labels or Ward menu bar item layer could be measured. Only the menu bar `Window Server` (layer 24) was seen.
+- Kept the design defaults in the new `scripts/capture/lib/defaults.sh`: owner `UserNotificationCenter`, layer `8` (last measured on 27.0.1, about 260 x 282 pt), Ward menu bar item layer 24 or higher, allow labels `ok,allow`, deny labels `don't allow,deny`. Each is overridable by an environment variable of the same name.
+- Still to do: run the dump while a WardTrigger prompt (folder and removable volume) is up and update the defaults if they differ.
+
+---
 
 ## 2026-11-22 (13:30 UTC) — Day 18: Gemini image usage validated
 

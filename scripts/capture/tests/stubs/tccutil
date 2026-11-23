@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Stub tccutil: logs argv, never touches the real TCC database.
+# When CAPTURE_TCC_DB_TEST names an existing temporary database, `reset
+# <service> <bundle>` deletes the matching rows from it to imitate a real
+# reset (service `All` matches every service). Without it, nothing is edited.
+. "$(dirname "$0")/_stub_common.sh"
+stub_log_call tccutil "$@"
+db="${CAPTURE_TCC_DB_TEST:-}"
+case "$db" in
+  *com.apple.TCC*|*/TCC.db) db="" ;;
+esac
+if [ "${1:-}" = "reset" ] && [ "$#" -ge 3 ] && [ -n "$db" ] && [ -f "$db" ]; then
+  svc="${2//\'/\'\'}"
+  bundle="${3//\'/\'\'}"
+  if [ "$2" = "All" ]; then
+    where="client = '$bundle'"
+  else
+    where="client = '$bundle' AND service = '$svc'"
+  fi
+  /usr/bin/sqlite3 "$db" "DELETE FROM access WHERE $where;" >/dev/null 2>&1
+fi
+stub_finish tccutil ""

@@ -1,0 +1,58 @@
+# Template App_Profile. This file is NOT loaded by capture.sh (it does not end in .profile).
+# To add an app: copy it to scripts/capture/profiles/<profile_id>.profile and edit.
+# Format: "key = value" lines. "#" starts a comment line. The file is parsed, never executed.
+
+# REQUIRED. Lowercase kebab-case id. Must equal the file name without ".profile".
+profile_id     = my-app
+
+# REQUIRED. Human-readable app name shown in logs and summaries.
+display_name   = My App
+
+# REQUIRED. App bundle ID (find it with: mdls -name kMDItemCFBundleIdentifier /Applications/My.app).
+# Only this ID is ever passed to "tccutil reset"; it must never be empty or "All".
+bundle_id      = com.example.myapp
+
+# REQUIRED. Command that launches the app. First word must be "open", "osascript",
+# or an absolute path under /Applications.
+launch         = open -b com.example.myapp
+
+# REQUIRED. Where to type the prompt: "ax:" followed by a System Events element path
+# resolved against the app's front window.
+input_locator  = ax:text area 1 of scroll area 1 of group 1 of window 1
+
+# REQUIRED. How to submit the prompt: key:return, key:cmd+return, or ax:<element path to click>.
+send_action    = key:return
+
+# OPTIONAL. How the prompt text is entered: clipboard (default) or keystroke.
+send_method    = clipboard
+
+# OPTIONAL. Seconds to wait for the app's front window (1..300, default 20).
+launch_timeout = 20
+
+# OPTIONAL. Element to click to approve an agent tool call, for example: ax:button "Allow"
+# approve_tool_call = ax:button "Allow"
+
+# OPTIONAL. Element to click after launch and before typing, for a clean start, for example:
+# prepare_action = find:button "New Session"
+
+# OPTIONAL. true for Electron apps, whose web content is hidden from Accessibility until
+# AXManualAccessibility is set on the app. app.sh sets it after every launch. Default false.
+# ax_manual_accessibility = true
+
+# REQUIRED. 1 to 20 scenarios, each as scenario.<name>.<field>. Names are lowercase kebab-case.
+# Shipped profiles declare at least "desktop" and "removable-volume".
+
+# REQUIRED per scenario. Prompt sent to the app, 1 to 2000 characters.
+# Keep it read-only. A /Volumes/<name> path must exist when the scenario runs.
+scenario.desktop.prompt         = List the files and folders on my Desktop (~/Desktop). Only read the names, and do not change, create, or delete anything.
+
+# REQUIRED per scenario. TCC service key the prompt is expected to raise
+# (for example SystemPolicyDesktopFolder, SystemPolicyDocumentsFolder,
+# SystemPolicyDownloadsFolder, SystemPolicyRemovableVolumes). Used for the scoped reset.
+scenario.desktop.service        = SystemPolicyDesktopFolder
+
+# OPTIONAL per scenario. Seconds to wait for the prompt window (1..300, default 45).
+scenario.desktop.prompt_timeout = 45
+
+# OPTIONAL per scenario. Seconds to wait with the prompt on screen before resolving (1..60, default 4).
+scenario.desktop.dwell          = 4
