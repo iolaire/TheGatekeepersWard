@@ -4,7 +4,7 @@ import { Background } from "../components/Background";
 import { Badge, Card, Heading, Mono, Reveal, useSceneFade } from "../components/ui";
 import { theme } from "../theme";
 
-const s = (sec: number) => Math.round(sec * 30 * 0.91);
+const s = (sec: number) => Math.round(sec * 30);
 
 export const Scene01Intro: React.FC<{ frames: number }> = ({ frames }) => {
   const frame = useCurrentFrame();
@@ -42,7 +42,7 @@ export const Scene01Intro: React.FC<{ frames: number }> = ({ frames }) => {
 
       {/* Right: the problem, revealed in step with the narration */}
       <div style={{ position: "absolute", right: 110, top: 120, width: 800, display: "grid", gap: 22 }}>
-        <Reveal delay={s(4.5)} from="right">
+        <Reveal delay={s(3.8)} from="right">
           <Card border={theme.crimson}>
             <div style={{ fontSize: 30, lineHeight: 1.35 }}>
               &ldquo;Some App&rdquo; would like to access files in your Desktop folder.
@@ -53,10 +53,10 @@ export const Scene01Intro: React.FC<{ frames: number }> = ({ frames }) => {
             </div>
           </Card>
         </Reveal>
-        <Reveal delay={s(9)} from="right">
+        <Reveal delay={s(7.1)} from="right">
           <Card border={theme.crimson}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 30 }}>What will it actually run?</span>
+              <span style={{ fontSize: 30 }}>What is it about to do?</span>
               <Badge color={theme.crimson}>Unknown</Badge>
             </div>
             <Mono size={26} color={theme.crimson} style={{ marginTop: 14 }}>
@@ -67,15 +67,15 @@ export const Scene01Intro: React.FC<{ frames: number }> = ({ frames }) => {
             </div>
           </Card>
         </Reveal>
-        <Reveal delay={s(17.5)} from="right">
+        <Reveal delay={s(17.8)} from="right">
           <Card border={theme.amber}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 28 }}>Apple: finer-grained permissions for AI tools</span>
-              <Badge color={theme.amber}>Not released yet</Badge>
+              <span style={{ fontSize: 28 }}>Apple: better controls are coming</span>
+              <Badge color={theme.amber}>Still in beta</Badge>
             </div>
           </Card>
         </Reveal>
-        <Reveal delay={s(22)} from="right">
+        <Reveal delay={s(22.4)} from="right">
           <Card border={theme.violet} style={{ boxShadow: `0 0 50px ${theme.violet}55` }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: 28 }}>Gatekeeper&rsquo;s Ward fills the gap</span>

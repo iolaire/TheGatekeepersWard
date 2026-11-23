@@ -4,9 +4,27 @@
 
 ---
 
+## The Elevator Pitch
+
+**Gatekeeper's Ward shows you what an app is about to do, at the moment your Mac asks "Allow?"**
+
+Your Mac's permission pop-up says which app wants your files, camera or microphone. It never says what the app is about to do. With AI helpers now running commands for you, one blind click on **Allow** can give away a lot.
+
+Gatekeeper's Ward puts a small panel next to the pop-up that shows what the app wants, who started the request, the exact command and where it runs, with red warnings for risky things. It only tells you. You still click **Allow** or **Don't Allow** yourself.
+
+**The need, the impact and the innovation:**
+
+| | |
+|---|---|
+| **The need** | Your Mac asks "Allow this app?" but never says what the app is about to do. AI helpers now act for you, so that blind click matters far more than it used to. |
+| **The impact** | Before you click, you see what is being asked, who started it, and the exact command. A harmless file listing looks different from a copy of your password file, so you decide with facts. It works today, and because it only informs, it cannot break your workflow. |
+| **The innovation** | Commands live in a text world. Permission pop-ups live in the visual world. Nothing connected the two, so the command was lost. When a pop-up opens, your Mac pauses the app that asked. We read that paused app's command and show it beside the pop-up, using only what an ordinary app is allowed to do. No special Apple access, no system changes. |
+
+---
+
 ## The Problem
 
-Modern AI coding agents (Cursor, Claude Code, Kiro, GitHub Copilot Workspace) operate autonomously inside your filesystem. When they trigger a macOS TCC (Transparency, Consent, and Control) permission dialog, you see only:
+Modern AI coding agents (Cursor, Claude Code, Kiro, GitHub Copilot Workspace) operate autonomously inside your filesystem. When they trigger a Mac permission pop-up (technically a TCC dialog), you see only:
 
 > *"XYZ app would like to access your Documents folder."*
 
@@ -21,7 +39,7 @@ You're forced to **Allow** or **Don't Allow** blind.
 
 ## The Solution
 
-**Gatekeeper's Ward** — a lightweight macOS menu bar utility that intercepts permission challenges and immediately shows a gothic Fortress HUD alongside Apple's own dialog.
+**Gatekeeper's Ward** — a lightweight macOS menu bar utility that watches for permission pop-ups and shows a small panel (the gothic Fortress HUD) beside Apple's own dialog. It informs only; Apple's dialog still decides.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -125,6 +143,8 @@ This fits the *"stitch together a chimera of technologies"* prompt to the letter
 ### Why nobody built this before: the core technical insight
 
 While a permission dialog is open, `tccd` does not answer the process that asked, so that process (and its parents) stays in the Darwin process table. The Ward reads `argv`, working directory and lineage from it with an unprivileged `sysctl(KERN_PROCARGS2)` call, with no race against a short-lived command. Tools that need to see brief CLI commands usually reach for Apple's Endpoint Security framework, which needs a restricted entitlement and a system extension. The prompt itself gives the Ward the window that framework would otherwise be used for. If the process has already exited, the HUD degrades to partial information with a note.
+
+**Agent-agnostic at the OS boundary.** IDE plugins, agent hooks and MCP gateways only see commands that a cooperative agent routes through them. The Ward sits at the macOS privacy boundary, so any process that triggers a protected-resource prompt is covered, including a script run by an `npm postinstall` or an unvetted MCP server.
 
 The pipeline stitches four layers together: BSD buffer parsing (`KERN_PROCARGS2`), real-time Unified Log NDJSON streaming, risk triage of arguments (`.env`, `.pem`, `id_rsa`, `curl`, `base64`) and a non-activating SwiftUI `NSPanel` overlay. Risk triage is what turns a process viewer into a decision aid.
 

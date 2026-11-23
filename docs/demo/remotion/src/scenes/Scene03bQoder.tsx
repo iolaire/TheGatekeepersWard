@@ -5,7 +5,7 @@ import { Background } from "../components/Background";
 import { Card, Heading, Mono, Reveal, useSceneFade } from "../components/ui";
 import { theme } from "../theme";
 
-const s = (sec: number) => Math.round(sec * 30 * 0.83);
+const s = (sec: number) => Math.round(sec * 30);
 
 const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div style={{ fontFamily: theme.fontSans, fontSize: 22, color: theme.textDim, marginBottom: 8, letterSpacing: 1 }}>
@@ -21,7 +21,7 @@ export const Scene03bQoder: React.FC<{ frames: number }> = ({ frames }) => {
       <Background />
       <div style={{ position: "absolute", left: 80, top: 56 }}>
         <Reveal>
-          <Heading size={52}>Another AI IDE, another vault</Heading>
+          <Heading size={52}>Another AI tool, another permission</Heading>
           <div style={{ fontFamily: theme.fontMono, fontSize: 24, color: theme.textDim, marginTop: 8 }}>
             real capture &middot; Qoder asks for the Microphone
           </div>
@@ -40,27 +40,25 @@ export const Scene03bQoder: React.FC<{ frames: number }> = ({ frames }) => {
         />
       </div>
       <div style={{ position: "absolute", right: 70, top: 200, width: 640, display: "grid", gap: 14 }}>
-        <Reveal delay={s(3)} from="right">
+        <Reveal delay={s(3.8)} from="right">
           <Card style={{ padding: 20 }}>
-            <Label>PERMISSION &amp; TARGET</Label>
-            <Mono size={22} color={theme.violet}>kTCCServiceMicrophone</Mono>
-            <div style={{ fontSize: 24, marginTop: 8, color: theme.text }}>
-              target: <span style={{ color: theme.amber }}>Voice Chamber</span>
-            </div>
+            <Label>WHAT IT WANTS</Label>
+            <div style={{ fontSize: 34, color: theme.amber, fontWeight: 700 }}>Your microphone</div>
+            <Mono size={18} color={theme.textDim} style={{ marginTop: 10 }}>kTCCServiceMicrophone</Mono>
           </Card>
         </Reveal>
         <Reveal delay={s(6)} from="right">
           <Card style={{ padding: 20 }}>
-            <Label>COMMAND</Label>
+            <Label>WHAT IT RUNS</Label>
             <Mono size={22} color={theme.text}>$ swift-frontend -interpret &hellip;</Mono>
             <div style={{ fontSize: 22, marginTop: 10, color: theme.textDim, lineHeight: 1.3 }}>
-              A <code>swift -e</code> one-liner shows up as the Swift compiler, so it is harder to read.
+              A one-line Swift command shows up as the Swift tool, so it reads less clearly.
             </div>
           </Card>
         </Reveal>
-        <Reveal delay={s(10)} from="right">
+        <Reveal delay={s(8.8)} from="right">
           <Card style={{ padding: 20, boxShadow: `0 0 40px ${theme.violet}55` }} border={theme.violet}>
-            <Label>LINEAGE STILL NAMES THE SOURCE</Label>
+            <Label>WHO STARTED IT: STILL CLEAR</Label>
             <Mono size={22} color={theme.text}>
               Qoder (44386){"\n"}
               {"  "}&rarr; Qoder (44767){"\n"}

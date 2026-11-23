@@ -2,31 +2,57 @@
   {
     "id": "scene-01-intro",
     "title": "Intro, Hook and Immediate Need",
-    "text": "Every day, autonomous A I coding tools and random Mac apps throw up a system permission popup. It names the app. It never says what that app is about to do. One blind click on Allow can hand an autonomous agent your Desktop, your Documents, even your camera. Apple is tightening these permissions for A I agents, but the new prompts still name only the app, not the command. Gatekeeper's Ward fills in the missing context today."
+    "text": "Imagine an app on your Mac asks to see your files. Your Mac shows a pop-up that says which app is asking. But it never says what that app is about to do. A I helpers now run commands for you, so one blind click on Allow can give away your documents, your photos, even your camera. Apple is working on better controls, but the pop-up still will not show the command. Gatekeeper's Ward does, today.",
+    "impact": "Why this matters: a pop-up names the app but not the command, and Apple's new controls do not change that.",
+    "visual": "Title card with the ghost mascot. Right column reveals: a generic Mac pop-up, \"What is it about to do?\" marked UNKNOWN, an amber \"Apple: better controls are coming / Still in beta\" card, then a violet \"Gatekeeper's Ward fills the gap: Today\" card."
   },
   {
     "id": "scene-02-baseline",
     "title": "Baseline Flow",
-    "text": "Here is the standard macOS flow, without Gatekeeper's Ward. DeepSeek Harness asks to access files in your Desktop folder. That is all the dialog says. Is it a harmless listing, or a script copying your files out? You cannot tell. You can only click Allow or Don't Allow, and hope."
+    "text": "Here is a normal Mac pop-up. An A I tool called DeepSeek Harness wants to see your Desktop folder. That is all it says. Is it just listing file names, or copying your files out? You cannot tell. So you click, and hope.",
+    "impact": "Without the Ward, the user decides blind.",
+    "visual": "Real baseline capture (`baseline_deepseek_harness_desktop_flow.mov`) beside two cards: what your Mac tells you, and what it does not (what it will run, who started it, where it runs, why it asks). Caption: \"Allow or Don't Allow, and hope.\""
   },
   {
     "id": "scene-03-ward",
     "title": "Gatekeeper's Ward in Action",
-    "text": "Now the same request, with Gatekeeper's Ward running. DeepSeek Harness asks for the Desktop folder, and the Fortress H U D slides in beside Apple's dialog. It shows the permission being requested and the target. It shows the full process lineage: DeepSeek Harness, a helper process, bash, and finally l s. And it shows the exact command and arguments, plus the working directory. Now you can tell a safe listing from a delete or a data grab, and risky arguments like dot env files or curl get flagged. Gatekeeper's Ward never blocks anything. It only informs. You stay in full control, and you still answer with Apple's own Allow or Don't Allow button. That matters most for developers running autonomous coding agents, and for anyone who gets a popup from an app they barely recognize. Informed consent, instead of a blind click."
+    "text": "Now the same pop-up, with Gatekeeper's Ward running. A small panel appears right beside it. It says what the app wants. Here, your Desktop. It shows who started the request, step by step. It shows the exact command being run, and where. Now you can tell a harmless look from a data grab, and risky things, like password files, are flagged in red. The Ward never blocks anything. It just tells you. You still choose Allow or Don't Allow yourself. An informed choice, instead of a blind click.",
+    "impact": "A small panel next to the pop-up turns a blind click into an informed choice. It only informs; the user still decides.",
+    "visual": "Real Ward capture (`ward_deepseek_harness_desktop_flow.mov`), then the `pair.png` still. Right column reveals: what it wants (Your Desktop folder), who started it step by step, what it runs and where, warning signs (.env, .pem, id_rsa, curl, base64), then \"Informs only / Never blocks\"."
   },
   {
     "id": "scene-03b-qoder",
     "title": "A Second AI IDE: Qoder and the Microphone",
-    "text": "It works for other A I tools and permissions too. Here Qoder asks for the microphone. A Swift one liner reads as the Swift compiler, but the lineage still names the source: Qoder, a z s h shell, then swift frontend."
+    "text": "It works with other A I tools, and other permissions, too. Here Qoder asks to use the microphone. The command is a little hard to read, but the chain of steps still shows where it came from: Qoder, then a terminal, then the Swift tool.",
+    "impact": "It works for other AI tools and other permissions, not just one demo app.",
+    "visual": "Real Qoder capture (`ward_qoder_microphone_flow.mov`). Right column reveals: what it wants (Your microphone), what it runs, and who started it (Qoder, Qoder, zsh, swift-frontend)."
+  },
+  {
+    "id": "scene-04a-insight",
+    "title": "The Insight: Command Line Meets the Visual Mac",
+    "text": "Here is the clever part. A I helpers work in the command line, a world of plain text. Your Mac's permission pop-ups live in the visual world. The command gets lost in between. Seeing it normally needs Apple's heavy, restricted security tools, and a quick command is gone before anyone can look. But when a pop-up opens, your Mac pauses the app that asked. That pause is our chance. We bring the command line into the visual Mac, with no special access.",
+    "impact": "The key idea: AI helpers work in the command line, permission pop-ups live in the visual Mac. We bring the command into the visual world without special access.",
+    "visual": "Two cards (command line vs the visual Mac), a crimson \"Command lost\" gap, a \"usual route\" card (restricted Apple security tools) against \"our route\" (the Mac pauses the app that asked, so we read it live), then the banner \"The command line, inside the visual Mac.\""
   },
   {
     "id": "scene-04-how",
     "title": "How It Works: Zero Dark Magic",
-    "text": "How does it work? With zero dark magic. Gatekeeper's Ward streams the macOS unified log and watches the com dot apple dot T C C subsystem. When a prompt fires, it reads the paused process's arguments with sysctl K E R N underscore PROCARGS two. It runs in unprivileged user space. No kernel extensions. No S I P changes. No restricted entitlements. No security bypasses."
+    "text": "How does it work, in short? No dark magic. We watch the Mac's own activity log and wait for a permission pop-up. Then we look at the paused app and read its command. It all runs as a normal app. No system hacks, no turning off protections, and no special Apple access.",
+    "impact": "Simple and safe: it runs as a normal app. No system hacks, no turning off protections.",
+    "visual": "Four-box flow: a pop-up appears, we watch the activity log (`com.apple.TCC`), we read its command (`sysctl KERN_PROCARGS2`), we show it beside the pop-up (Fortress HUD). Then four red \"No\" cards: system hacks (kernel extensions), turning off protections (SIP), special Apple access, security bypasses."
+  },
+  {
+    "id": "scene-04b-team",
+    "title": "Meet the Team",
+    "text": "We are two builders in two time zones. Dharshaneshwaran, in Bengaluru, India, is an A I and creative technology developer. Iolaire, in Arlington, Virginia, is a former Director of Data Science. Dharshaneshwaran built the first app. Iolaire built the tests and this demo. Both of us paired with Kiro.",
+    "impact": "Who we are and how we collaborated: two people, two time zones, one shared Kiro workflow.",
+    "visual": "Two cards with profile photos: Dharshaneshwaran (Bengaluru, India) and Iolaire McFadden (Arlington, Virginia, USA), each with a role line and LinkedIn handle. Under each, what they built. A closing strip: \"Paired with Kiro, specs first.\""
   },
   {
     "id": "scene-05-outro",
     "title": "Outro and Kiro Wrap-Up",
-    "text": "We built Gatekeeper's Ward for Kiroween 2026 with Kiro, using spec driven development, agent hooks, and property based testing. It is open source under Apache 2.0. Gatekeeper's Ward. Know who knocks before you drop the castle gates."
+    "text": "We built Gatekeeper's Ward for Kiroween 2026 with Kiro, using specs, hooks, and property based testing. It is open source. Now the commands behind a pop-up are finally visible. Gatekeeper's Ward. Know who knocks before you drop the castle gates.",
+    "impact": "Open source, built with Kiro, and the closing line.",
+    "visual": "Gate-and-spirits art, Kiro badges (spec-driven development, agent hooks, property-based testing), repo link placeholder, \"The commands behind a pop-up, finally visible.\", then the tagline."
   }
 ]

@@ -21,3 +21,5 @@ for (const s of n) console.log(s.id + "\t" + s.text);
 done
 
 node scripts/measure-audio.mjs scratch
+
+node scripts/sync-voiceover.mjs

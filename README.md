@@ -6,9 +6,38 @@
 
 ---
 
+## The Elevator Pitch
+
+**Gatekeeper's Ward shows you what an app is about to do, at the moment your Mac asks "Allow?"**
+
+When an app on your Mac wants to see your files, camera or microphone, your Mac shows a pop-up. The pop-up says **which app** is asking. It never says **what the app is about to do**.
+
+That used to be fine. Now AI helpers run commands on your Mac for you, so a single blind click on **Allow** can hand over your documents, photos or camera.
+
+**Gatekeeper's Ward adds a small panel right next to that pop-up.** The panel shows:
+
+- what the app wants (for example, your Desktop folder),
+- who started the request, step by step,
+- the exact command being run, and where,
+- red warning signs for risky things, such as password files.
+
+The Ward only tells you. It never blocks anything and never clicks for you. You still choose **Allow** or **Don't Allow** yourself, now with the facts in front of you.
+
+*Technical names for the curious: the pop-ups come from macOS's TCC (privacy permissions) system, and the panel is called the Fortress HUD.*
+
+---
+
 ## Why Gatekeeper's Ward Matters (Potential Impact)
 
-### The urgent problem
+### The need, the impact and the innovation
+
+| | |
+|---|---|
+| **The need** | Your Mac asks "Allow this app?" but never says what the app is about to do. AI helpers now act for you, so that blind click matters far more than it used to. |
+| **The impact** | Before you click, you see what is being asked, who started it, and the exact command. A harmless file listing looks different from a copy of your password file, so you decide with facts. It works today, and because it only informs, it cannot break your workflow. |
+| **The innovation** | Commands live in a text world. Permission pop-ups live in the visual world. Nothing connected the two, so the command was lost. When a pop-up opens, your Mac pauses the app that asked. We read that paused app's command and show it beside the pop-up, using only what an ordinary app is allowed to do. No special Apple access, no system changes. |
+
+### The need, in more detail
 
 Autonomous AI IDEs, coding harnesses, and ordinary Mac apps trigger macOS TCC permission prompts that say which *app* wants access and nothing about *what it intends to do*. The user has to gamble on **Allow**, and that click can give an autonomous agent a shell-driven path into `~/Desktop`, `~/Documents`, Contacts, or the Camera.
 
@@ -116,6 +145,23 @@ The moment a permission challenge fires, our **Fortress HUD** slides in alongsid
 - 📜 The full command-line arguments
 - ⚠️ Automatic risk tagging for suspicious arguments (`.pem`, `.env`, `curl`, `base64`, `id_rsa`)
 
+### For the technically curious: why this works in user space
+
+Tools that need to see short-lived CLI commands (`ls`, `cat`, `rg`) usually reach for Apple's Endpoint Security framework. That needs a restricted entitlement and a system extension. And by the time an ordinary app reads a log line, a fast child process has often exited, so there is nothing left to inspect.
+
+The Ward uses a different window. While a permission dialog is open, `tccd` does not answer the process that asked, so that process (and its parents) stays in the Darwin process table. That gives an unprivileged app time to read it:
+
+1. **Trigger.** A background `/usr/bin/log stream` listener filtered to `com.apple.TCC` catches the prompt event and extracts the TCC service key, the client PID and the responsible PID.
+2. **Process facts.** `sysctl(KERN_PROCARGS2)` returns the raw `argv`. `sysctl(KERN_PROC_PID)` walks the ancestor chain up to the parent IDE. `proc_pidinfo(PROC_PIDVNODEPATHINFO)` gives the working directory.
+3. **Risk triage.** The command and paths are checked against secret and exfiltration patterns (`.env`, `.pem`, `id_rsa`, `curl`, `base64`), and matches are highlighted in Mischief Crimson.
+4. **Fortress HUD.** A floating `NSPanel` (`.nonactivatingPanel`, `.borderless`) appears beside Apple's dialog without taking key focus. The user still answers in Apple's own dialog.
+
+If the process has already exited, the HUD shows partial information with a note.
+
+### Agent-agnostic, at the OS boundary
+
+IDE plugins, agent hooks and MCP gateways only see commands that a cooperative, supported agent chooses to route through them. The Ward watches the macOS privacy boundary instead. Cursor, Claude Code, Kiro, DeepSeek Harness, Qoder, a script run by an `npm postinstall`, or an unvetted MCP server: if it triggers a protected-resource prompt, the Ward shows what is behind it.
+
 ## The Castle Keep & The Wandering Spirits
 
 Your macOS system is a fortified castle courtyard. Unprivileged child processes are mischievous, curious **spirits** trying to slip past the portcullis gates into protected vaults (`~/Documents`, Contacts, Camera). Gatekeeper's Ward is the **night watch lantern** — spotting these phantoms suspended mid-escape while macOS holds the gate shut.
@@ -204,8 +250,36 @@ realism. See `docs/architecture.md` for details.
 
 ## Team
 
-- **Iolaire McFadden** (iolaire), Team Representative
-- **Dharshaneshwaran**
+Two builders in two time zones, working with Kiro.
+
+<table>
+<tr>
+<td align="center" width="50%" valign="top">
+<img src="docs/team/dharshaneshwaran.jpg" width="150" alt="Dharshaneshwaran D" /><br />
+<b>Dharshaneshwaran D</b><br />
+Bengaluru, Karnataka, India<br />
+<a href="https://www.linkedin.com/in/dharshaneshwaran/">LinkedIn</a>
+</td>
+<td align="center" width="50%" valign="top">
+<img src="docs/team/iolaire.jpg" width="150" alt="Iolaire McFadden" /><br />
+<b>Iolaire McFadden</b> (Team Representative)<br />
+Arlington, Virginia, United States<br />
+<a href="https://www.linkedin.com/in/iolaire-mcfadden-240484/">LinkedIn</a>
+</td>
+</tr>
+</table>
+
+**Dharshaneshwaran D** is an AI, IoT and creative technology developer who builds smart, interactive systems with machine learning, automation and embedded hardware, and a 2D and 3D artist (Photoshop, Premiere Pro, After Effects, Blender, Unreal Engine). Past projects include Venom AI Assistant (a multilingual voice and text assistant), EcoCell (an ESP32 prototype for EV battery recycling education), and a face-recognition attendance system. The goal: bridge creativity and technology, with intelligent, aesthetic, impactful experiences.
+
+**Iolaire McFadden** spent 25 years in the commercial real estate data industry, as Director of Data Science and Quantitative Quality Assurance Director, building time series methods, datasets and rating systems. Since early retirement in 2024, Iolaire spends several hours a day building web apps with AI-assisted coding tools, such as Vedfolnir (a tool for creating accessible content for the non-commercial Fediverse), and volunteers with local charities and theaters.
+
+### How we built this together
+
+We pair with Kiro on specs first, then code, and keep a public record of it in [docs/devlog.md](docs/devlog.md).
+
+- **Dharshaneshwaran** built the first working app on the `dev` branch: the menu bar app, the TCC watcher, the process inspector and the Fortress HUD, including the fix for the macOS 27 log format. Later work: re-running the hackathon review, and the plain-language HUD banner and risk reasons.
+- **Iolaire** set up the project, specs and steering files, built the WardTrigger test harness, the permission capture framework and the real-device before/after captures, and produced the demo video and impact docs.
+- **Together** we review each other's branches, merge them with `--no-ff` so each person's commits stay in the history, and use Kiro specs, hooks and property-based tests as the shared source of truth.
 
 ## AI-Assisted Artwork
 

@@ -15,8 +15,8 @@ proxy() { # name src start duration
 }
 # baseline: Apple prompt appears ~20s in; start at 15s
 proxy baseline "$A/baseline_deepseek_harness_desktop_flow.mov" 15 10.4
-# ward: HUD appears ~14s in; start at 8s
-proxy ward "$A/ward_deepseek_harness_desktop_flow.mov" 8 15.4
+# ward: HUD appears ~14s in; start at 11s so it lands ~3s into the scene
+proxy ward "$A/ward_deepseek_harness_desktop_flow.mov" 11 12.4
 
 # qoder ward: prompt at ~14s, HUD at ~16s; start at 12s
 proxy qoder "../assets/qoder/ward_qoder_microphone_flow.mov" 12 8.0
@@ -27,4 +27,6 @@ cp "$A/ward_deepseek_harness_desktop_hud.png" public/img/ward-hud.png
 cp ../assets/qoder/ward_qoder_microphone_pair.png public/img/qoder-pair.png
 cp ../../Planning/Styles/solo_spirit.svg public/img/solo_spirit.svg
 cp ../../Planning/Styles/castle_gate_spirits.svg public/img/castle_gate_spirits.svg
+cp ../../team/iolaire.jpg public/img/team-iolaire.jpg
+cp ../../team/dharshaneshwaran.jpg public/img/team-dharshaneshwaran.jpg
 echo "assets ready"

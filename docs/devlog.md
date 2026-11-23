@@ -38,7 +38,34 @@ The six files in `.kiro/hooks/` used a custom `version: v1` / `PostTaskExec` sch
 The guard changed from a script that emits a CLI permission decision to an agent prompt carrying the same rules, because the IDE ignores that script output. The script stays in `scripts/hooks/` for the Kiro CLI. The two lint scripts run cleanly with no stdin, which is how the IDE calls them. Not yet confirmed: that each hook shows up and fires in the IDE Hooks panel.
 
 ---
-## 2026-11-23 (02:47 UTC) — Day 19: Demo video splash card, real-clip scenes, draft render
+## 2026-11-23 (15:20 UTC) — Day 19: Plain-language narrative, new insight scene, synced voiceover
+
+**iolaire (pairing with KiroCrew)**
+
+Reworked the demo narrative and the docs so a non-technical viewer understands the product first, with technical names second.
+
+- Narration rewritten in everyday words (pop-up, command, who started it, where). The panel is "a small panel" in the voice-over; `com.apple.TCC`, `sysctl KERN_PROCARGS2` and "Fortress HUD" now appear only as small on-screen labels. On-screen cards use plain labels (what it wants, who started it, what it runs and where, warning signs).
+- New scene `scene-04a-insight` ("The insight") between the Qoder scene and "How it works": AI helpers work in the command line, permission pop-ups live in the visual Mac, the command is lost between them, the usual route (restricted Apple security tools) is heavy, and the Mac pausing the app that asked is the window we use. It lands the innovation of bringing command-line tools into the visual macOS environment. Scenes 1, 3, 4 and 5 were tightened to carry the same thread.
+- All on-screen reveal times were re-matched to the spoken phrases (computed from each scene's measured duration). The Ward clip now starts 3 s before its panel appears. Scratch cut: **2:32** (4578 frames incl. splash), under 3:00.
+- `docs/demo/remotion/VOICEOVER.md` is now generated from `src/narration.json` (`scripts/sync-voiceover.mjs`, `npm run voiceover:sync`). It re-syncs after `npm run audio:scratch`, and `npm run voiceover:check` fails if the two differ. The JSON also holds each scene's impact point and visual cues.
+- `README.md` and `docs/pitch.md` open with an "Elevator Pitch" block and a need / impact / innovation table before any technical detail. The technical pipeline section is labelled "For the technically curious". The pitch no longer says the Ward "intercepts" prompts; it watches and informs.
+- Rendered a draft at 960x540 (`npm run render:draft`). Full-res render is still pending the final narration.
+- Poster image: the at-rest preview is the splash card at 0:02 (frame 60). `scripts/make-poster.sh` renders `out/poster.png` and attaches it to the MP4 as cover art without re-encoding; `render` and `render:draft` now do this automatically. The video still starts on dark with the same transitions, and the existing draft was not re-rendered (cover art added by stream copy only).
+
+---
+## 2026-11-23 (14:55 UTC) — Day 19: Documentation pass on Potential Impact and technical insight
+
+**iolaire (pairing with KiroCrew)**
+
+Reviewed a new Potential Impact draft against the docs and the code. Most of it was already in `README.md` and `docs/pitch.md` (Apple's macOS 27.3 beta 2 controls, the public-signal sources, the inform-only safety model, the DeepSeek Desktop and `.env` captures, the Qoder microphone capture).
+
+- Fetched the TechCrunch and Hacker News articles and the Hacker News thread. The Apple quote, the beta 2 date, the split settings, folder-limited Full Disk Access and "ask every time" all match.
+- Added to `README.md`: "Why this works in user space" (the four-stage pipeline: `log stream` on `com.apple.TCC`, `KERN_PROCARGS2` / `KERN_PROC_PID` / `PROC_PIDVNODEPATHINFO`, risk triage, non-activating `NSPanel`) and "Agent-agnostic, at the OS boundary". Checked each API name against `GatekeepersWard/Core/ProcessInspector.swift` and `HUD/FortressHUDWindow.swift`.
+- Added the agent-agnostic paragraph to `docs/pitch.md`, after the core technical insight.
+- Left out on purpose: the "zero race conditions" wording (the HUD already degrades if a process exited), the "clickjacking-protected" claim (not verified), the `[cite: ...]` markers and the Google search link on the Qoder pair shot (the README already links the file), and the closing question from the draft.
+- Not done: an "Agent hooks / MCP gateways" column in the comparison table, and the ASCII mockup buttons. Both need a decision.
+
+
 
 **iolaire (pairing with KiroCrew)**
 

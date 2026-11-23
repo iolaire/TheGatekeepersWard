@@ -5,7 +5,7 @@ import { ScreenClip } from "../components/ScreenClip";
 import { Badge, Caption, Card, Heading, Mono, Reveal, useSceneFade } from "../components/ui";
 import { theme } from "../theme";
 
-const s = (sec: number) => Math.round(sec * 30 * 0.91);
+const s = (sec: number) => Math.round(sec * 30);
 
 export const Scene02Baseline: React.FC<{ frames: number }> = ({ frames }) => {
   const fade = useSceneFade(frames);
@@ -16,7 +16,7 @@ export const Scene02Baseline: React.FC<{ frames: number }> = ({ frames }) => {
         <Reveal>
           <Heading size={52}>Without the Ward</Heading>
           <div style={{ fontFamily: theme.fontMono, fontSize: 24, color: theme.textDim, marginTop: 8 }}>
-            real capture &middot; macOS prompt only
+            real capture &middot; the normal Mac pop-up
           </div>
         </Reveal>
       </div>
@@ -33,26 +33,26 @@ export const Scene02Baseline: React.FC<{ frames: number }> = ({ frames }) => {
         />
       </div>
       <div style={{ position: "absolute", right: 80, top: 210, width: 600, display: "grid", gap: 22 }}>
-        <Reveal delay={s(4)} from="right">
+        <Reveal delay={s(2.3)} from="right">
           <Card>
-            <div style={{ fontSize: 24, color: theme.textDim, marginBottom: 10 }}>macOS tells you</div>
+            <div style={{ fontSize: 24, color: theme.textDim, marginBottom: 10 }}>Your Mac tells you</div>
             <Mono size={26} color={theme.text}>
               &ldquo;DeepSeek Harness&rdquo; would like to access files in your Desktop folder.
             </Mono>
           </Card>
         </Reveal>
-        <Reveal delay={s(8)} from="right">
+        <Reveal delay={s(6.5)} from="right">
           <Card border={theme.crimson}>
             <div style={{ fontSize: 24, color: theme.textDim, marginBottom: 14 }}>It does not tell you</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-              <Badge>Command</Badge>
-              <Badge>Arguments</Badge>
-              <Badge>Process lineage</Badge>
-              <Badge>Target</Badge>
+              <Badge>What it will run</Badge>
+              <Badge>Who started it</Badge>
+              <Badge>Where it runs</Badge>
+              <Badge>Why it asks</Badge>
             </div>
           </Card>
         </Reveal>
-        <Reveal delay={s(13)} from="right">
+        <Reveal delay={s(8.1)} from="right">
           <Card border={theme.amber}>
             <div style={{ fontSize: 30, lineHeight: 1.3 }}>
               Harmless listing, or a script copying files out? <b style={{ color: theme.amber }}>You can&rsquo;t tell.</b>
@@ -60,7 +60,7 @@ export const Scene02Baseline: React.FC<{ frames: number }> = ({ frames }) => {
           </Card>
         </Reveal>
       </div>
-      <Caption delay={s(15)}>Allow or Don&rsquo;t Allow, and hope.</Caption>
+      <Caption delay={s(12.6)}>Allow or Don&rsquo;t Allow, and hope.</Caption>
     </AbsoluteFill>
   );
 };

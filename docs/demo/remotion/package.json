@@ -9,9 +9,12 @@
     "audio:measure": "node scripts/measure-audio.mjs",
     "dev": "remotion studio",
     "typecheck": "tsc --noEmit",
-    "render:draft": "remotion render GatekeepersWardDemo out/gatekeepers-ward-demo-draft.mp4 --scale=0.5 --crf=28",
-    "render": "remotion render GatekeepersWardDemo out/gatekeepers-ward-demo.mp4 --crf=20",
-    "render:still": "remotion still GatekeepersWardDemo --frame=300 out/still.png"
+    "render:draft": "remotion render GatekeepersWardDemo out/gatekeepers-ward-demo-draft.mp4 --scale=0.5 --crf=28 && bash scripts/make-poster.sh out/gatekeepers-ward-demo-draft.mp4",
+    "render": "remotion render GatekeepersWardDemo out/gatekeepers-ward-demo.mp4 --crf=20 && bash scripts/make-poster.sh out/gatekeepers-ward-demo.mp4",
+    "render:still": "remotion still GatekeepersWardDemo --frame=300 out/still.png",
+    "voiceover:sync": "node scripts/sync-voiceover.mjs",
+    "voiceover:check": "node scripts/sync-voiceover.mjs --check",
+    "poster": "bash scripts/make-poster.sh"
   },
   "dependencies": {
     "@remotion/cli": "4.0.545",

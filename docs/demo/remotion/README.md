@@ -21,6 +21,8 @@ npm run render:draft # fast 960x540 proxy -> out/gatekeepers-ward-demo-draft.mp4
 npm run render       # full 1920x1080 -> out/gatekeepers-ward-demo.mp4
 ```
 
+**Preview image at rest.** The poster is the splash card at 0:02 (frame 60). Both render scripts attach it to the MP4 as cover art (stream copy, no re-encode), and `npm run poster` writes `out/poster.png` (1920x1080) for a web `<video poster>` or an upload thumbnail. To embed it in an existing MP4 without re-rendering: `bash scripts/make-poster.sh out/<file>.mp4`. Change the frame with `POSTER_FRAME=<n>`. The video itself still starts on dark and keeps its transitions. Players differ: some show the cover art, others show the first frame, and YouTube or Devpost pick their own thumbnail unless you upload `poster.png`.
+
 Render at low resolution while iterating, then render full-res to finalize. `render:draft` uses `--scale=0.5` (half the pixels, same composition) and a higher CRF, so it encodes roughly twice as fast.
 
 Generated and large files are gitignored: `node_modules/`, `out/`, `public/audio/`, `public/clips/`, `public/img/`.
@@ -49,13 +51,13 @@ Keep the total under 3:00. `npm run render` prints the frame count; divide by 30
 
 | Path | Purpose |
 |---|---|
-| `src/narration.json` | Spoken text per scene (single source for the scratch voice) |
+| `src/narration.json` | Spoken text, impact point and visual cues per scene (single source for the scratch voice and `VOICEOVER.md`) |
 | `src/audioConfig.ts` | Audio mode, per-scene timing, padding |
 | `src/theme.ts` | Palette (Obsidian `#0E1013`, Violet `#8B5CF6`, Amber `#F59E0B`, Crimson `#E63946`) and fonts |
 | `src/components/` | `Background`, glass `Card`, `Mono`, `Badge`, `Caption`, `ScreenClip` |
 | `src/scenes/` | One component per scene |
 | `scripts/` | `prepare-assets.sh`, `generate-scratch-vo.sh`, `measure-audio.mjs` |
-| `VOICEOVER.md` | Timed script with scene IDs and visual cues |
+| `VOICEOVER.md` | Timed script with scene IDs and visual cues. **Generated** from `src/narration.json`: run `npm run voiceover:sync` (also runs after `npm run audio:scratch`); `npm run voiceover:check` fails if it is out of date |
 
 ## Notes
 

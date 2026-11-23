@@ -23,12 +23,14 @@ export const MASTER_FILE = "audio/final-narration.wav";
 
 /** Master mode only: seconds into the master file where each scene starts, and its length. */
 export const MASTER_TIMINGS: Record<string, { start: number; length: number }> = {
-  "scene-01-intro": { start: 0, length: 26 },
-  "scene-02-baseline": { start: 26, length: 20 },
-  "scene-03-ward": { start: 46, length: 56 },
-  "scene-03b-qoder": { start: 102, length: 17 },
-  "scene-04-how": { start: 119, length: 29 },
-  "scene-05-outro": { start: 148, length: 18 },
+  "scene-01-intro": { start: 0, length: 24.3 },
+  "scene-02-baseline": { start: 24.8, length: 14.8 },
+  "scene-03-ward": { start: 40.0, length: 31.3 },
+  "scene-03b-qoder": { start: 71.8, length: 15.0 },
+  "scene-04a-insight": { start: 87.3, length: 27.8 },
+  "scene-04-how": { start: 115.6, length: 17.4 },
+  "scene-04b-team": { start: 133.5, length: 19.9 },
+  "scene-05-outro": { start: 153.9, length: 17.1 },
 };
 
 /** Silence before the voice starts and after it ends, in seconds. */

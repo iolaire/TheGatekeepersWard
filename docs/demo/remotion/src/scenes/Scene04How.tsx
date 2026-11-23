@@ -4,7 +4,7 @@ import { Background } from "../components/Background";
 import { Badge, Card, Heading, Mono, Reveal, useSceneFade } from "../components/ui";
 import { theme } from "../theme";
 
-const s = (sec: number) => Math.round(sec * 30 * 0.91);
+const s = (sec: number) => Math.round(sec * 30);
 
 const Node: React.FC<{
   delay: number;
@@ -35,30 +35,30 @@ export const Scene04How: React.FC<{ frames: number }> = ({ frames }) => {
         <Reveal>
           <Heading size={64}>Zero Dark Magic</Heading>
           <div style={{ fontFamily: theme.fontSans, fontSize: 30, color: theme.textDim, marginTop: 10 }}>
-            Everything runs in unprivileged user space.
+            It all runs as a normal app.
           </div>
         </Reveal>
       </div>
 
       <div style={{ position: "absolute", left: 90, right: 90, top: 270, display: "flex", gap: 14 }}>
-        <Node delay={s(1.5)} title="macOS shows a prompt" code="tccd holds the process" color={theme.textDim} />
-        <Arrow delay={s(2.5)} />
-        <Node delay={s(3.5)} title="Unified Log stream" code={'log stream\n  com.apple.TCC'} color={theme.violet} />
-        <Arrow delay={s(8)} />
-        <Node delay={s(9)} title="Read the arguments" code={"sysctl\n KERN_PROCARGS2"} color={theme.amber} />
-        <Arrow delay={s(13)} />
-        <Node delay={s(14)} title="Fortress HUD" code="beside Apple's dialog" color={theme.violet} />
+        <Node delay={s(0.8)} title="A pop-up appears" code="your Mac pauses the app" color={theme.textDim} />
+        <Arrow delay={s(1.8)} />
+        <Node delay={s(3.4)} title="We watch the activity log" code={'log stream\n  com.apple.TCC'} color={theme.violet} />
+        <Arrow delay={s(5.5)} />
+        <Node delay={s(7.3)} title="We read its command" code={"sysctl\n KERN_PROCARGS2"} color={theme.amber} />
+        <Arrow delay={s(9.4)} />
+        <Node delay={s(9.8)} title="We show it beside the pop-up" code="the Ward panel (Fortress HUD)" color={theme.violet} />
       </div>
 
       <div style={{ position: "absolute", left: 90, right: 90, top: 640 }}>
-        <Reveal delay={s(16.5)}>
+        <Reveal delay={s(12)}>
           <div style={{ fontFamily: theme.fontSans, fontSize: 30, color: theme.textDim, marginBottom: 18 }}>
-            What it does not need
+            What we never do
           </div>
         </Reveal>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18 }}>
-          {["Kernel extensions", "SIP changes", "Restricted entitlements", "Security bypasses"].map((t, i) => (
-            <Reveal key={t} delay={s(18 + i * 2.2)}>
+          {["System hacks (kernel extensions)", "Turn off protections (SIP)", "Special Apple access", "Security bypasses"].map((t, i) => (
+            <Reveal key={t} delay={s(13 + i * 0.9)}>
               <Card border={theme.crimson} style={{ textAlign: "center", padding: 22 }}>
                 <Badge size={26}>No</Badge>
                 <div style={{ fontSize: 30, marginTop: 14 }}>{t}</div>
