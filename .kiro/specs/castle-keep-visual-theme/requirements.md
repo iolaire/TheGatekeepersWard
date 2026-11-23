@@ -61,11 +61,11 @@ This feature restyles Gatekeeper's Ward to match the reference mock `docs/Planni
 
 1. THE Fortress_HUD SHALL show a Gate_Banner at the top, drawn with `Canvas` or `Shape`, containing a violet portcullis with spikes and scroll work, two torches with amber flames, a brick wall in Obsidian Slate tones, at least two floating Ghost_Figures, and small sparkles around the figures.
 2. THE Fortress_HUD SHALL show the Neon_Title with the Ghost_Pair at its right.
-3. THE Fortress_HUD SHALL show an Audit_Banner with the heading "SECURITY AUDIT: TCC EVENT DETECTED" and the raw TCC service key, on an amber-tinted background with an amber border.
+3. THE Fortress_HUD SHALL show an Audit_Banner with the heading "A spirit is knocking at your " followed by the requested vault's name (amended by `.kiro/specs/hud-plain-language-copy` Requirement 1; previously "SECURITY AUDIT: TCC EVENT DETECTED") and the raw TCC service key, on an amber-tinted background with an amber border.
 4. THE Fortress_HUD SHALL keep the status text "Spirit Paused at the Gate" visible.
 5. THE Fortress_HUD SHALL draw the Lineage_Tree with indentation per depth, a connector arrow between parent and child, and a rounded terminal-style tile holding the spirit icon for each process, and SHALL highlight the asking process.
 6. THE Fortress_HUD SHALL keep the per-process spirit icons that the lineage already shows.
-7. THE Fortress_HUD SHALL show a Risk_Legend that lists only the `RiskCategory` values present in the current event's risk tags (credential file, network tool, encoding, secret path), each with an icon and a short label, and SHALL show no legend when there are no risk tags.
+7. THE Fortress_HUD SHALL show a Risk_Legend that lists only the `RiskCategory` values present in the current event's risk tags (credential file, network tool, encoding, secret path), each with an icon, a short label and a one-line reason (reason added by `.kiro/specs/hud-plain-language-copy` Requirement 2), and SHALL show no legend when there are no risk tags.
 8. THE Fortress_HUD SHALL show the executed command in a monospaced box with an amber border (crimson when the status is suspicious) and a `vault:` line naming the requested vault, and a working directory line when known. THE command box SHALL grow taller to show the whole command, up to 12 lines, and the full text SHALL stay available as a tooltip and by text selection.
 9. THE Fortress_HUD SHALL be 400 pt wide. Its height SHALL grow with its content: at most 720 pt for typical content, and never more than 900 pt (the hard cap), so that it fits beside Apple's alert.
 10. THE Fortress_HUD SHALL keep the Obsidian Slate frosted background, the Wrought Iron edge and the dark colour scheme.
