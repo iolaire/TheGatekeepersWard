@@ -64,3 +64,12 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .hypothesis/
+
+# Permission capture framework output (may contain personal data)
+captures/
+
+# Published capture videos are 30-55 MB each; keep them local (images and manifests are committed).
+docs/demo/assets/**/*.mov
+docs/demo/assets/**/*.mp4
+# Full-screen 5K shots are ~20 MB each; pair.png shows the key moment.
+docs/demo/assets/**/*_screen.png

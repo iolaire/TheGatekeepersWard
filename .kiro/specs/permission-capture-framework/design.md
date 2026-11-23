@@ -4,7 +4,9 @@
 
 The Permission Capture Framework is a set of shell scripts under `scripts/capture/` that records macOS TCC permission prompts raised by AI coding agent apps, once without Gatekeeper's Ward (`baseline`) and once with it (`ward`). It produces screenshots, a video, and a JSON manifest for each Capture_Session. It adds no runtime code to the Ward app.
 
-The framework has one entry script, `capture.sh`, with the subcommands `setup`, `teardown`, `reset`, `prompt`, `run`, `list`, `doctor`, and `export`. Everything it needs comes from macOS: `osascript`, `screencapture`, `tccutil`, `mdls`, `pgrep`, and an optional `ffmpeg`. A small Swift script is used only to ask macOS whether a permission is granted without prompting.
+The framework has one entry script, `capture.sh`, with the subcommands `setup`, `teardown`, `reset`, `restore`, `prompt`, `run`, `list`, `doctor`, and `export`. Everything it needs comes from macOS: `osascript`, `screencapture`, `tccutil`, `sqlite3`, `mdls`, `pgrep`, and an optional `ffmpeg`. A small Swift script is used only to ask macOS whether a permission is granted without prompting.
+
+`tccutil reset` deletes the developer's real grants for the target app. To avoid that loss, the framework saves the affected rows of the user-level TCC database before the first reset of a run and writes them back when the run ends, fails, or is interrupted. All database access lives in one file, `lib/tccdb.sh` (the TCC_Access_Module). It opens only the user-level database, touches only the target app's rows for the profile's declared services, and takes a full backup copy before any write. The rest of the framework contains no reference to a TCC database file.
 
 ### Design decisions
 
@@ -17,9 +19,14 @@ The framework has one entry script, `capture.sh`, with the subcommands `setup`, 
 | D5 | Pure decision logic (profile validation, bundle-ID guard, reset plan, session paths, crop rectangle, window matching, session planning, manifest checks) lives in `lib/*.sh` functions with no I/O. | These functions are the ones property-based tests can drive. |
 | D6 | JSON is produced and parsed with **`osascript -l JavaScript`** (`lib/json.js`), not `jq` or Python. | Requirement 14.8 forbids extra dependencies. `osascript` is already required. |
 | D7 | Window discovery uses `CGWindowListCopyWindowInfo` through JXA (`lib/windows.js`). It never reads `kCGWindowName`. | Verified on this Mac: JXA reads owner, number, layer, and alpha with no Screen Recording grant. Matches `AlertLocator` in the app. |
-| D8 | Permission status checks use `scripts/capture/lib/permcheck.swift`, run with `swift`. | Only `AEDeterminePermissionToAutomateTarget(askUserIfNeeded: false)` checks Automation without prompting, and JXA cannot build the `AEDesc` it needs. Accessibility (`AXIsProcessTrusted`) and Screen Recording (`CGPreflightScreenCaptureAccess`) use the same helper for consistency. |
+| D8 | Permission status checks for Accessibility, Screen Recording, and Automation use `scripts/capture/lib/permcheck.swift`, run with `swift`. Full Disk Access is checked by `tcc_probe` in `lib/tccdb.sh`. | Only `AEDeterminePermissionToAutomateTarget(askUserIfNeeded: false)` checks Automation without prompting, and JXA cannot build the `AEDesc` it needs. Accessibility (`AXIsProcessTrusted`) and Screen Recording (`CGPreflightScreenCaptureAccess`) use the same helper for consistency. macOS has no preflight API for Full Disk Access, and the only reliable test is a read-only open of the database, which Requirement 13.11 confines to `tccdb.sh`. |
 | D9 | Automated tests are **pytest + Hypothesis**, reusing the virtualenv at `.kiro/tools/.venv` (Hypothesis 6.170.15 is already pinned in `.kiro/tools/requirements.txt`). Tests call the bash functions through subprocesses, with stub binaries for `tccutil`, `osascript`, `screencapture`, and `pgrep` placed first on `PATH`. | Requirement 14.3 needs tests that pass with no macOS permissions. The project's own steering requires a real PBT library rather than hand-rolled generators. Swift Testing is not used because the code under test is bash. |
 | D10 | One run timestamp is chosen per `capture.sh run` invocation and shared by every Capture_Session of that run. | Requirement 9.10 needs `baseline` and `ward` to be siblings. `--all-scenarios` and `--all-profiles` then land under one timestamp directory. |
+| D11 | All TCC database access is in **one file**, `lib/tccdb.sh`, which uses the system `sqlite3` CLI. A static scan enforces that no other file under `scripts/capture/` (except tests and `*.md`) contains `TCC.db` or `com.apple.TCC`. | Requirements 13.1, 13.11, 17. One small file is auditable, and the scan makes a stray reference a test failure. |
+| D12 | Snapshots are **schema-agnostic and typed**. The column list comes from `PRAGMA table_info(access)`, and every cell is stored as a tagged string: `i:<int>`, `t:<hex>`, `b:<hex>`, or `n:`. Text and blobs are hex of their bytes. A real number makes the snapshot fail closed. | The `access` schema changes between macOS releases. Hex needs no quoting, so `csreq` blobs and any text round-trip byte for byte (15.2, 13.12). |
+| D13 | Restore deletes the scope rows and re-inserts the snapshot rows with `INSERT OR REPLACE` in **one transaction** (`BEGIN IMMEDIATE` ... `COMMIT`, with `.bail on`). It then re-reads and compares. | Requirements 16.4 to 16.8. Delete-then-insert ends in the same state as "replace present rows, delete extra rows", and a failure rolls everything back. |
+| D13a | Profiles and snapshot JSON (`services`, `services_without_row`) use tccutil short names; `tcc_db_service` maps each to `kTCCService<Name>` (unless already prefixed) only where a value enters SQL or is compared with an `access.service` cell. | The real `access.service` column stores the prefixed name, so a verbatim short name matches no row. |
+| D14 | The restore runs **once per run**, after the last session's end-of-session reset, and in every failure and signal path. `reset` takes the snapshot and leaves it pending. | One snapshot per bundle per run (15.4) means one restore. `reset` exists to leave the app reset, so restoring inside it would undo the command. The developer runs `restore` or `teardown` afterwards. |
 
 ### Findings from inspecting the repo and this Mac
 
@@ -32,7 +39,9 @@ These resolve the assumptions that were open when the requirements were written.
 5. **Ward launch.** `scripts/run_ward.sh` builds with `swift build`, wraps the binary in `.build/GatekeepersWard.app`, signs ad hoc, and runs `open -n`. It returns after launching and does not print a PID. It also runs `pkill` on any running copy, so the framework calls it only when no Ward process exists. The framework finds the PID afterwards with `pgrep -n -f GatekeepersWard.app/Contents/MacOS/GatekeepersWardApp`, the same pattern `run_ward.sh --stop` uses. The 10 second menu bar timeout (9.5) starts when `run_ward.sh` returns, so build time is not counted.
 6. **Tool availability.** `ffmpeg` is at `/opt/homebrew/bin/ffmpeg`. `screencapture` supports `-v` (video), `-l<windowid>`, `-R<x,y,w,h>`, `-D<display>`, `-o` (no shadow), and `-x` (no sound). `osascript -l JavaScript` can call `CGWindowListCopyWindowInfo` with `ObjC.castRefToObject` and returns owner, number, layer, and alpha.
 7. **Existing conventions.** `scripts/reset_ward_trigger.sh` already resets TCC with `tccutil reset <service> <bundle>`. `scripts/hooks/*.sh` are bash. `captures/` is not yet in `.gitignore`, and the only Python tests are in `.kiro/tools/tests/`.
-8. **Guarded by project hooks.** `scripts/hooks/guard-security-boundaries.py` and `docs/` steering forbid TCC database access. The framework never touches `TCC.db`, which matches Requirement 13.1.
+8. **Guarded by project hooks.** `scripts/hooks/guard-security-boundaries.py` and the `macos-security-boundaries` steering file currently forbid TCC database access. Requirements 13.1 and 15 to 17 add one exception: `scripts/capture/lib/tccdb.sh`, on the user-level database only. The implementation tasks must (a) add a narrowly worded exception to the steering file and (b) change the hook to allow exactly that path, so that any other file referencing a TCC database is still blocked. The hook's current matching rules must be read before editing it.
+9. **Full Disk Access has no preflight API.** The user database cannot be opened without it, so a read-only open is the only probe. Granting it needs the Capture_Host to be restarted in some macOS versions, which the README notes.
+10. **Write protection is unverified.** Recent macOS releases can refuse writes to the user database even with Full Disk Access, and `tccd` caches grants in memory. Restore therefore reports failure cleanly (16.13) and restarts `tccd` after a verified write (16.9). Whether a write succeeds on 27.2.1 is settled by the first implementation task (see Open items).
 
 ## Architecture
 
@@ -47,6 +56,8 @@ scripts/capture/
 │   ├── profile.sh              # load, parse, validate App_Profiles (pure parts + file I/O)
 │   ├── validate.sh             # pure option validators (resolve, display, timeouts, dwell)
 │   ├── reset.sh                # bundle-ID guard, reset plan, reset execution
+│   ├── tccdb.sh                # TCC_Access_Module: the ONLY file that names a TCC database
+│   ├── restore.sh              # restore subcommand, run-level snapshot/restore wiring, tccd restart report
 │   ├── plan.sh                 # session planning and failure policy (pure)
 │   ├── session.sh              # Session_Directory naming, creation, step runner, summary.md
 │   ├── manifest.sh             # accumulate manifest fields, write/validate manifest.json
@@ -66,7 +77,7 @@ scripts/capture/
 │   ├── ui.applescript          # System Events: focus, type, click, read prompt text
 │   ├── clipboard.js            # JXA: snapshot/restore all pasteboard types
 │   ├── focus.applescript       # Control Center Focus toggle (see Open items)
-│   └── permcheck.swift         # permission status/request without side effects
+│   └── permcheck.swift         # permission status/request without side effects (4 permissions; FDA is in tccdb.sh)
 ├── profiles/
 │   ├── zcode.profile
 │   ├── deepseek-harness.profile
@@ -76,10 +87,12 @@ scripts/capture/
     ├── test_profile.py  test_reset_guard.py  test_quoting.py  test_paths_manifest.py
     ├── test_windows_crop.py  test_plan.py  test_validate.py  test_dryrun.py
     ├── test_setup_state.py  test_export_summary.py  test_cleanup.py
-    └── stubs/                  # tccutil, osascript, screencapture, pgrep, open
+    ├── test_tccdb.py  test_tcc_restore.py  test_tcc_wiring.py  test_tcc_scan.py
+    └── stubs/                  # tccutil (edits the temp DB), osascript, screencapture, pgrep, open,
+                                # pkill, sqlite3 (logs argv, then runs /usr/bin/sqlite3)
 ```
 
-`captures/` is added to `.gitignore`. Runtime state lives in `captures/.state/` (`setup.json`, `ward.pid`, `recorder.pid`, `launched.txt`, `focus-state`, `clipboard.snap`).
+`captures/` is added to `.gitignore`. Runtime state lives in `captures/.state/` (`setup.json`, `ward.pid`, `recorder.pid`, `launched.txt`, `focus-state`, `clipboard.snap`, `tcc-snapshot-<bundle_id>.json`, `tcc-snapshot-<bundle_id>.restored.json`, `TCC.db.backup-<timestamp>`).
 
 ### Run flow
 
@@ -90,7 +103,7 @@ flowchart TD
     B --> C[plan sessions: scenarios x profiles x modes]
     C --> D{next session}
     D --> E[1 preflight]
-    E --> F[2 scoped reset before]
+    E --> F[2 snapshot once per bundle, then scoped reset before]
     F --> G[3 video start]
     G --> H[4 app launch]
     H --> I[5 prompt send]
@@ -110,11 +123,24 @@ flowchart TD
     J -.fail.-> Q
     K -.fail.-> Q
     M -.fail.-> Q
-    Q[cleanup, scoped reset, error manifest] --> R{keep-going?}
+    Q[scoped reset, cleanup_all, error manifest] --> R{keep-going?}
     R -->|yes| D
-    R -->|no| Z[exit non-zero]
+    R -->|no| T
     D -->|none left| S[summary.md when both modes completed]
+    S --> T[run epilogue: restore pending snapshots, restart tccd]
+    T --> Z[exit code: non-zero if any session or the restore failed]
 ```
+
+### TCC snapshot and restore placement
+
+The twelve numbered steps are unchanged. Snapshot and restore are not new steps. They are printed as extra lines (`tcc-snapshot`, `tcc-restore`) in the step log, so Requirement 12.1's order still holds.
+
+- **Snapshot** runs inside step 2 (`reset`), before the first `tccutil reset` for a bundle ID in the run. `tcc_ensure_snapshot` does nothing when this run already took the snapshot for that bundle, or when a pending snapshot exists from an earlier crashed run (reusing it keeps the developer's original grants, since the database now holds reset state). A failure fails step 2, and no `tccutil` command runs (15.7).
+- **Restore** runs once, in the run epilogue, after the last session's `reset-after` step (16.1). With `--keep-going` and several sessions it still runs once.
+- **Failure path.** The runner now runs the session's scoped reset first, then `cleanup_all`, whose last TCC action is the restore. The earlier text ordered cleanup before the reset. The reset must come first, because a restore followed by a reset would delete the restored grants again.
+- **Signal path.** The `INT`/`TERM` trap runs the session reset when a session is active, then `cleanup_all` (which restores), then exits 130 or 143.
+- **`prompt`** is a one-session run and follows the same flow. **`reset`** takes the snapshot, resets, and leaves the snapshot pending (D14).
+- **`--no-restore`** removes every snapshot, backup, probe, and restore action. A notice is printed (15.10).
 
 The twelve step names, in order, are `preflight`, `reset`, `video-start`, `app-launch`, `prompt-send`, `prompt-detection`, `screenshots`, `dwell`, `resolve`, `video-stop`, `reset-after`, `manifest-write`. These are the names printed (12.9), recorded as the failing step in the manifest (11.5), and listed by `--dry-run`.
 
@@ -135,10 +161,13 @@ One idempotent function, `cleanup_all`, performs every teardown action. It is ca
 2. Send `SIGINT` to the PID in `recorder.pid`, wait up to 10 s, check playability (2.5).
 3. Send `SIGTERM` to the PID in `ward.pid`, wait up to 5 s, send `SIGKILL` if needed, delete the Marker_File (2.1 to 2.3).
 4. Quit each bundle ID in `launched.txt` that the framework launched, wait up to 10 s each, never force-kill (2.6, 2.7).
-5. Restore the Focus state from `focus-state` if present.
-6. Print the revoke guidance for each permission `setup.json` records as originally missing (2.4).
+5. Run `restore_all` (2.11, 16.1, 16.3, 16.15): for every pending `captures/.state/tcc-snapshot-<bundle_id>.json`, call `tcc_restore`, then `tcc_verify`, then restart `tccd` and rename the snapshot to `.restored.json` on success. A failure here is recorded and does not stop the remaining actions.
+6. Restore the Focus state from `focus-state` if present.
+7. Print the revoke guidance for each permission `setup.json` records as originally missing (2.4).
 
-The signal trap then exits with 130 (`SIGINT`) or 143 (`SIGTERM`).
+Restore comes after the app has quit (4), so the target app is not writing to the database while rows are replaced, and after the session's scoped reset (run by the caller before `cleanup_all`). When `restore_all` failed, `cleanup_all` returns non-zero after finishing actions 6 and 7, and `teardown` exits 1.
+
+The signal trap then exits with 130 (`SIGINT`) or 143 (`SIGTERM`), whatever the restore result, and prints the restore failure first.
 
 ## Components and Interfaces
 
@@ -155,12 +184,13 @@ The signal trap then exits with 130 (`SIGINT`) or 143 (`SIGTERM`).
 
 | Subcommand | Options | Notes |
 |---|---|---|
-| `setup` | none | 4 status lines, requests missing permissions, opens Settings panes, writes Setup_State_File |
-| `doctor` | none | Read-only. Never calls a request function and never writes state |
-| `teardown` | none | Runs `cleanup_all`. Exit 0 and a message when nothing exists |
-| `reset <profile>` | `--service <svc>`, `--dry-run` | Scoped `tccutil reset` |
-| `prompt <profile> <scenario>` | `--mode`, `--resolve`, `--no-reset`, `--no-video`, `--no-images`, `--video-backend`, `--display`, `--dry-run`, `--redact-notifications` | One Capture_Session |
-| `run <profile> <scenario>` | all `prompt` options plus `--all-scenarios`, `--all-profiles`, `--keep-going` | Baseline then ward, each with a fresh reset |
+| `setup` | `--no-restore` | 5 status lines, requests missing permissions, opens Settings panes, writes Setup_State_File. With `--no-restore` the Full Disk Access line reads `full-disk-access: skipped (--no-restore)` and is not probed |
+| `doctor` | `--no-restore`, `--video-backend` | Read-only. Never calls a request function and never writes state. Also prints whether a pending TCC_Snapshot exists |
+| `teardown` | none | Runs `cleanup_all`, including the Restore. Exit 0 and a message when nothing exists |
+| `reset <profile>` | `--service <svc>`, `--dry-run`, `--no-restore` | Snapshot (once), then scoped `tccutil reset`. The snapshot stays pending |
+| `restore [<profile>]` | `--dry-run` | Restores one profile's pending snapshot, or every pending snapshot. Exit 0 with a message when none is pending |
+| `prompt <profile> <scenario>` | `--mode`, `--resolve`, `--no-reset`, `--no-video`, `--no-images`, `--no-restore`, `--video-backend`, `--display`, `--dry-run`, `--redact-notifications` | One Capture_Session |
+| `run <profile> <scenario>` | all `prompt` options plus `--all-scenarios`, `--all-profiles`, `--keep-going` | Baseline then ward, each with a fresh reset. Restore once at the end |
 | `list` | none | One line per profile |
 | `export <dir>` | none | Copies `*.png` and `flow.*` |
 
@@ -238,6 +268,104 @@ Defaults: launch timeout 20 s (1 to 300), prompt timeout 45 s (1 to 300), HUD ti
 
 Session-start reset (3.8, 3.9) and session-end reset (10.7, 10.8) call `reset_run` with `--service <scenario service>`. A failure at session start stops the session before `prompt-send`. A failure at session end sets a warning, a manifest field, and a non-zero exit but does not skip the remaining cleanup.
 
+`reset_run` is called after `tcc_ensure_snapshot` for the same profile (see "Run wiring" below). Its own guard checks are unchanged.
+
+### `lib/tccdb.sh` (TCC_Access_Module)
+
+The only file that names a TCC database. It sources `reset.sh` for `guard_bundle_id`. It calls `sqlite3` from `PATH`, which lets tests put a logging wrapper first. Every SQL script goes to `sqlite3` on **stdin**, never in argv, and begins with `.bail on`.
+
+**Path guard (17.1, 17.2)**
+
+| Function | Pure? | Contract |
+|---|---|---|
+| `tcc_path_ok candidate home tmpdir test_env` | yes | Resolves symbolic links in `candidate` (and in the other two paths). Returns 0 when it equals `<home>/Library/Application Support/com.apple.TCC/TCC.db`. Returns 0 for any other path only when `test_env` is non-empty and the resolved path lies strictly inside the resolved `tmpdir`. The system-level database path is never accepted. Otherwise prints `refusing database path '<p>'` and returns 1 |
+| `tcc_db_path` | no | Computes the path: `$CAPTURE_TCC_DB_TEST` when set, else the user database path. Calls `tcc_path_ok` with `$HOME`, `$(getconf DARWIN_USER_TEMP_DIR)`, and the variable. Exits non-zero on refusal |
+
+The system temporary directory is the user's `DARWIN_USER_TEMP_DIR` (also accepting `/tmp` and `/private/tmp`). A test path that is a symlink out of that directory resolves outside it and is refused.
+
+**Probe (1.9, 12.7)**
+
+`tcc_probe` returns 0 when `sqlite3` exists and `sqlite3 -readonly <db> 'SELECT 1 FROM access LIMIT 1'` succeeds. It writes nothing. A missing `sqlite3`, a missing file, or any open error returns 1 and prints the cause (`sqlite3 not found`, or the sqlite error text). `perm_status full-disk-access` calls it, and prints `granted` or `missing` accordingly. `setup` opens `x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles` for it. No request API exists, so `perm_request full-disk-access` only opens the pane.
+
+**Literal builders (13.12, pure)**
+
+| Function | Contract |
+|---|---|
+| `sql_quote s` | Prints `'` + `s` with each `'` doubled + `'`. Fails for a string with NUL |
+| `tcc_valid_bundle s` | `^[A-Za-z0-9][A-Za-z0-9._-]*$`, not `All` in any case, not empty |
+| `tcc_valid_service s` | `^[A-Za-z][A-Za-z0-9]*$` |
+| `tcc_ident s` | Accepts a column name matching `^[A-Za-z_][A-Za-z0-9_]*$` and prints it double-quoted. Anything else is refused |
+| `cell_literal cell` | `i:<n>` (`^-?[0-9]{1,19}$`) prints `<n>`. `t:<hex>` prints `CAST(X'<hex>' AS TEXT)`. `b:<hex>` prints `X'<hex>'`. `n:` prints `NULL`. `<hex>` must match `^([0-9A-Fa-f]{2})*$`. Any other cell (including `r:`) is refused |
+
+Bundle IDs and service keys are validated first and then quoted with `sql_quote`, so a validation gap is not an injection path. Values from a snapshot file never pass through `sql_quote`. They pass through `cell_literal`, which only emits digits, hex, or `NULL`.
+
+**Guards (17.4, 17.5)**
+
+`tcc_guard bundle service... -- known_bundle...` calls `guard_bundle_id` and then checks that every service is non-empty, passes `tcc_valid_service`, and is declared by the selected profile. On refusal it prints the rejected value and returns 1 before any `sqlite3` call.
+
+**Snapshot, backup, restore, verify**
+
+| Function | Contract |
+|---|---|
+| `tcc_scope_query bundle services...` | Pure. Prints the SQL that selects every column of the Snapshot_Scope rows as tagged cells (below), ordered by `service, rowid`, with `WHERE client = <q(bundle)> AND service IN (<q(s)>, ...)`. The column list is an argument |
+| `tcc_columns` | Runs `PRAGMA table_info(access)` read-only and prints column names after `tcc_ident` validation. Fails when `service` or `client` is absent |
+| `tcc_rows bundle services...` | Opens the database with `-readonly`, runs `tcc_scope_query`, prints one row per line as tab-separated cells. Fails closed when any cell is `r:` (a real number) |
+| `tcc_snapshot bundle services...` | Guards, then writes `captures/.state/tcc-snapshot-<bundle>.json` atomically (temp file in the same directory, then rename). Re-reads the file and compares its row count with the query's (15.8). On any failure removes the temp file and returns non-zero, and prints the reason, plus the Full Disk Access pane when the open failed |
+| `tcc_backup run_ts` | If `captures/.state/TCC.db.backup-<run_ts>` exists, returns 0 and does nothing (never overwrites, 15.9). Otherwise `cp -p` of the database, then checks that the copy has the same byte size as the source and that `sqlite3 -readonly <copy> 'SELECT count(*) FROM access'` succeeds (17.7). On failure deletes the copy and returns 1. Earlier backup files are never touched. When `-wal` and `-shm` files exist beside the database they are copied with it |
+| `tcc_restore bundle` | Reads the snapshot, applies the guards (bundle must be in a loaded profile, snapshot services must all be declared by that profile), builds the script (below), runs it, then calls `tcc_verify`. Does not rename the snapshot or restart `tccd` |
+| `tcc_verify bundle` | Re-reads the scope rows with `tcc_rows`, sorts both sides, compares line by line, and prints the `service` of each differing or extra row. Returns 0 only when equal in every column and no extra row exists (16.8) |
+| `tcc_restart_daemon` | `pkill -x -u "$(id -u)" tccd`, prints `tccd restart: done` or `tccd restart: failed`, never fails the restore. Skipped when the path came from `CAPTURE_TCC_DB_TEST` |
+| `tcc_mark_restored bundle` | Renames the snapshot to `tcc-snapshot-<bundle>.restored.json` (16.11) |
+| `tcc_pending` | Lists bundle IDs with a `tcc-snapshot-*.json` that does not end in `.restored.json`. Reads only the state directory and never opens the database (17.11) |
+
+Restore script (D13), run with `sqlite3` read-write after `tcc_backup` succeeded:
+
+```sql
+.bail on
+BEGIN IMMEDIATE;
+DELETE FROM access WHERE client = 'dev.zcode.app' AND service IN ('SystemPolicyDesktopFolder', ...);
+INSERT OR REPLACE INTO access ("service","client",...) VALUES ('...', CAST(X'...' AS TEXT), X'...', NULL, 0, ...);
+-- one INSERT per snapshot row, columns taken from the snapshot file
+COMMIT;
+```
+
+The `DELETE` removes every in-scope row (so a row created after the snapshot, or one with no counterpart, is gone, 16.5 and 16.6). The `INSERT OR REPLACE` puts each snapshot row back with every column (16.4). With a zero-row snapshot the script is `DELETE` only. `sqlite3` exits non-zero on the first error, and because the script has not reached `COMMIT`, SQLite rolls the transaction back (16.7, 16.13).
+
+**Snapshot file format (`tcc-snapshot-<bundle>.json`)**
+
+```json
+{
+  "format": 1,
+  "bundle_id": "dev.zcode.app",
+  "taken_at": "2026-11-20T15:30:40Z",
+  "run": "20261120T153040Z",
+  "database": "user",
+  "backup": "captures/.state/TCC.db.backup-20261120T153040Z",
+  "services": ["SystemPolicyDesktopFolder", "SystemPolicyRemovableVolumes"],
+  "services_without_row": ["SystemPolicyRemovableVolumes"],
+  "columns": ["service","client","client_type","auth_value","auth_reason","auth_version","csreq","policy_id","indirect_object_identifier_type","indirect_object_identifier","indirect_object_code_identity","flags","last_modified"],
+  "rows": [["t:53797374...","t:6465762E...","i:0","i:2","i:4","i:1","b:FADE0C00...","n:","n:","t:554E...","n:","i:0","i:1763650000"]]
+}
+```
+
+`database` is `user` or `test`. The cell tags are `i:` (integer, decimal text), `t:` (text, hex of the UTF-8 bytes), `b:` (blob, hex), and `n:` (null). The whole file is written and read by `json.js`, so strings with any characters round-trip. `services_without_row` lists declared services that had no row (15.5).
+
+**What the file never contains.** No code path in `tccdb.sh` inserts a value that is not read from a snapshot, grants anything, or touches a row outside the scope (17.9).
+
+**Notices (17.10).** Before the first snapshot of a run, `tcc_notice` prints that the framework reads and may write the user's TCC database for the named bundle ID only, and the backup path.
+
+### Run wiring (`lib/restore.sh`)
+
+| Function | Contract |
+|---|---|
+| `tcc_ensure_snapshot profile run_ts` | Returns 0 at once when `--no-restore` is set (prints the 15.10 notice once). Otherwise, in order: (1) if this run already ensured the bundle, return 0; (2) if a pending snapshot exists and its `services` include all the profile's services, reuse it and print `reusing pending snapshot`; if it misses a service, fail with `pending snapshot is older than the profile; run capture.sh restore first`; (3) else `tcc_probe`, `tcc_notice`, `tcc_snapshot`, `tcc_backup run_ts`. A failure at any point returns 1 and `reset_run` does not start (15.7, 17.8). In dry-run it prints `would snapshot ...`, `would back up ...` and returns 0 without calling `sqlite3` (15.11) |
+| `tcc_copy_snapshot_to_session dir profile` | Copies the snapshot to `<dir>/tcc-snapshot.json` and adds it to the manifest artifact list (15.3). Skipped with `--no-restore` |
+| `restore_one bundle` | `tcc_restore`, then on success `tcc_restart_daemon` and `tcc_mark_restored`. On a verify difference keeps the snapshot pending, prints the differing services and the backup path, returns 1 (16.12). On a write rejection prints the `sqlite3` cause, the manual fallback (re-enable the permission in System Settings, Privacy & Security) and the backup path, returns 1 (16.13) |
+| `restore_all` | `restore_one` for each bundle from `tcc_pending`, continuing after a failure. Prints `nothing to restore` and returns 0 when none (16.14). In dry-run prints the actions only (16.17) |
+| `cmd_restore [profile]` | Loads profiles (needed for the guards), runs `restore_one` for the profile or `restore_all`. A pending snapshot whose bundle is in no loaded profile is refused with its bundle ID and counted as a failure |
+
+`--no-restore` on `run`, `prompt`, or `reset` skips `tcc_ensure_snapshot`, the session copy, and the epilogue restore. The `restore` subcommand still restores any pending snapshot (16.16).
+
 ### `lib/plan.sh` (pure)
 
 `plan_sessions` turns the command line into an ordered list of `profile<TAB>scenario<TAB>mode` rows:
@@ -256,7 +384,7 @@ Session-start reset (3.8, 3.9) and session-end reset (10.7, 10.8) call `reset_ru
 
 Each row carries a `pair` id (the profile and scenario) so the policy can tell which `baseline` belongs to which `ward`.
 
-`plan_exit_code outcomes` is 0 when every outcome is `ok`, else 1.
+`plan_exit_code outcomes restore_status` is 0 when every outcome is `ok` and `restore_status` is `verified`, `none`, or `skipped`, else 1.
 
 ### `lib/session.sh`
 
@@ -363,13 +491,15 @@ One row per TCC service key the profiles use: `service<TAB>keyword1,keyword2`. E
 
 | Function | Contract |
 |---|---|
-| `perm_status name` | Runs `swift permcheck.swift status <name>` and prints `granted` or `missing`. Names: `accessibility`, `screen-recording`, `automation-system-events`, `automation-finder`. Never prompts |
-| `perm_request name` | Runs `permcheck.swift request <name>` and opens the matching Settings pane with `open "x-apple.systempreferences:com.apple.preference.security?Privacy_<Pane>"` within 5 s of detection (1.2) |
-| `setup_state_merge old new` | Pure. For each permission keeps the old `already_granted` value when the old file has it, otherwise takes the new one (1.3) |
-| `cmd_setup` | Prints exactly four lines (`<name>: granted\|missing`), requests what is missing, re-checks after the user confirms, writes the state file, exits 0 only when all four are granted |
-| `cmd_doctor` | Four permission lines, one each for `osascript`, `screencapture`, `tccutil`, `ffmpeg` (only when `--video-backend ffmpeg` is selected), and the macOS version line. Calls only `perm_status` and `command -v`. Exits 1 if a required tool is missing, after printing every line |
+| `perm_status name` | Prints `granted` or `missing`. Names: `accessibility`, `screen-recording`, `automation-system-events`, `automation-finder` (through `swift permcheck.swift status <name>`) and `full-disk-access` (through `tcc_probe`). Never prompts and never writes |
+| `perm_request name` | Runs `permcheck.swift request <name>` where an API exists and opens the matching Settings pane with `open "x-apple.systempreferences:com.apple.preference.security?Privacy_<Pane>"` within 5 s of detection (1.2). For `full-disk-access` it only opens the pane |
+| `setup_state_merge old new` | Pure. For each permission keeps the old `already_granted` value when the old file has it, otherwise takes the new one (1.3). Covers all five keys |
+| `cmd_setup` | Prints exactly five lines (`<name>: granted\|missing`), requests what is missing, re-checks after the user confirms, writes the state file, exits 0 only when all five are granted. With `--no-restore` the fifth line is `full-disk-access: skipped (--no-restore)`, no probe runs, the state file has four entries, and exit 0 needs only the other four |
+| `cmd_doctor` | Five permission lines, one each for `osascript`, `screencapture`, `tccutil`, `ffmpeg` (only when `--video-backend ffmpeg` is selected), a macOS version line, and one `pending tcc snapshot: <bundle_id>\|none` line from `tcc_pending` (17.11). Calls only `perm_status`, `tcc_pending`, and `command -v`. Exits 1 if a required tool is missing, after printing every line |
 
-The Settings pane names are `Privacy_Accessibility`, `Privacy_ScreenCapture`, and `Privacy_Automation`. The Setup_State_File is removed only by the user.
+The Settings pane names are `Privacy_Accessibility`, `Privacy_ScreenCapture`, `Privacy_Automation`, and `Privacy_AllFiles`. The Setup_State_File is removed only by the user.
+
+**Preflight (12.7).** The permissions check of `preflight` calls `perm_status` for all five permissions, or for four when `--no-restore` is given. It still runs all three checks and names every failure. A missing Full Disk Access is reported with its Settings pane.
 
 ### `lib/focus.sh` (`--redact-notifications`)
 
@@ -443,7 +573,8 @@ Rules enforced by `manifest_check`:
 
 ```json
 {"accessibility": {"already_granted": true}, "screen-recording": {"already_granted": false},
- "automation-system-events": {"already_granted": true}, "automation-finder": {"already_granted": true}}
+ "automation-system-events": {"already_granted": true}, "automation-finder": {"already_granted": true},
+ "full-disk-access": {"already_granted": false}}
 ```
 
 ### Other state files
@@ -455,27 +586,34 @@ Rules enforced by `manifest_check`:
 | `launched.txt` | Bundle IDs the framework launched, one per line |
 | `focus-state` | `on` or `off`, the Focus state before the session |
 | `clipboard.snap` | Keyed archive of the clipboard before a paste |
+| `tcc-snapshot-<bundle_id>.json` | Pending TCC_Snapshot (format in `lib/tccdb.sh`). Its existence means a restore is owed |
+| `tcc-snapshot-<bundle_id>.restored.json` | Snapshot after a verified Restore. Never read as pending. A later run overwrites it with a new snapshot's restored copy |
+| `TCC.db.backup-<run timestamp>` | Byte copy of the whole user database made when the first snapshot of the run was taken. Never overwritten or deleted by the framework |
 
 ### Session artifacts
 
 ```
-captures/<ts>/<profile>/<scenario>/baseline/{capture.log, manifest.json, screen.png, prompt.png, flow.mov}
-captures/<ts>/<profile>/<scenario>/ward/{capture.log, manifest.json, screen.png, prompt.png, hud.png, pair.png, flow.mov}
+captures/<ts>/<profile>/<scenario>/baseline/{capture.log, manifest.json, screen.png, prompt.png, flow.mov, tcc-snapshot.json}
+captures/<ts>/<profile>/<scenario>/ward/{capture.log, manifest.json, screen.png, prompt.png, hud.png, pair.png, flow.mov, tcc-snapshot.json}
 captures/<ts>/<profile>/<scenario>/summary.md
 ```
 
 ### Permissions per subcommand
 
-| Subcommand | Accessibility | Screen Recording | Automation (System Events) | Automation (Finder) |
-|---|---|---|---|---|
-| `setup`, `doctor` | checks | checks | checks | checks |
-| `reset`, `list`, `teardown`, `export` | no | no | no | no |
-| `prompt`, `run` | yes (typing, clicking, reading the prompt) | yes (`screencapture`) | yes | yes (disk check) |
-| window list polling | no | no | no | no |
+| Subcommand | Accessibility | Screen Recording | Automation (System Events) | Automation (Finder) | Full Disk Access |
+|---|---|---|---|---|---|
+| `setup`, `doctor` | checks | checks | checks | checks | checks (not with `--no-restore`) |
+| `list`, `export` | no | no | no | no | no |
+| `reset` | no | no | no | no | yes (snapshot), not with `--no-restore` |
+| `restore`, `teardown` | no | no | no | no | yes when a snapshot is pending (reads and writes the database) |
+| `prompt`, `run` | yes (typing, clicking, reading the prompt) | yes (`screencapture`) | yes | yes (disk check) | yes (snapshot and restore), not with `--no-restore` |
+| window list polling | no | no | no | no | no |
 
 ### Open items carried into implementation
 
 - The prompt owner and layer, and the Allow/Deny button labels, are verified only on macOS 27.0.1 (owner, layer) or not at all (labels). The first implementation task runs `dump_window_list.swift` with a live WardTrigger prompt on 27.2.1 and updates the defaults and `services.tbl`.
+- Whether `sqlite3` can write the user TCC database on 27.2.1 with Full Disk Access, whether `pkill -x tccd` makes `tccd` reload it, and the `access` table columns on this release are unknown. The first implementation task tries snapshot, `tccutil reset`, and restore on a throwaway bundle ID with a real backup, and records the result. If writes are refused, the restore path reports it (16.13) and the README documents the manual fallback.
+- The steering file `macos-security-boundaries` and `scripts/hooks/guard-security-boundaries.py` need the single-file exception described in Findings item 8.
 - The Ward menu bar item layer (24 or higher) is inferred. The same task records the measured value.
 - The Focus toggle depends on Control Center UI structure and is the least reliable component. It is isolated in `focus.applescript` so a macOS change touches one file.
 - ZCode and DeepSeek Harness input locators and send actions cannot be known without inspecting each app's accessibility tree with Accessibility Inspector. The shipped profiles carry best-effort values and the README documents how to re-derive them.
@@ -511,9 +649,9 @@ captures/<ts>/<profile>/<scenario>/summary.md
 
 ### Property 5: Bundle-ID guard
 
-*For any* string `id` and any set of loaded bundle IDs, `guard_bundle_id` accepts `id` if and only if `id` is non-empty, is not `All` in any combination of letter case, and is a member of the loaded set. On rejection the message contains `id`, and no `tccutil` command is run.
+*For any* string `id` and any set of loaded bundle IDs, `guard_bundle_id` accepts `id` if and only if `id` is non-empty, is not `All` in any combination of letter case, and is a member of the loaded set. On rejection the message contains `id`, and no `tccutil` command is run and no `sqlite3` command is run.
 
-**Validates: Requirements 3.2, 13.2, 13.3**
+**Validates: Requirements 3.2, 13.2, 13.3, 17.4**
 
 ### Property 6: Reset plan is scoped to one bundle and the profile's services
 
@@ -601,9 +739,9 @@ captures/<ts>/<profile>/<scenario>/summary.md
 
 ### Property 20: Failure policy
 
-*For any* sequence of session outcomes and any `--keep-going` setting: without `--keep-going`, no row starts after an `error` outcome. With `--keep-going`, rows keep starting after an error, except that the `ward` row of a pair never starts when the `baseline` row of the same pair failed. The final exit code is 0 if and only if every executed row ended `ok`, and every planned row not skipped by these rules is executed.
+*For any* sequence of session outcomes and any `--keep-going` setting: without `--keep-going`, no row starts after an `error` outcome. With `--keep-going`, rows keep starting after an error, except that the `ward` row of a pair never starts when the `baseline` row of the same pair failed. The final exit code is 0 if and only if every executed row ended `ok` and the run's restore status is `verified`, `none`, or `skipped`, and every planned row not skipped by these rules is executed.
 
-**Validates: Requirements 9.8, 12.6**
+**Validates: Requirements 9.8, 12.6, 16.12, 16.13, 16.15**
 
 ### Property 21: Unknown profile or scenario creates nothing
 
@@ -625,13 +763,13 @@ captures/<ts>/<profile>/<scenario>/summary.md
 
 ### Property 24: Dry-run has no effects
 
-*For any* valid profile, scenario, mode, and option combination, `run --dry-run` (and `reset --dry-run`) exits 0, prints the twelve step names in the fixed order together with the quoted text of each external command, calls no stub binary (the stub call log is empty), and leaves the file tree and file contents of the working directory exactly as they were, including `captures/`.
+*For any* valid profile, scenario, mode, and option combination (with or without `--no-restore`, and with or without a pending snapshot), `run --dry-run`, `reset --dry-run`, and `restore --dry-run` exit 0, print the twelve step names in the fixed order together with the quoted text of each external command and each `would snapshot`, `would back up`, and `would restore` action, call no stub binary (the stub call log is empty, so no `sqlite3` call is made), and leave the file tree and file contents of the working directory exactly as they were, including `captures/` and the temp database.
 
-**Validates: Requirements 3.7, 12.1, 14.5, 14.6**
+**Validates: Requirements 3.7, 12.1, 14.5, 14.6, 15.11, 16.17**
 
 ### Property 25: Setup state is never overwritten
 
-*For any* previously recorded Setup_State_File and any newly observed set of permission states, `setup_state_merge` keeps every previously recorded `already_granted` value unchanged, and fills in only the permissions that were not recorded. Merging the same observation twice gives the same result as merging it once.
+*For any* previously recorded Setup_State_File and any newly observed set of states for the five permissions (including `full-disk-access`), `setup_state_merge` keeps every previously recorded `already_granted` value unchanged, and fills in only the permissions that were not recorded. Merging the same observation twice gives the same result as merging it once.
 
 **Validates: Requirements 1.3**
 
@@ -652,6 +790,98 @@ captures/<ts>/<profile>/<scenario>/summary.md
 *For any* set of files under `captures/` with arbitrary names and contents, `export <dir>` copies exactly the files that match `*.png` or `flow.*`, each with identical bytes, creates `<dir>` when it is absent, and leaves every source file unchanged. When no file matches, it exits non-zero and creates no files.
 
 **Validates: Requirements 11.10, 11.11**
+
+The properties below cover the TCC_Access_Module. Each runs against a temporary SQLite database with the `access` table schema, selected through `CAPTURE_TCC_DB_TEST`, never against the user database. "Scope" means the rows whose `client` equals the bundle ID and whose `service` is one of the profile's declared services. A "generated database" holds any number of rows for the bundle ID in declared services, for the same bundle ID in undeclared services, for other bundle IDs, and for the client `All`. Cells include NULL, integers, ASCII and Unicode text, text with quotes, and random `csreq`-like blobs including empty ones.
+
+### Property 29: Snapshot is exact and scoped
+
+*For any* generated database, bundle ID, and declared services, `tcc_snapshot` writes a file whose rows, once decoded, equal in every column and byte exactly the scope rows read directly from the database, in a stable order, and contain no other row. A scope with no rows yields a snapshot with zero rows and a `services_without_row` list equal to the declared services that had no row. The database file is byte-identical before and after the snapshot.
+
+**Validates: Requirements 15.2, 15.5, 15.6, 17.3, 17.6**
+
+### Property 30: Restore round trip
+
+*For any* generated database, taking a snapshot, then applying any sequence of changes to the scope rows (deleting rows, as `tccutil reset` does, changing cells, inserting rows), then calling `tcc_restore`, leaves the scope rows equal to the snapshot rows in every column, including `csreq`, and `tcc_verify` reports success.
+
+**Validates: Requirements 16.4, 16.6, 16.8**
+
+### Property 31: Restore is idempotent
+
+*For any* generated database and snapshot, running `tcc_restore` a second time with the same snapshot leaves the whole database file's rows unchanged compared with after the first restore, and `tcc_verify` still reports success.
+
+**Validates: Requirements 16.10**
+
+### Property 32: Rows created after the snapshot are removed
+
+*For any* generated database and snapshot, and any set of extra scope rows inserted after the snapshot (including rows for declared services that had no row in the snapshot, and rows for any `client_type` or `indirect_object_identifier`), `tcc_restore` leaves none of those rows in the database. When the snapshot has zero rows, `tcc_restore` leaves no scope row at all and inserts none.
+
+**Validates: Requirements 16.5, 16.6, 17.9**
+
+### Property 33: Restore never touches rows outside the scope
+
+*For any* generated database, snapshot, and sequence of in-scope changes, the set of rows outside the scope (other bundle IDs, the client `All`, and the same bundle ID in undeclared services) is identical before the snapshot and after `tcc_restore`, and `tcc_snapshot` never reads them into the file.
+
+**Validates: Requirements 15.6, 17.3**
+
+### Property 34: Unsafe bundle IDs and services are refused
+
+*For any* bundle ID that is empty, is `All` in any combination of letter case, or is not declared in a loaded profile, and *for any* service key that is empty or not declared by the selected profile, `tcc_snapshot` and `tcc_restore` print the rejected value, exit non-zero, leave the database file byte-identical, run no `sqlite3` write, and create no snapshot file.
+
+**Validates: Requirements 13.2, 17.4, 17.5**
+
+### Property 35: Database path guard
+
+*For any* candidate path, home directory, temporary directory, and value of the test variable, `tcc_path_ok` accepts the candidate if and only if its symlink-resolved form equals the user database path of that home, or the test variable is set and the resolved form lies inside the resolved temporary directory. The system-level database path, a path outside the temporary directory, and a symlink inside the temporary directory that points outside it are refused whether or not the variable is set.
+
+**Validates: Requirements 17.1, 17.2**
+
+### Property 36: Failed restore leaves the database unchanged
+
+*For any* generated database and snapshot, if the restore script fails part way (a snapshot row that violates a constraint, a column the table lacks, or a malformed cell), the scope rows and every other row are unchanged afterwards, the snapshot file stays pending (not renamed), and the exit status is non-zero. A cell that does not match the cell grammar is refused before any `sqlite3` write.
+
+**Validates: Requirements 16.7, 16.12, 16.13**
+
+### Property 37: Verification detects every difference
+
+*For any* snapshot and any database whose scope rows differ from the snapshot rows (a changed cell in any column, a missing row, or an extra row), `tcc_verify` returns non-zero and its output names the `service` of each differing row. *For any* database whose scope rows equal the snapshot rows, it returns success.
+
+**Validates: Requirements 16.8, 16.12**
+
+### Property 38: SQL literal construction is lossless
+
+*For any* string without NUL, evaluating `SELECT <sql_quote s>` in SQLite returns exactly `s`. *For any* byte sequence, evaluating `SELECT <cell_literal c>` for `c` built as `b:<hex>` returns the same bytes, for `t:<hex>` the same text, for `i:<n>` the same integer, and for `n:` NULL. *For any* string that is not a well-formed cell, `cell_literal` refuses it and prints no literal.
+
+**Validates: Requirements 13.12, 15.2**
+
+### Property 39: Backup is byte-identical and never overwritten
+
+*For any* generated database and any existing backup files, `tcc_backup` creates a new file whose bytes equal the database's, leaves every earlier backup file unchanged, and when called again for the same run changes nothing. When the copy cannot be verified (size differs or the file is unreadable), it removes the copy and returns non-zero.
+
+**Validates: Requirements 15.9, 17.7, 17.8**
+
+### Property 40: One snapshot per run, taken before the first reset
+
+*For any* number of sessions of a run on one bundle ID, and whether or not a pending snapshot from an earlier run exists, the stub call log shows exactly one snapshot for that bundle before the first `tccutil reset` call, a pending snapshot's file is byte-identical afterwards, and a snapshot that is not pending (absent or `.restored.json`) is replaced by a new one. After a verified restore the file is named `tcc-snapshot-<bundle>.restored.json`, and a later run takes a fresh snapshot.
+
+**Validates: Requirements 15.1, 15.4, 16.11**
+
+### Property 41: A failed snapshot blocks every reset
+
+*For any* injected snapshot failure (database unreadable, `sqlite3` missing, a failing query, a write that stops short, or a snapshot file whose row count differs from the query's), the run makes no `tccutil reset` call, exits non-zero, and prints the reason. When the failure is an open error, the output includes the Full Disk Access pane.
+
+**Validates: Requirements 15.7, 15.8, 17.8**
+
+### Property 42: `--no-restore` touches no database
+
+*For any* valid profile, scenario, mode, and option combination that includes `--no-restore`, a run makes no `sqlite3` call (the stub log has none), creates no snapshot or backup file, does not probe Full Disk Access in preflight, setup, or doctor, and prints the no-restore notice. The `restore` subcommand still restores any pending snapshot.
+
+**Validates: Requirements 1.9, 12.7, 15.10, 16.16**
+
+### Property 43: Database references stay in `tccdb.sh`
+
+*For any* directory tree of files with arbitrary names and contents, `scan_tcc_refs` reports exactly the files that contain `TCC.db` or `com.apple.TCC` and are not `lib/tccdb.sh`, a file under `tests/`, or a `*.md` file. The same scan applied to the real `scripts/capture/` tree reports nothing.
+
+**Validates: Requirements 13.1, 13.11, 14.9**
 
 ## Error Handling
 
@@ -677,6 +907,20 @@ captures/<ts>/<profile>/<scenario>/summary.md
 | Target app ignores quit for 10 s | Report the app name, continue, never force-kill | 2.7 |
 | Partial video on teardown | Verify it plays, otherwise print the path and a warning | 2.5 |
 | Focus state cannot be read or set with `--redact-notifications` | Fail before the first Scenario | 13.7 |
+| Full Disk Access missing (probe fails) | `setup`/`doctor` report `missing` with the `Privacy_AllFiles` pane. `preflight` names it as a failed check. Not checked with `--no-restore` | 1.9, 12.7 |
+| Snapshot cannot be taken or written (unreadable database, `sqlite3` missing, query error, incomplete file) | Run no `tccutil reset`, print the reason and the Full Disk Access pane when the open failed, remove any temp file, exit non-zero | 15.7 |
+| Snapshot row count differs from the query | Treated as not taken, same handling as above | 15.8 |
+| Snapshot contains a real number | Fail closed as not taken, naming the column | 15.2 |
+| Backup cannot be made or verified | Delete the copy, write nothing to the database, run no `tccutil reset`, exit non-zero | 17.7, 17.8 |
+| Pending snapshot does not cover all services of the profile | Stop before any reset, tell the user to run `capture.sh restore` first | 15.4 |
+| Bundle ID empty, `All`, or undeclared, or service empty or undeclared, at the database layer | Refuse, print the value, change nothing | 17.4, 17.5 |
+| Database path differs from the user database (and is not an allowed temp path) | Refuse to open, exit non-zero | 17.1, 17.2 |
+| Restore verification finds a difference | Keep the snapshot pending, print the differing `service` values and the backup path, exit non-zero | 16.12 |
+| macOS rejects a database write (protection, SIP, locked database) | The transaction rolls back, keep the snapshot pending, print the `sqlite3` cause, the manual re-enable fallback, and the backup path, exit non-zero | 16.13 |
+| Restore fails during `teardown` or signal cleanup | Run the remaining cleanup actions, then exit non-zero (130 or 143 on a signal) | 16.15 |
+| Nothing pending for `restore` | Print `nothing to restore`, exit 0 | 16.14 |
+| Pending snapshot belongs to a bundle ID in no loaded profile | Refuse that snapshot, print its bundle ID, count it as a failure, keep it pending | 17.4 |
+| `tccd` restart fails | Print `tccd restart: failed`, keep the verified restore, do not fail | 16.9 |
 
 Cleanup is written to be idempotent and to continue after an individual action fails, so one broken step cannot leave the Ward running or the clipboard changed.
 
@@ -684,14 +928,22 @@ Cleanup is written to be idempotent and to continue after an individual action f
 
 ### Dual approach
 
-- **Property tests** cover the 28 properties above. Each runs the function under test through a bash subprocess, with generated inputs.
-- **Example tests** cover specific scenarios and error cases: setup and doctor output, teardown actions with a dummy process, the ordering of steps with stub binaries, a failing image capture, clipboard restore on failure, `--no-video` and `--no-images`, ffmpeg errors, Ward reuse, shipped profile contents, README headings, and static scans for `TCC.db`, `curl`, `nc`, and non-bash/osascript tooling.
+- **Property tests** cover the 43 properties above. Each runs the function under test through a bash subprocess, with generated inputs. Properties 29 to 39 run the real `sqlite3` CLI against a temporary database file built with Python's `sqlite3` module.
+- **Example tests** cover specific scenarios and error cases: setup and doctor output (five permission lines, the pending-snapshot line, `--no-restore` skipping the probe), teardown actions with a dummy process, the ordering of steps with stub binaries, a failing image capture, clipboard restore on failure, `--no-video` and `--no-images`, ffmpeg errors, Ward reuse, shipped profile contents, README headings, and static scans for `curl`, `nc`, and non-bash/osascript tooling. TCC-specific examples:
+  - Restore runs after the session reset and after the app quit, in the success, step-failure, and signal paths (stub log order).
+  - `teardown` and `restore` restore every pending snapshot, restart `tccd` through the `pkill` stub, and rename the file to `.restored.json`.
+  - `restore` with nothing pending prints `nothing to restore` and exits 0.
+  - A read-only temp database makes the write fail, the snapshot stays pending, and the message names the cause and the backup path (16.13).
+  - `tcc-snapshot.json` appears in each session directory and its manifest artifact list (15.3).
+  - The pre-snapshot notice names the bundle ID and the backup path (17.10).
+  - `reset` leaves its snapshot pending, and a following `restore` restores it.
+  - The scan for `TCC.db` and `com.apple.TCC` finds nothing outside `lib/tccdb.sh`, `tests/`, and `*.md` in the real tree. The steering file and hook exception allow only that path (a hook test feeds it `lib/tccdb.sh` and another path).
 - **Manual integration run** (not automated): `capture.sh setup`, then `run zcode desktop` and `run deepseek-harness removable-volume` on a Mac with the apps installed, checking the artifacts. It covers the UI-driving, screen capture, resolve click, and Focus behavior that no stub can cover. This is also where the open items in the Data Models section are settled.
 
 ### Property-based testing setup
 
 - **Library:** Hypothesis 6.170.15 with pytest 8.4.2, both already pinned in `.kiro/tools/requirements.txt`. Tests run as `.kiro/tools/.venv/bin/python -m pytest scripts/capture/tests`. No property-based testing code is written from scratch.
-- **Iterations:** each property test uses `@settings(max_examples=100)` or more. Properties that spawn a subprocess per example (7, 9, 21, 22, 24, 28) use 100, with `deadline=None`. Pure-function properties through one batched subprocess use 200 or more.
+- **Iterations:** each property test uses `@settings(max_examples=100)` or more. Properties that spawn a subprocess per example (7, 9, 21, 22, 24, 28, and 29 to 43) use 100, with `deadline=None`. Pure-function properties through one batched subprocess use 200 or more.
 - **Tagging:** each property test carries a comment in this form, and implements one property in one test:
 
   `# Feature: permission-capture-framework, Property 5: Bundle-ID guard`
@@ -700,7 +952,8 @@ Cleanup is written to be idempotent and to continue after an individual action f
   - Runs bash functions with `bash -c 'source lib/<file>.sh; <function> "$@"' _ args...`, so every generated value is passed as an argument, never interpolated.
   - Builds a temporary copy of the repo's `scripts/capture/` and a scratch `captures/` root for each test, and puts `tests/stubs/` first on `PATH`. Each stub appends its argv to a call log and returns canned output.
   - Provides Hypothesis strategies: kebab-case IDs, bundle IDs, prompt text (printable plus the special characters in Property 1 and 7), window rows, rectangles, button label lists, manifests, and file name sets.
-- **Permissions:** no test needs Accessibility, Screen Recording, or Automation, because every external call is a stub. A test that would need a real permission is marked `@pytest.mark.skipif` with a reason such as `requires Screen Recording grant`, so it is reported as skipped and never as failed.
+- **Temporary database (14.9):** a fixture builds a SQLite file in a directory under the system temp directory with the `access` table (the current macOS column set and primary key), fills it from a Hypothesis strategy, and exports `CAPTURE_TCC_DB_TEST` pointing at it. The `tccutil` stub deletes matching rows from that file, which imitates a reset. The `pkill` stub logs the `tccd` restart. A `sqlite3` wrapper stub logs its argv and then runs `/usr/bin/sqlite3`, so tests can assert that no call was made (Properties 24, 42). Tests compare databases by reading rows with Python's `sqlite3` module, independently of the code under test. No test opens the user database, and `tcc_path_ok` is also tested directly (Property 35).
+- **Permissions:** no test needs Accessibility, Screen Recording, Automation, or Full Disk Access, because every external call is a stub and the database is a temp file. A test that would need a real permission is marked `@pytest.mark.skipif` with a reason such as `requires Screen Recording grant`, so it is reported as skipped and never as failed.
 - **Pre-commit:** `scripts/git-hooks/pre-commit` runs `swift build` and `swift test --skip integration`. The capture tests are fast and have no Swift dependency, so a second line there runs them when `.kiro/tools/.venv` exists. That edit is part of the implementation tasks, not this design.
 
 ### Scope and reflection
@@ -716,7 +969,11 @@ Testing with generated inputs applies to the pure functions in `lib/` (parsing, 
 - 3.7 and 14.5 and 14.6 all say that dry-run has no side effects, so they become one dry-run property.
 - 7.5, 7.6, 8.2, 10.1, 10.3, 5.3, and 6.3 all validate option values and become one validator property.
 - 4.2, 4.3, and 4.6 are covered by a profile round trip plus a rejection property. 4.7 stays separate because the failure condition differs.
+- 15.2 and 15.6 (exact, scoped snapshot) merge into Property 29. 16.4 and 16.6 merge into the restore round trip (30), 16.5 stays separate as the created-row property (32), and 17.3 joins Property 33 with the scope part of 15.6.
+- 13.2, 13.3, 17.4, and 17.5 reduce to the bundle and service refusal in Properties 5 and 34, and 17.1 and 17.2 to Property 35.
+- 15.7, 15.8, and 17.8 become the single fail-closed Property 41. 15.10, 1.9, and 12.7 become Property 42. 13.1, 13.11, and 14.9 become Property 43.
+- Criteria that only describe ordering or wiring (2.11, 16.1, 16.3, 16.9, 16.15) are example tests with stub call logs, because the input does not vary.
 
 ### Property-based testing exclusions
 
-Property tests are not used for screen capture, video recording, UI scripting, permission prompts, Focus toggling, window-server timing, or the `tccutil` command itself. These depend on external services and on timing, so repeated runs would not find more bugs than a few examples. The pure logic around them (matching, planning, geometry, validation) is covered by properties instead.
+Property tests are not used for screen capture, video recording, UI scripting, permission prompts, Focus toggling, window-server timing, the `tccutil` command itself, restarting `tccd`, or reading and writing the real user TCC database. The database logic is covered through a temporary database instead. These depend on external services and on timing, so repeated runs would not find more bugs than a few examples. The pure logic around them (matching, planning, geometry, validation) is covered by properties instead.

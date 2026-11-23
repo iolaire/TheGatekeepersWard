@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Stub open: logs argv, launches nothing.
+. "$(dirname "$0")/_stub_common.sh"
+stub_log_call open "$@"
+stub_finish open ""

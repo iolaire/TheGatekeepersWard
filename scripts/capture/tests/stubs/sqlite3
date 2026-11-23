@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Stub sqlite3: logs argv, then runs the real /usr/bin/sqlite3 with the same
+# arguments and stdin. Refuses (exit 99, nothing run) any argument that names
+# the user's real TCC database, so no test can open it.
+. "$(dirname "$0")/_stub_common.sh"
+stub_log_call sqlite3 "$@"
+for a in "$@"; do
+  case "$a" in
+    *com.apple.TCC*|*/TCC.db)
+      printf 'stub sqlite3: refusing real TCC database path\n' >&2
+      exit 99
+      ;;
+  esac
+done
+exec /usr/bin/sqlite3 "$@"

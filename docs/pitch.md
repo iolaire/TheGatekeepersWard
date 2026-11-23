@@ -43,6 +43,31 @@ You can now make an **informed** decision.
 
 ---
 
+## Why It Matters Now (Potential Impact)
+
+Apple is working on finer-grained permissions that would give users more control over AI IDEs and agents, but that capability is not released yet. Until it ships, users have only the opaque TCC prompt. Gatekeeper's Ward fills that gap today, in unprivileged user space: no kernel extensions, no SIP changes, no restricted entitlements.
+
+It only informs. Apple's dialog keeps full control, and the user always answers with Apple's own **Allow** or **Don't Allow** button.
+
+### Real-device proof: DeepSeek Harness asks for the Desktop folder
+
+| | What macOS shows (baseline) | What Gatekeeper's Ward reveals |
+|---|---|---|
+| Message | `"DeepSeek Harness" would like to access files in your Desktop folder.` | Same dialog, plus the Fortress HUD ("Spirit Paused at the Gate") |
+| TCC scope | Not shown | `kTCCServiceSystemPolicyDesktopFolder` (Desktop Vault) |
+| Lineage | Not shown | `DeepSeek Harness (40189)` → `DeepSeek Harness (40723)` → `bash (45203)` → `ls (45204)` |
+| Command | Not shown | `$ ls -1 /Users/iolaire/Desktop` |
+| Working directory | Not shown | `/Volumes/Gold/Vegrún` |
+
+With the baseline alone, a safe directory listing and a delete or exfiltration look identical. With the HUD, the exact command settles it.
+
+![Baseline macOS prompt](demo/assets/deepseek-harness/baseline_deepseek_harness_desktop_prompt.png)
+
+![Apple's prompt beside the Gatekeeper's Ward Fortress HUD](demo/assets/deepseek-harness/ward_deepseek_harness_desktop_pair.png)
+
+**Who benefits now:** developers running autonomous AI coding agents and IDEs (Kiro, Cursor, Claude Code, DeepSeek Harness), and any Mac user facing an unexpected permission popup from an app they barely recognize.
+
+---
 ## The Castle Keep & The Wandering Spirits
 
 Your macOS system is a **fortified castle courtyard**. Unprivileged child processes are mischievous, curious spirits trying to slip past the portcullis gates into protected vaults. Gatekeeper's Ward is the **night watch lantern** that spots these phantoms suspended mid-escape while macOS holds the gate shut.
@@ -108,7 +133,7 @@ This fits the *"stitch together a chimera of technologies"* prompt to the letter
 | 0:35–1:15 | Same trigger — Fortress HUD slides in alongside Apple's dialog | *"Gatekeeper's Ward unmasks the intruder instantly."* |
 | 1:15–2:00 | Code walkthrough: `sysctl KERN_PROCARGS2` + Unified Log | *"Zero dark magic. No kernel extensions. We resurrect 20-year-old POSIX APIs."* |
 | 2:00–2:35 | Menu bar ghost, history dropdown, risk tags on suspicious args | *"Full lineage tree, process history, automatic risk tagging."* |
-| 2:35–3:00 | Kiro spec-driven development + GitHub repo link | *"Built for Kiroween 2026. Know who knocks before you drop the castle gates."* |
+| 2:35–3:00 | Impact: before/after pair, Apple's finer-grained permissions not shipped yet, Apache 2.0 repo link | *"Apple's finer-grained agent permissions aren't here yet. The Ward is. Know who knocks before you drop the castle gates."* |
 
 ---
 

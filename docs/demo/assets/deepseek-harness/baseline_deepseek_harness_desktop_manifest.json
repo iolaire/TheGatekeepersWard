@@ -1,0 +1,35 @@
+{
+  "profile_id": "deepseek-harness",
+  "bundle_id": "com.deepseek.dsh",
+  "scenario": "desktop",
+  "mode": "baseline",
+  "started_at": "2026-11-23T00:53:54Z",
+  "ended_at": "2026-11-23T00:54:23Z",
+  "macos_version": "27.2.1",
+  "artifacts": [
+    "capture.log",
+    "flow.mov",
+    "prompt.png",
+    "screen.png"
+  ],
+  "outcome": "ok",
+  "prompt": {
+    "bounds": {
+      "h": 18,
+      "w": 20,
+      "x": 1270,
+      "y": 377
+    },
+    "detected_at": "2026-11-23T00:54:17.517Z",
+    "resolution": "dismissed",
+    "service_match": true
+  },
+  "video": {
+    "bytes": 91326498,
+    "duration_s": 25.458,
+    "status": "ok"
+  },
+  "reset_failed": false,
+  "failed_step": null,
+  "error": null
+}

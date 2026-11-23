@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Stub pkill: logs argv (so tests can see the tccd restart), kills nothing.
+. "$(dirname "$0")/_stub_common.sh"
+stub_log_call pkill "$@"
+stub_finish pkill ""

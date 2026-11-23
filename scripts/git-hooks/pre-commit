@@ -5,3 +5,7 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 swift build
 swift test --skip integration
+if [ -x .kiro/tools/.venv/bin/python ]; then
+  # Parallel, dev profile: about 45 s. CAPTURE_PBT_PROFILE=full runs 100 examples per property.
+  .kiro/tools/.venv/bin/python -m pytest scripts/capture/tests -q -n auto --dist worksteal
+fi

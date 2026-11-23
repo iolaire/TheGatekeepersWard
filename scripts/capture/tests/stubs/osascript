@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Stub osascript: logs argv, returns canned output. A `new Date().toISOString()`
+# call (utc_now_ms) gets a fixed timestamp unless STUB_OSASCRIPT_OUT is set.
+. "$(dirname "$0")/_stub_common.sh"
+stub_log_call osascript "$@"
+default=""
+for a in "$@"; do
+  case "$a" in
+    *toISOString*) default="2026-01-01T00:00:00.000Z" ;;
+  esac
+done
+stub_finish osascript "$default"

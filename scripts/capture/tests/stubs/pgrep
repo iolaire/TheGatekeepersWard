@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Stub pgrep: logs argv. Default is "no match" (exit 1, no output). Set
+# STUB_PGREP_OUT to a PID list to report matches; exit becomes 0 unless
+# STUB_PGREP_EXIT is set.
+. "$(dirname "$0")/_stub_common.sh"
+stub_log_call pgrep "$@"
+if [ -z "${STUB_PGREP_EXIT:-}" ]; then
+  if [ -n "${STUB_PGREP_OUT:-}" ]; then STUB_PGREP_EXIT=0; else STUB_PGREP_EXIT=1; fi
+fi
+stub_finish pgrep ""

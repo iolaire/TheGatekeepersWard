@@ -7,10 +7,18 @@ file introduces something the steering forbids, prints a permissionDecision of
 Never blocks outright: the human decides.
 """
 import json
+import os
 import re
 import sys
 
 WATCHED = re.compile(r"(\.swift|\.entitlements|\.plist)$")
+# Script files are watched for TCC database references only.
+TCC_DB_WATCHED = re.compile(r"\.(sh|bash|zsh|py|js|applescript|scpt|command|bak|orig|tmp)$")
+TCC_DB_PATTERN = r"TCC\.db"
+TCC_DB_WHY = "direct TCC database access"
+# The one file allowed to name the user-level TCC database (permission-capture-framework).
+TCC_DB_EXCEPTION = "scripts/capture/lib/tccdb.sh"
+REPO_ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 
 RULES = [
     (r"com\.apple\.private\.", "restricted private entitlement"),
@@ -18,11 +26,19 @@ RULES = [
     (r"allow-jit|disable-library-validation", "Hardened Runtime weakening"),
     (r"\btask_for_pid\b|\bvm_read\b|\bPT_ATTACH\b|\bptrace\s*\(", "debugger-class API (task_for_pid / vm_read / ptrace)"),
     (r"\bcsrutil\b|\bkext\b|\bDriverKit\b|\bSystemExtensions\b", "SIP bypass or kernel/driver extension"),
-    (r"TCC\.db|TCCAccessRequest|TCC\.framework", "direct TCC database or private TCC API"),
+    (r"TCCAccessRequest|TCC\.framework", "private TCC API"),
     (r"\bAXUIElement\w*", "synthetic input / accessibility clicks (ignored by TCC dialogs)"),
     (r"\bSIGSTOP\b|\bSIGKILL\b|\bSIGTERM\b|\bkill\s*\(", "signalling an inspected process (we are read-only)"),
     (r"/private/var/db/", "reading protected /private/var/db paths"),
 ]
+
+
+def is_tcc_db_exception(path: str) -> bool:
+    """True only for the repo's own scripts/capture/lib/tccdb.sh, after resolving . .. and symlinks."""
+    if not path:
+        return False
+    full = path if os.path.isabs(path) else os.path.join(os.getcwd(), path)
+    return os.path.realpath(full) == os.path.join(REPO_ROOT, TCC_DB_EXCEPTION)
 
 
 def strings(node):
@@ -47,7 +63,8 @@ def main() -> int:
         if isinstance(tool_input, dict) and isinstance(tool_input.get(key), str):
             path = tool_input[key]
             break
-    if not WATCHED.search(path):
+    check_tcc_db = bool(WATCHED.search(path) or TCC_DB_WATCHED.search(path)) and not is_tcc_db_exception(path)
+    if not WATCHED.search(path) and not check_tcc_db:
         return 0
 
     # Only inspect the text being written, not the path field itself.
@@ -58,7 +75,11 @@ def main() -> int:
     # Ignore comment-only mentions so docs explaining a ban do not trigger it.
     code = "\n".join(l for l in body.splitlines() if not l.strip().startswith("//"))
 
-    reasons = [why for pat, why in RULES if re.search(pat, code)]
+    reasons = []
+    if check_tcc_db and re.search(TCC_DB_PATTERN, code):
+        reasons.append(TCC_DB_WHY)
+    if WATCHED.search(path):
+        reasons += [why for pat, why in RULES if re.search(pat, code)]
     if "styleMask" in code and "nonactivatingPanel" not in code and "NSPanel" in body + path:
         reasons.append("NSPanel styleMask without .nonactivatingPanel (would steal focus from Apple's dialog)")
     if not reasons:
