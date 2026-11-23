@@ -16,3 +16,6 @@ export const theme = {
 export const FPS = 30;
 export const WIDTH = 1920;
 export const HEIGHT = 1080;
+
+/** Silent splash / title card length, in frames (3.5s at 30fps). */
+export const SPLASH_FRAMES = 105;

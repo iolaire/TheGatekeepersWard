@@ -1,6 +1,8 @@
 import React from "react";
 import { Audio, Sequence } from "remotion";
 import { NARRATION_MODE, sceneTimings } from "./audioConfig";
+import { SPLASH_FRAMES } from "./theme";
+import { SceneSplash } from "./scenes/SceneSplash";
 import { Scene01Intro } from "./scenes/Scene01Intro";
 import { Scene02Baseline } from "./scenes/Scene02Baseline";
 import { Scene03Ward } from "./scenes/Scene03Ward";
@@ -18,9 +20,12 @@ const scenes: Record<string, React.FC<{ frames: number }>> = {
 };
 
 export const Main: React.FC = () => {
-  let from = 0;
+  let from = SPLASH_FRAMES;
   return (
     <>
+      <Sequence from={0} durationInFrames={SPLASH_FRAMES} name="splash">
+        <SceneSplash frames={SPLASH_FRAMES} />
+      </Sequence>
       {sceneTimings.map((t) => {
         const Scene = scenes[t.id];
         const start = from;

@@ -5,7 +5,7 @@ import { ScreenClip } from "../components/ScreenClip";
 import { Badge, Caption, Card, Heading, Mono, Reveal, useSceneFade } from "../components/ui";
 import { theme } from "../theme";
 
-const s = (sec: number) => Math.round(sec * 30);
+const s = (sec: number) => Math.round(sec * 30 * 0.91);
 
 export const Scene02Baseline: React.FC<{ frames: number }> = ({ frames }) => {
   const fade = useSceneFade(frames);

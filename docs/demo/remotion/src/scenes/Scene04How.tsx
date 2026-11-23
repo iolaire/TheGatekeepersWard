@@ -4,7 +4,7 @@ import { Background } from "../components/Background";
 import { Badge, Card, Heading, Mono, Reveal, useSceneFade } from "../components/ui";
 import { theme } from "../theme";
 
-const s = (sec: number) => Math.round(sec * 30);
+const s = (sec: number) => Math.round(sec * 30 * 0.91);
 
 const Node: React.FC<{
   delay: number;

@@ -17,12 +17,12 @@
   {
     "id": "scene-03b-qoder",
     "title": "A Second AI IDE: Qoder and the Microphone",
-    "text": "It works for other A I tools and permissions too. Here Qoder asks for the microphone. The command is a Swift one liner, so it reads as the Swift compiler. The lineage still shows the source: Qoder, a z s h shell, then swift frontend."
+    "text": "It works for other A I tools and permissions too. Here Qoder asks for the microphone. A Swift one liner reads as the Swift compiler, but the lineage still names the source: Qoder, a z s h shell, then swift frontend."
   },
   {
     "id": "scene-04-how",
     "title": "How It Works: Zero Dark Magic",
-    "text": "How does it work? With zero dark magic. Gatekeeper's Ward streams the macOS unified log and watches the com dot apple dot T C C subsystem. When a prompt fires, it reads the paused process's arguments with sysctl K E R N underscore PROCARGS two. That is all. It runs in unprivileged user space. No kernel extensions. No S I P changes. No restricted entitlements. No security bypasses."
+    "text": "How does it work? With zero dark magic. Gatekeeper's Ward streams the macOS unified log and watches the com dot apple dot T C C subsystem. When a prompt fires, it reads the paused process's arguments with sysctl K E R N underscore PROCARGS two. It runs in unprivileged user space. No kernel extensions. No S I P changes. No restricted entitlements. No security bypasses."
   },
   {
     "id": "scene-05-outro",

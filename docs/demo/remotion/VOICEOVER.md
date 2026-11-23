@@ -2,9 +2,14 @@
 
 Scene IDs match the files in `public/audio/scratch/<scene-id>.wav` and the keys in `src/narration.json`. The spoken copy below is generated from that JSON, so edit the JSON first, then re-run `npm run audio:scratch`.
 
-Total runtime of the scratch cut: **2:47** (limit 3:00). Timecodes are cumulative and include ~0.4 s lead-in and ~0.8 s tail per scene. Voice: macOS `say`, Samantha, 150 wpm.
+Total runtime of the scratch cut: **2:34** (includes a 3.5 s silent splash card at the start) (limit 3:00). Timecodes are cumulative and include ~0.4 s lead-in and ~0.8 s tail per scene. Voice: macOS `say`, Samantha, 156 wpm.
 
 The spoken copy uses spelled-out letters ("A I", "H U D", "T C C") so the scratch voice reads acronyms correctly. When you record yourself, say them naturally.
+
+## Splash card (silent)
+- **ID:** none (fixed-length title card, no narration)
+- **Timecode:** 0:00-0:03
+- **Visual cues:** Gate-and-spirits mascot rises, the wordmark lights up, tagline fades in, then the card fades to Scene 1.
 
 ## Scene 1: Intro, Hook and Immediate Need
 - **ID:** `scene-01-intro`

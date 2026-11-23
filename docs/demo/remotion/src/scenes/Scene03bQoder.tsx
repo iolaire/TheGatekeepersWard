@@ -1,10 +1,11 @@
 import React from "react";
-import { AbsoluteFill, Img, staticFile } from "remotion";
+import { AbsoluteFill } from "remotion";
+import { ScreenClip } from "../components/ScreenClip";
 import { Background } from "../components/Background";
 import { Card, Heading, Mono, Reveal, useSceneFade } from "../components/ui";
 import { theme } from "../theme";
 
-const s = (sec: number) => Math.round(sec * 30);
+const s = (sec: number) => Math.round(sec * 30 * 0.83);
 
 const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div style={{ fontFamily: theme.fontSans, fontSize: 22, color: theme.textDim, marginBottom: 8, letterSpacing: 1 }}>
@@ -12,7 +13,7 @@ const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </div>
 );
 
-/** Second real capture: Qoder's Microphone prompt beside the Fortress HUD (still image only). */
+/** Second real capture: Qoder's Microphone prompt beside the Fortress HUD (clip, then held on the HUD). */
 export const Scene03bQoder: React.FC<{ frames: number }> = ({ frames }) => {
   const fade = useSceneFade(frames);
   return (
@@ -26,24 +27,16 @@ export const Scene03bQoder: React.FC<{ frames: number }> = ({ frames }) => {
           </div>
         </Reveal>
       </div>
-      <div
-        style={{
-          position: "absolute",
-          left: 80,
-          top: 200,
-          width: 1080,
-          height: 820,
-          background: theme.obsidianRaised,
-          border: `2px solid ${theme.glassBorder}`,
-          borderRadius: 18,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Img
-          src={staticFile("img/qoder-pair.png")}
-          style={{ maxWidth: "96%", maxHeight: "96%", borderRadius: 10 }}
+      <div style={{ position: "absolute", left: 80, top: 200 }}>
+        <ScreenClip
+          file="qoder.mp4"
+          clipSeconds={8}
+          width={1080}
+          height={780}
+          zoom={1.8}
+          focusX={0.5}
+          focusY={0.4}
+          label="Qoder + Gatekeeper's Ward"
         />
       </div>
       <div style={{ position: "absolute", right: 70, top: 200, width: 640, display: "grid", gap: 14 }}>

@@ -16,9 +16,12 @@ Needs Node 20+, `ffmpeg` and macOS (`say`, `afinfo`).
 ## Preview and render
 
 ```bash
-npm run dev      # Remotion Studio
-npm run render   # writes out/gatekeepers-ward-demo.mp4
+npm run dev          # Remotion Studio
+npm run render:draft # fast 960x540 proxy -> out/gatekeepers-ward-demo-draft.mp4
+npm run render       # full 1920x1080 -> out/gatekeepers-ward-demo.mp4
 ```
+
+Render at low resolution while iterating, then render full-res to finalize. `render:draft` uses `--scale=0.5` (half the pixels, same composition) and a higher CRF, so it encodes roughly twice as fast.
 
 Generated and large files are gitignored: `node_modules/`, `out/`, `public/audio/`, `public/clips/`, `public/img/`.
 

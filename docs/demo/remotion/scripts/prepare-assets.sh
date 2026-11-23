@@ -18,6 +18,9 @@ proxy baseline "$A/baseline_deepseek_harness_desktop_flow.mov" 15 10.4
 # ward: HUD appears ~14s in; start at 8s
 proxy ward "$A/ward_deepseek_harness_desktop_flow.mov" 8 15.4
 
+# qoder ward: prompt at ~14s, HUD at ~16s; start at 12s
+proxy qoder "../assets/qoder/ward_qoder_microphone_flow.mov" 12 8.0
+
 cp "$A/baseline_deepseek_harness_desktop_prompt.png" public/img/baseline-prompt.png
 cp "$A/ward_deepseek_harness_desktop_pair.png" public/img/ward-pair.png
 cp "$A/ward_deepseek_harness_desktop_hud.png" public/img/ward-hud.png

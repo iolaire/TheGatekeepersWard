@@ -3,7 +3,19 @@
 Running notes from the build. Newest entries at the top.
 
 ---
-## 2026-11-23 (02:25 UTC) — Day 19: Microphone capture from Qoder
+## 2026-11-23 (02:47 UTC) — Day 19: Demo video splash card, real-clip scenes, draft render
+
+**iolaire (pairing with Kiro)**
+
+Reworked the demo video and refreshed its narration pass.
+
+- Added a 3.5 s silent splash / title card at the very start (`src/scenes/SceneSplash.tsx`): the gate-and-spirits mascot rises, the wordmark lights up, the tagline fades in, then it hands off to Scene 1. It is a fixed-length sequence wired in `src/Main.tsx`, length `SPLASH_FRAMES` in `src/theme.ts`, and carries no narration, so the audio config is unchanged.
+- Scenes 2, 3 and 3b now play the real screen recordings as clips (via `ScreenClip`) and hold the last frame, instead of only showing the pair stills. `scripts/prepare-assets.sh` makes 1440p proxies in `public/clips/` for baseline (from 15 s), Ward (from 8 s) and Qoder (from 12 s, 8 s long). Sources are untouched.
+- Narration re-generated at 156 wpm (Samantha). Per-scene on-screen reveal timings were scaled to the shorter clips. The scratch cut now runs **2:34** (4628 frames, 154.3 s), including the splash, under the 3:00 limit.
+- Added a fast draft render path: `npm run render:draft` renders 960x540 (`--scale=0.5`, CRF 28) to `out/gatekeepers-ward-demo-draft.mp4` for quick iteration; `npm run render` stays full 1920x1080 for finalizing. Both outputs are gitignored.
+- `VOICEOVER.md` gained the splash entry and the 2:34 runtime; the folder `README.md` documents the draft/final render split. No Swift code or `.kiro/` files changed.
+
+
 
 **iolaire (pairing with Kiro)**
 

@@ -5,7 +5,7 @@ import { ScreenClip } from "../components/ScreenClip";
 import { Badge, Card, Heading, Mono, Reveal, useSceneFade } from "../components/ui";
 import { theme } from "../theme";
 
-const s = (sec: number) => Math.round(sec * 30);
+const s = (sec: number) => Math.round(sec * 30 * 0.91);
 
 const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div style={{ fontFamily: theme.fontSans, fontSize: 22, color: theme.textDim, marginBottom: 8, letterSpacing: 1 }}>
