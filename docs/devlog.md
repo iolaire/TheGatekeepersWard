@@ -3,6 +3,21 @@
 Running notes from the build. Newest entries at the top.
 
 ---
+## 2026-11-23 (02:25 UTC) — Day 19: Microphone capture from Qoder
+
+**iolaire (pairing with Kiro)**
+
+Captured a second before/after set, this time for a Microphone prompt from Qoder (`com.qoder.app`), another AI IDE. The new profile is `scripts/capture/profiles/qoder.profile`, and `scripts/capture/lib/services.tbl` gained a `Microphone` row (plus an `AddressBook` row no profile uses yet). The agent was asked to run a one-line `swift -e` command that calls `AVCaptureDevice.requestAccess(for: .audio)`.
+
+- The Ward capture (`ward_qoder_microphone_pair.png`) shows `Allow "Qoder" to access your microphone?`, `kTCCServiceMicrophone`, the lineage Qoder 44386 → Qoder 44767 → zsh 63090 → swift-frontend 63093, the full `swift-frontend -interpret` command, and the working directory. The baseline shows only Apple's prompt.
+- Files tracked in git from `docs/demo/assets/qoder/`: both `prompt.png` shots, `ward_*_hud.png`, `ward_*_pair.png`, both manifests, and the summary. The `flow.mov` videos (baseline 85.7 s, ward 20.6 s) and the 5K `screen.png` shots stay local under the existing `.gitignore` rules.
+- The ChatGPT desktop app (`com.openai.codex`) was tried first. Its sandbox blocked the command, so no prompt appeared, and the profile was dropped.
+- Contacts was dropped too. Neither ChatGPT nor Qoder declares `NSContactsUsageDescription`, so macOS is not expected to show a Contacts prompt for them.
+- `README.md` and `docs/pitch.md` show the Qoder pair as a second example. Both note that the Executed Command is less readable (a `swift -e` one-liner shows up as `swift-frontend -interpret …`), while the lineage Qoder → zsh → swift-frontend still names the source.
+- The demo video has a new `scene-03b-qoder` (1:42-1:59) built on the pair still. The scratch cut now runs 2:47 (5024 frames, 167.5 s), still under 3:00.
+- The pair crop needs the prompt and the HUD on the same display. Two runs with the prompt on the secondary display gave no `pair.png`; the third run, with both on the main display, did.
+
+---
 ## 2026-11-23 (02:20 UTC) — Day 19: Remotion demo video draft
 
 **iolaire (pairing with Kiro)**

@@ -15,6 +15,11 @@
     "text": "Now the same request, with Gatekeeper's Ward running. DeepSeek Harness asks for the Desktop folder, and the Fortress H U D slides in beside Apple's dialog. It shows the permission being requested and the target. It shows the full process lineage: DeepSeek Harness, a helper process, bash, and finally l s. And it shows the exact command and arguments, plus the working directory. Now you can tell a safe listing from a delete or a data grab, and risky arguments like dot env files or curl get flagged. Gatekeeper's Ward never blocks anything. It only informs. You stay in full control, and you still answer with Apple's own Allow or Don't Allow button. That matters most for developers running autonomous coding agents, and for anyone who gets a popup from an app they barely recognize. Informed consent, instead of a blind click."
   },
   {
+    "id": "scene-03b-qoder",
+    "title": "A Second AI IDE: Qoder and the Microphone",
+    "text": "It works for other A I tools and permissions too. Here Qoder asks for the microphone. The command is a Swift one liner, so it reads as the Swift compiler. The lineage still shows the source: Qoder, a z s h shell, then swift frontend."
+  },
+  {
     "id": "scene-04-how",
     "title": "How It Works: Zero Dark Magic",
     "text": "How does it work? With zero dark magic. Gatekeeper's Ward streams the macOS unified log and watches the com dot apple dot T C C subsystem. When a prompt fires, it reads the paused process's arguments with sysctl K E R N underscore PROCARGS two. That is all. It runs in unprivileged user space. No kernel extensions. No S I P changes. No restricted entitlements. No security bypasses."

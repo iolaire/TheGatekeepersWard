@@ -21,6 +21,7 @@ proxy ward "$A/ward_deepseek_harness_desktop_flow.mov" 8 15.4
 cp "$A/baseline_deepseek_harness_desktop_prompt.png" public/img/baseline-prompt.png
 cp "$A/ward_deepseek_harness_desktop_pair.png" public/img/ward-pair.png
 cp "$A/ward_deepseek_harness_desktop_hud.png" public/img/ward-hud.png
+cp ../assets/qoder/ward_qoder_microphone_pair.png public/img/qoder-pair.png
 cp ../../Planning/Styles/solo_spirit.svg public/img/solo_spirit.svg
 cp ../../Planning/Styles/castle_gate_spirits.svg public/img/castle_gate_spirits.svg
 echo "assets ready"

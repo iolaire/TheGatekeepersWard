@@ -26,8 +26,9 @@ export const MASTER_TIMINGS: Record<string, { start: number; length: number }> =
   "scene-01-intro": { start: 0, length: 26 },
   "scene-02-baseline": { start: 26, length: 20 },
   "scene-03-ward": { start: 46, length: 56 },
-  "scene-04-how": { start: 102, length: 29 },
-  "scene-05-outro": { start: 131, length: 18 },
+  "scene-03b-qoder": { start: 102, length: 17 },
+  "scene-04-how": { start: 119, length: 29 },
+  "scene-05-outro": { start: 148, length: 18 },
 };
 
 /** Silence before the voice starts and after it ends, in seconds. */

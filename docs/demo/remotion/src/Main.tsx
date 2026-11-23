@@ -4,6 +4,7 @@ import { NARRATION_MODE, sceneTimings } from "./audioConfig";
 import { Scene01Intro } from "./scenes/Scene01Intro";
 import { Scene02Baseline } from "./scenes/Scene02Baseline";
 import { Scene03Ward } from "./scenes/Scene03Ward";
+import { Scene03bQoder } from "./scenes/Scene03bQoder";
 import { Scene04How } from "./scenes/Scene04How";
 import { Scene05Outro } from "./scenes/Scene05Outro";
 
@@ -11,6 +12,7 @@ const scenes: Record<string, React.FC<{ frames: number }>> = {
   "scene-01-intro": Scene01Intro,
   "scene-02-baseline": Scene02Baseline,
   "scene-03-ward": Scene03Ward,
+  "scene-03b-qoder": Scene03bQoder,
   "scene-04-how": Scene04How,
   "scene-05-outro": Scene05Outro,
 };

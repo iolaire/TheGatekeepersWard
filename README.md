@@ -40,14 +40,38 @@ A real capture of DeepSeek Harness asking for the Desktop folder. Same prompt, s
 
 Original captures, flow recordings and manifests are in [docs/demo/assets/deepseek-harness/](docs/demo/assets/deepseek-harness/).
 
+**A second AI IDE and permission: Qoder asking for the Microphone**
+
+![Apple's Microphone prompt for Qoder beside the Fortress HUD showing kTCCServiceMicrophone and the lineage Qoder, zsh, swift-frontend](docs/demo/assets/qoder/ward_qoder_microphone_pair.png)
+
+The Executed Command is less readable here. The agent ran a `swift -e` one-liner, so the HUD shows the compiler process (`swift-frontend -interpret …`) rather than the original command. The lineage still makes the source clear: `Qoder (PID 44386)` → `Qoder (PID 44767)` → `zsh (PID 63090)` → `swift-frontend (PID 63093)`, started from `/Volumes/Gold/Kiroween2026/TheGatekeepersWard`. Captures are in [docs/demo/assets/qoder/](docs/demo/assets/qoder/).
+
 ### Demo video
 
-A scripted draft (about 2:30) built from the real captures above lives in [docs/demo/remotion/](docs/demo/remotion/). The timed narration is in [VOICEOVER.md](docs/demo/remotion/VOICEOVER.md), and the folder README explains how to render it and swap in a final recording.
+A scripted draft (about 2:47) built from the real captures above lives in [docs/demo/remotion/](docs/demo/remotion/). The timed narration is in [VOICEOVER.md](docs/demo/remotion/VOICEOVER.md), and the folder README explains how to render it and swap in a final recording.
 
 ### Who benefits right now
 
 - Developers running autonomous AI coding agents and IDEs (Kiro, Cursor, Claude Code, DeepSeek Harness) who need to know which child process is asking, and why.
 - Everyday Mac users who get an unexpected permission popup from an app they barely recognize.
+
+---
+
+### How it compares to existing tools
+
+Gatekeeper's Ward does one narrow job: when a TCC prompt is on screen, it shows the command behind it. The tools below solve neighboring problems, and several can block things that the Ward only reports.
+
+| | Apple's TCC prompt | Little Snitch | Santa | Objective-See (LuLu, OverSight) | `log stream` by hand | **Gatekeeper's Ward** |
+|---|---|---|---|---|---|---|
+| Main job | Ask the user to allow a protected resource | Network connection firewall | Allow or block binary execution | Firewall, camera and mic use alerts, persistence checks | Read raw system logs | Explain who is behind a TCC prompt |
+| Reacts to a TCC prompt | Is the prompt | No | No | No (OverSight reports camera and mic use, not the prompt) | Yes, if you know the predicate | **Yes** |
+| Shows the child command, args and cwd | No (app name only) | No | Shows the binary, not the prompt context | No | No, needs `ps` and `lsof` follow-up | **Yes** |
+| Shows the process lineage | No | No | No | No | No | **Yes** |
+| Flags risky arguments (`.pem`, `.env`, `curl`) | No | No | No | No | No | **Yes** |
+| Can block | Yes, the user decides | Yes | Yes | Yes (LuLu) | No | No, it informs only |
+| Needs a kernel or system extension, or restricted entitlement | No | Yes (network extension) | Yes (Endpoint Security) | Yes for most | No | **No** |
+
+*Summary based on each project's public documentation. Verify a row before quoting it elsewhere.*
 
 ---
 

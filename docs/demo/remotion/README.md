@@ -1,6 +1,6 @@
 # Gatekeeper's Ward: Demo Video (Remotion)
 
-1920x1080, 30 fps, about 2:30. Everything is self-contained in this folder and reads the real captures in `../assets/deepseek-harness/`. Nothing in the Swift sources or `.kiro/` is touched.
+1920x1080, 30 fps, about 2:47. Everything is self-contained in this folder and reads the real captures in `../assets/deepseek-harness/` and `../assets/qoder/`. Nothing in the Swift sources or `.kiro/` is touched.
 
 ## Setup (once)
 

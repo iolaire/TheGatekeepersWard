@@ -2,3 +2,5 @@ SystemPolicyDesktopFolder	desktop
 SystemPolicyDocumentsFolder	documents
 SystemPolicyDownloadsFolder	downloads
 SystemPolicyRemovableVolumes	removable volume
+AddressBook	contacts,address book
+Microphone	microphone

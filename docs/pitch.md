@@ -65,6 +65,8 @@ With the baseline alone, a safe directory listing and a delete or exfiltration l
 
 ![Apple's prompt beside the Gatekeeper's Ward Fortress HUD](demo/assets/deepseek-harness/ward_deepseek_harness_desktop_pair.png)
 
+The same capture works for a second AI IDE and a different permission: Qoder asking for the Microphone ([pair shot](demo/assets/qoder/ward_qoder_microphone_pair.png)). The command there is a `swift -e` one-liner, so the HUD shows the compiler process rather than a readable command, but the lineage Qoder → zsh → swift-frontend still names the source.
+
 **Who benefits now:** developers running autonomous AI coding agents and IDEs (Kiro, Cursor, Claude Code, DeepSeek Harness), and any Mac user facing an unexpected permission popup from an app they barely recognize.
 
 ---
@@ -94,6 +96,23 @@ This fits the *"stitch together a chimera of technologies"* prompt to the letter
 ---
 
 ## Differentiators
+
+### How it compares to existing tools
+
+Gatekeeper's Ward does one narrow job: when a TCC prompt is on screen, it shows the command behind it. The tools below solve neighboring problems, and several can block things that the Ward only reports.
+
+| | Apple's TCC prompt | Little Snitch | Santa | Objective-See (LuLu, OverSight) | `log stream` by hand | **Gatekeeper's Ward** |
+|---|---|---|---|---|---|---|
+| Main job | Ask the user to allow a protected resource | Network connection firewall | Allow or block binary execution | Firewall, camera and mic use alerts, persistence checks | Read raw system logs | Explain who is behind a TCC prompt |
+| Reacts to a TCC prompt | Is the prompt | No | No | No (OverSight reports camera and mic use, not the prompt) | Yes, if you know the predicate | **Yes** |
+| Shows the child command, args and cwd | No (app name only) | No | Shows the binary, not the prompt context | No | No, needs `ps` and `lsof` follow-up | **Yes** |
+| Shows the process lineage | No | No | No | No | No | **Yes** |
+| Flags risky arguments (`.pem`, `.env`, `curl`) | No | No | No | No | No | **Yes** |
+| Can block | Yes, the user decides | Yes | Yes | Yes (LuLu) | No | No, it informs only |
+| Needs a kernel or system extension, or restricted entitlement | No | Yes (network extension) | Yes (Endpoint Security) | Yes for most | No | **No** |
+
+*Summary based on each project's public documentation. Verify a row before quoting it elsewhere.*
+
 
 - **No kernel extension required** — pure userspace, ships as a notarised `.app`
 - **No SIP bypass** — zero security compromise required to install or run

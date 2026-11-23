@@ -2,7 +2,7 @@
 
 Scene IDs match the files in `public/audio/scratch/<scene-id>.wav` and the keys in `src/narration.json`. The spoken copy below is generated from that JSON, so edit the JSON first, then re-run `npm run audio:scratch`.
 
-Total runtime of the scratch cut: **2:30** (limit 3:00). Timecodes are cumulative and include ~0.4 s lead-in and ~0.8 s tail per scene. Voice: macOS `say`, Samantha, 150 wpm.
+Total runtime of the scratch cut: **2:47** (limit 3:00). Timecodes are cumulative and include ~0.4 s lead-in and ~0.8 s tail per scene. Voice: macOS `say`, Samantha, 150 wpm.
 
 The spoken copy uses spelled-out letters ("A I", "H U D", "T C C") so the scratch voice reads acronyms correctly. When you record yourself, say them naturally.
 
@@ -30,9 +30,15 @@ The spoken copy uses spelled-out letters ("A I", "H U D", "T C C") so the scratc
 
 > Now the same request, with Gatekeeper's Ward running. DeepSeek Harness asks for the Desktop folder, and the Fortress H U D slides in beside Apple's dialog. It shows the permission being requested and the target. It shows the full process lineage: DeepSeek Harness, a helper process, bash, and finally l s. And it shows the exact command and arguments, plus the working directory. Now you can tell a safe listing from a delete or a data grab, and risky arguments like dot env files or curl get flagged. Gatekeeper's Ward never blocks anything. It only informs. You stay in full control, and you still answer with Apple's own Allow or Don't Allow button. That matters most for developers running autonomous coding agents, and for anyone who gets a popup from an app they barely recognize. Informed consent, instead of a blind click.
 
+## Scene 3b: A Second AI IDE: Qoder and the Microphone
+- **ID:** `scene-03b-qoder`
+- **Timecode:** 1:42-1:59
+- **Impact point:** The Ward works for other AI IDEs and other permissions, not just one demo app.
+- **Visual cues:** Real Ward still (`ward_qoder_microphone_pair.png`). Right column reveals: `kTCCServiceMicrophone` (target: Voice Chamber), the command shown as `swift-frontend -interpret …` with a note that a `swift -e` one-liner is harder to read, then the lineage Qoder (44386) → Qoder (44767) → zsh (63090) → swift-frontend (63093).
+> It works for other A I tools and permissions too. Here Qoder asks for the microphone. The command is a Swift one liner, so it reads as the Swift compiler. The lineage still shows the source: Qoder, a z s h shell, then swift frontend.
 ## Scene 4: How It Works: Zero Dark Magic
 - **ID:** `scene-04-how`
-- **Timecode:** 1:42-2:12
+- **Timecode:** 1:59-2:29
 - **Impact point:** Zero dark magic: unprivileged user space, no bypasses.
 - **Visual cues:** Four-box flow: prompt, Unified Log (`com.apple.TCC`), `sysctl KERN_PROCARGS2`, Fortress HUD. Then four red "No" cards: kernel extensions, SIP changes, restricted entitlements, security bypasses.
 
@@ -40,7 +46,7 @@ The spoken copy uses spelled-out letters ("A I", "H U D", "T C C") so the scratc
 
 ## Scene 5: Outro and Kiro Wrap-Up
 - **ID:** `scene-05-outro`
-- **Timecode:** 2:12-2:30
+- **Timecode:** 2:29-2:47
 - **Impact point:** Kiroween 2026 wrap-up and closing line.
 - **Visual cues:** Gate-and-spirits art, Kiro badges (spec-driven development, agent hooks, property-based testing), repo link placeholder, tagline.
 
