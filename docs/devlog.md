@@ -3,6 +3,20 @@
 Running notes from the build. Newest entries at the top.
 
 ---
+## 2026-11-23 (15:50 UTC) — Day 19: Kiro write-up, README fixes and spec task cleanup
+
+**iolaire (pairing with Kiro)**
+
+Follow-ups from the submission review.
+
+- **Kiro write-up.** New `docs/KIRO_USAGE.md` answers each question in the rules (IDE, CLI, Web and Crew, custom agents, hooks, spec-driven versus vibe coding, steering, MCP, property-based testing, powers). It states plainly what the record does not show: no custom agents, no Kiro Web use, no hook catch worth claiming, no Swift parser bug found by property tests. Linked from the README.
+- **MCP setup in the README.** Added "Optional: the Darwin docs MCP server" with the venv steps. Checked on a fresh venv: 55 tests pass, 1 skipped, and the server starts and exits cleanly.
+- **Test count.** The README said 166 tests; the suite runs 169 in 23 suites.
+- **Spec tasks.** `hud-plain-language-copy` task 3 is ticked: build and 169 tests pass, and the manual check was done with the DeepSeek Harness `env-file` capture (CREDENTIAL FILE tag) rather than the WardTrigger command. In `ward-app`, tasks 8.7 and 8.10 now say why they are deferred. 8.7 records the portrait-display placement seen on 2026-11-23. 8.3, 8.4, 8.7 and 8.10 stay open on purpose.
+- **Hook format correction.** The 03:30 UTC entry says the hooks became `*.kiro.hook` files. The committed files are `.kiro/hooks/*.json`, standardized in `ab6966b`. The IDE runs them: the security guard and spec-first nudge fired during this work.
+
+---
+
 ## 2026-11-23 (14:45 UTC) — Day 19: Recaptured DeepSeek Desktop and Qoder Microphone with the current HUD
 **iolaire (pairing with Kiro)**
 Re-ran `deepseek-harness desktop` (baseline and Ward) and `qoder microphone` so the README and pitch images show the current HUD ("Answer in Apple's dialog" footer, plain-language header). The Qoder Ward run took several tries. In an old Qoder chat, the agent had saved a note that `swift -e` microphone probes return false and ran the command in the background, which returned `false` with no prompt. The run that worked started from a fresh task in the TheGatekeepersWard workspace, opened by hand. On that screen, the framework's `find:text area` search took about 80 s, probably because of the sessions heatmap, but it finished. Prompt detection recorded 16×14 bounds (likely the "?" button), and the full-screen shot was taken before the HUD appeared, so the published `pair.png` was cropped wrongly. It was replaced with a frame from that run's `flow.mov` at 83 s, cropped to the prompt and HUD. The pair is a real frame from the same session, not a composite. The local `ward_qoder_microphone_screen.png` (gitignored) is now the full 83 s frame. The Qoder baseline from this round was unusable: a second DeepSeek Desktop prompt stayed on screen for the whole recording, so the framework saved DeepSeek's dialog as Qoder's baseline. The baseline prompt shot and manifest were restored from git (the Nov 22 capture). A baseline shows only Apple's prompt, so the HUD update does not affect it. The local baseline `flow.mov` and `_screen.png` are still the bad ones and should not be used for the video. Follow-ups: tighten prompt-bounds detection in `scripts/capture/lib/runner_steps.sh` to ignore tiny child elements, and decide whether the Qoder profile should open a new task automatically.

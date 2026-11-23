@@ -222,7 +222,7 @@ docs/               Planning, architecture, devlog
 git clone https://github.com/iolaire/TheGatekeepersWard.git
 cd TheGatekeepersWard
 swift build          # builds the GatekeepersWard library and WardTrigger CLI
-swift test           # 166 tests incl. property-based suites
+swift test           # 169 tests incl. property-based suites
 scripts/run_ward.sh  # builds and launches the menu bar app (stop: scripts/run_ward.sh --stop)
 ```
 
@@ -241,6 +241,18 @@ Subcommands: `docs`, `desktop`, `downloads`, `contacts`, `calendar`,
 `reminders`, `photos`, `mic`, `camera`, `events` (AppleEvents), `screen`. Run
 the binary with no arguments for the list. The extra arguments are echoed and included in argv for demo
 realism. See `docs/architecture.md` for details.
+
+### Optional: the Darwin docs MCP server
+
+`.kiro/settings/mcp.json` registers `darwin-tcc-docs`, a local Python MCP server we used with Kiro to look up Darwin headers, TCC service keys and the `KERN_PROCARGS2` layout. It is not needed to build or run the app. The virtual environment it uses is git-ignored, so create it once (Python 3.12 or newer; the setup below was checked on a fresh venv):
+
+```bash
+python3 -m venv .kiro/tools/.venv
+.kiro/tools/.venv/bin/python -m pip install -r .kiro/tools/requirements.txt
+.kiro/tools/.venv/bin/python -m pytest .kiro/tools/tests/ -q   # optional check: 55 pass, 1 skipped
+```
+
+Then open the repository in Kiro. It starts the server from `.kiro/settings/mcp.json` (`.kiro/tools/.venv/bin/python .kiro/tools/mcp_darwin_server.py`, relative to the repo root). More detail, including a `uv` variant, is in [.kiro/tools/README.md](.kiro/tools/README.md).
 
 ## Hackathon Category
 
@@ -276,6 +288,8 @@ Arlington, Virginia, United States<br />
 ### How we built this together
 
 We pair with Kiro on specs first, then code, and keep a public record of it in [docs/devlog.md](docs/devlog.md).
+
+The full answer to how we used Kiro (IDE, CLI and Crew, hooks, specs versus vibe coding, steering, MCP, property-based testing, powers) is in [docs/KIRO_USAGE.md](docs/KIRO_USAGE.md).
 
 - **Dharshaneshwaran** built the first working app on the `dev` branch: the menu bar app, the TCC watcher, the process inspector and the Fortress HUD, including the fix for the macOS 27 log format. Later work: re-running the hackathon review, and the plain-language HUD banner and risk reasons.
 - **Iolaire** set up the project, specs and steering files, built the WardTrigger test harness, the permission capture framework and the real-device before/after captures, and produced the demo video and impact docs.

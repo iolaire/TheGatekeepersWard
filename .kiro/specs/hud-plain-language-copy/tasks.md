@@ -33,8 +33,9 @@ Swift 6, Swift Testing. The banner title ships first, then the risk reasons, as 
     - Add the four reasons to steering §7; amend `castle-keep-visual-theme` Requirement 3.7 and the `RiskLegendView` line in its design
     - _Requirements: 3.1, 3.2_
 
-- [ ] 3. Final checkpoint
+- [x] 3. Final checkpoint
   - Full `swift build && swift test --skip integration`; manual check with `scripts/run_ward_trigger.sh docs curl base64 ~/.ssh/id_rsa .env`
+  - Done 2026-11-23: build completes and 169 tests in 23 suites pass. The manual check used a real agent instead of WardTrigger: the DeepSeek Harness `env-file` capture (`docs/demo/assets/deepseek-harness/`) shows the HUD with the CREDENTIAL FILE tag and its plain-language reason on macOS 27.2.1. The four-category WardTrigger command was not re-run; the all-four-categories height is covered by `fitsTheBudget`.
   - _Requirements: 1.4, 2.7_
 
 ## Measured heights (`fitsTheBudget`)
