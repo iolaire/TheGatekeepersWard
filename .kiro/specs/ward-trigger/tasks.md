@@ -118,7 +118,7 @@ Build the `WardTrigger` Swift CLI executable as an SPM target alongside the main
 
 - [x] 10. Wire CI hook integration
 
-  - [x] 10.1 Create the Kiro hook `.kiro/hooks/build-test-gate.json` (v1 schema, PostTaskExec trigger) running `swift build && swift test --skip integration`. Integration-tagged tests (those requiring a live TCC prompt or real sysctl call on the current process) must be excluded from the hook run via the `--skip integration` flag. Additionally, provide a git pre-commit gate at `scripts/git-hooks/pre-commit` (installed by symlinking into `.git/hooks/pre-commit`) that runs the same two commands and blocks the commit on failure.
+  - [x] 10.1 Create the Kiro hook `.kiro/hooks/build-test-gate.kiro.hook` (`postTaskExecution` trigger, `runCommand`) running `swift build && swift test --skip integration`. Integration-tagged tests (those requiring a live TCC prompt or real sysctl call on the current process) must be excluded from the hook run via the `--skip integration` flag. Additionally, provide a git pre-commit gate at `scripts/git-hooks/pre-commit` (installed by symlinking into `.git/hooks/pre-commit`) that runs the same two commands and blocks the commit on failure.
     - _Requirements: 6.1, 6.2, 6.3 (indirectly — ensures the pipeline is always buildable)_
 
 - [x] 11. Final verification
@@ -182,4 +182,4 @@ Build the `WardTrigger` Swift CLI executable as an SPM target alongside the main
 
 - Script names: the reset script is `scripts/reset_ward_trigger.sh` (not `reset_trigger.sh`), and `scripts/run_ward_trigger.sh` was added as a LaunchServices launcher (Requirement 12). Printed lines keep the `[reset_trigger]` prefix.
 - The Documents probe is a read-only directory listing of `~/Documents`, because a plain stat of the canary path is not intercepted by `tccd`.
-- The Kiro hook is `build-test-gate.json` using a v1 PostTaskExec trigger (Kiro has no commit trigger), and commit-time blocking is provided by the git hook script.
+- The Kiro hook is `build-test-gate.kiro.hook` using a `postTaskExecution` trigger (Kiro has no commit trigger), and commit-time blocking is provided by the git hook script.

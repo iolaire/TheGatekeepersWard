@@ -3,9 +3,26 @@
 Running notes from the build. Newest entries at the top.
 
 ---
-## 2026-11-23 (02:47 UTC) — Day 19: Demo video splash card, real-clip scenes, draft render
+## 2026-11-23 (03:30 UTC) — Hooks converted to the Kiro IDE format
 
 **iolaire (pairing with Kiro)**
+The six files in `.kiro/hooks/` used a custom `version: v1` / `PostTaskExec` schema that the Kiro IDE does not load. They are now `*.kiro.hook` files (`when` / `then`):
+
+| Hook | Trigger | Action |
+|---|---|---|
+| Build and Test Gate | `postTaskExecution` | `runCommand` |
+| Castle Keep Palette Check | `fileEdited` on HUD and MenuBar | `runCommand` |
+| Swift Standards Lint | `fileEdited` on app and WardTrigger code | `runCommand` |
+| Raw Pointer Safety Review | `fileEdited` on Core | `askAgent` |
+| Spec-First Nudge | `promptSubmit` | `askAgent` |
+| Security Boundary Guard | `preToolUse` on write tools | `askAgent` |
+
+The guard changed from a script that emits a CLI permission decision to an agent prompt carrying the same rules, because the IDE ignores that script output. The script stays in `scripts/hooks/` for the Kiro CLI. The two lint scripts run cleanly with no stdin, which is how the IDE calls them. Not yet confirmed: that each hook shows up and fires in the IDE Hooks panel.
+
+---
+## 2026-11-23 (02:47 UTC) — Day 19: Demo video splash card, real-clip scenes, draft render
+
+**iolaire (pairing with KiroCrew)**
 
 Reworked the demo video and refreshed its narration pass.
 
@@ -32,7 +49,7 @@ Captured a second before/after set, this time for a Microphone prompt from Qoder
 ---
 ## 2026-11-23 (02:20 UTC) — Day 19: Remotion demo video draft
 
-**iolaire (pairing with Kiro)**
+**iolaire (pairing with KiroCrew)**
 
 Built a draft demo video in `docs/demo/remotion/` (Remotion 4.0.545, 1920x1080, 30 fps). The scratch cut runs 2:30 (4505 frames, 150.2 s), under the 3:00 limit.
 

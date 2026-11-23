@@ -3,14 +3,14 @@
   "hooks": [
     {
       "name": "Security Boundary Guard",
+      "description": "Before a write, checks for forbidden entitlements, debugger APIs, SIP/kext use, direct TCC.db access, or a focus-stealing NSPanel, and asks the user first. scripts/hooks/guard-security-boundaries.py holds the same rules for the Kiro CLI.\n\nMigration note: Tool categories were converted to the tool-name matcher `^(fs_write|fs_append|str_replace|delete_file|code)$`, reconstructed from the built-in tool list. Confirm it covers the tools you meant, then enable the hook.",
       "trigger": "PreToolUse",
-      "description": "Asks for confirmation when a write adds forbidden entitlements, debugger APIs, SIP/kext use, or a focus-stealing NSPanel.",
-      "matcher": "fs_write|str_replace|fs_append",
+      "matcher": "^(fs_write|fs_append|str_replace|delete_file|code)$",
       "action": {
-        "type": "command",
-        "command": "python3 scripts/hooks/guard-security-boundaries.py",
-        "timeout": 15
-      }
+        "type": "agent",
+        "prompt": "Before writing, check the content against .kiro/steering/macos-security-boundaries.md. For .swift, .plist and .entitlements files, look for: com.apple.private.* or new com.apple.security.* entitlements, allow-jit or disable-library-validation, task_for_pid / vm_read / PT_ATTACH / ptrace, csrutil / kext / DriverKit / SystemExtensions, TCCAccessRequest or TCC.framework, AXUIElement calls, SIGSTOP / SIGKILL / SIGTERM / kill( on an inspected process, reads of /private/var/db/, and an NSPanel styleMask without .nonactivatingPanel. For script files (.sh, .py, .js and similar), look for references to TCC.db; scripts/capture/lib/tccdb.sh is the one allowed exception. Ignore mentions in comments. If any match, stop and ask the user to confirm before writing, naming the rule. Otherwise proceed without comment."
+      },
+      "enabled": true
     }
   ]
 }

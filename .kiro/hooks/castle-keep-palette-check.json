@@ -3,14 +3,14 @@
   "hooks": [
     {
       "name": "Castle Keep Palette Check",
-      "trigger": "PostFileSave",
       "description": "Flags hex colours outside the Castle Keep palette and generic Allow/Deny copy in HUD and MenuBar code.",
-      "matcher": "/(HUD|MenuBar)/.*\\.swift$",
+      "trigger": "PostFileSave",
+      "matcher": "(GatekeepersWard/HUD/.*[^/]*\\.swift$|GatekeepersWard/MenuBar/.*[^/]*\\.swift$)",
       "action": {
         "type": "command",
-        "command": "scripts/hooks/check-palette.sh",
-        "timeout": 15
-      }
+        "command": "scripts/hooks/check-palette.sh"
+      },
+      "enabled": true
     }
   ]
 }

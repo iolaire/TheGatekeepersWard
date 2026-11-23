@@ -3,11 +3,13 @@
   "hooks": [
     {
       "name": "Build and Test Gate",
+      "description": "After each spec task finishes, build the package and run the test suite, skipping integration-tagged tests that need a live TCC prompt.",
       "trigger": "PostTaskExec",
       "action": {
         "type": "command",
         "command": "swift build && swift test --skip integration"
-      }
+      },
+      "enabled": true
     }
   ]
 }
