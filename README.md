@@ -12,9 +12,19 @@
 
 Autonomous AI IDEs, coding harnesses, and ordinary Mac apps trigger macOS TCC permission prompts that say which *app* wants access and nothing about *what it intends to do*. The user has to gamble on **Allow**, and that click can give an autonomous agent a shell-driven path into `~/Desktop`, `~/Documents`, Contacts, or the Camera.
 
-Apple is working on finer-grained permissions that would give users more control over AI IDEs and agents, but that capability is not released yet. Gatekeeper's Ward covers the gap **today**. It runs entirely in unprivileged user space: no kernel extensions, no SIP changes, no restricted entitlements, no security bypasses.
+Apple is tightening these permissions because of AI agents, and its new options will put more prompts in front of users. Those prompts still name the app, not the command. Gatekeeper's Ward gives each one the missing context. It runs entirely in unprivileged user space: no kernel extensions, no SIP changes, no restricted entitlements, no security bypasses.
 
-**Safety model:** Gatekeeper's Ward only informs and never blocks. Apple's native dialog keeps full control, and the user always answers with Apple's own **Allow** or **Don't Allow** button.
+### Why now: the problem is public, and Apple is responding
+
+- **Apple is tightening controls because of AI agents.** On Nov 16, 2026, Apple previewed new controls in **macOS 27.3 beta 2**: Device Control and Data Access splits into two settings, Full Disk Access can be limited to chosen folders, and apps can be set to "ask every time". Apple's statement: *"Before granting an app such extraordinary access, users should understand that it puts all of the data on their Mac at risk."* ([The Hacker News, Nov 17](https://thehackernews.com/2026/11/apple-tightens-macos-app-permissions-to.html); [TechCrunch, Nov 16](https://techcrunch.com/2026/11/16/apple-reveals-new-mac-security-controls-as-ai-agents-raise-privacy-risks/))
+- **It is still beta.** The changes are not in a general release, so users running agents today still face the opaque prompt.
+- **Developers name the gap.** In a Hacker News thread on Full Disk Access ([Oct 3, 2026](https://news.ycombinator.com/item?id=49937631)), one commenter writes: *"Granting terminal full disk access grants arbitrary scripts full disk access."* Another: *"Once I grant iTerm access to Documents for whatever reason, it always has such permission. It would be nice to limit that to a single use, or a single harness session."*
+- **The prompt names the app, by design.** Commenters in the same thread explain that TCC attributes a child's file access to the app the user launched, so an `ls` run from a terminal appears as the terminal. A prompt for an agent harness therefore cannot say which command it is answering for.
+- **The concern reaches beyond developers.** Enterprise analysts warn that agents with broad disk access can reach stored credentials, API keys and session tokens ([Petronella Technology Group, Oct 5](https://petronellatech.com/blog/apple-plans-tighter-macos-full-disk-access-controls-over-ai-agent-data-access/)), and a widely shared `r/mac` thread ([July 14](https://www.reddit.com/r/mac/comments/1uvxp9r/warning_new_chatgpt_mac_desktop_update_bypasses/)) reports a desktop AI app listing local files, including dotfiles such as `.env`.
+
+**Complementary to Apple's changes.** Apple's controls decide *how much* access an app can hold: split permissions, folder limits, ask every time. Based on the published descriptions, they do not state *which command* is behind a given prompt. Gatekeeper's Ward shows that: the process lineage, the executed command (`argv`), the working directory and risky-argument tags. "Ask every time" will likely mean more prompts, and without the command behind each one that becomes prompt fatigue and blind clicks. With the Ward, each prompt is an informed decision.
+
+**Safety model:** Gatekeeper's Ward only informs and never blocks, which is why it can be adopted today: it cannot break a workflow or weaken a macOS security boundary. Apple's native dialog keeps full control, and the user always answers with Apple's own **Allow** or **Don't Allow** button.
 
 ### Before vs. after, on a real Mac
 
@@ -39,6 +49,14 @@ A real capture of DeepSeek Harness asking for the Desktop folder. Same prompt, s
 | Who decides | The user, via Apple's dialog | The user, via Apple's dialog (the HUD says "Answer in Apple's dialog") |
 
 Original captures, flow recordings and manifests are in [docs/demo/assets/deepseek-harness/](docs/demo/assets/deepseek-harness/).
+
+**A risky command: the same prompt, a different command**
+
+The prompt on the left is identical to the benign `ls` case above, but this time the agent ran `wc -c /Users/iolaire/Documents/temp_ai/vegurn/.env.prod.example` against the Documents folder. The HUD flags the path as a **CREDENTIAL FILE** ("Usually holds passwords or API keys"), marks the spirit "Suspicious Spirit at the Gate", and highlights the path in the command in Mischief Crimson. The command prints only a byte count, and the file is a `.example` template, so no secrets were involved.
+
+![Apple's Documents folder prompt beside the Fortress HUD showing a CREDENTIAL FILE risk tag and the .env.prod.example path highlighted in the executed command](docs/demo/assets/deepseek-harness/ward_deepseek_harness_env_file_pair.png)
+
+Apple's dialog alone reads the same for this command and for a harmless one. The HUD is what separates them.
 
 **A second AI IDE and permission: Qoder asking for the Microphone**
 

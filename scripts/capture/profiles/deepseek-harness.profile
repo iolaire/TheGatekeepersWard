@@ -28,3 +28,9 @@ scenario.removable-volume.prompt         = List the files and folders at the top
 scenario.removable-volume.service        = SystemPolicyRemovableVolumes
 scenario.removable-volume.prompt_timeout = 45
 scenario.removable-volume.dwell          = 4
+# Risk-tag demo: a single path inside Documents (raises the prompt) whose name RiskTagger flags as a credential file.
+# `ls -l` on one file only stats it, which TCC does not gate. `wc -c` opens the file (raising the prompt) but prints only a byte count; the file is a .example template.
+scenario.env-file.prompt         = Run exactly this one shell command and show its output: wc -c /Users/iolaire/Documents/temp_ai/vegurn/.env.prod.example. Do not display, change, create, or delete any file.
+scenario.env-file.service        = SystemPolicyDocumentsFolder
+scenario.env-file.prompt_timeout = 60
+scenario.env-file.dwell          = 4

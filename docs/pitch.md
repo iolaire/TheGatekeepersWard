@@ -35,7 +35,7 @@ You're forced to **Allow** or **Don't Allow** blind.
 ├──────────────────────────────────────────────────────────────┤
 │ ⚠️ Target: ~/Documents/Work/production.env   Spirit Paused   │
 │                                                              │
-│  [ Let Spirit Pass ]              [ Lower Portcullis ]       │
+│  Answer in Apple's dialog: Allow / Don't Allow               │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -45,9 +45,21 @@ You can now make an **informed** decision.
 
 ## Why It Matters Now (Potential Impact)
 
-Apple is working on finer-grained permissions that would give users more control over AI IDEs and agents, but that capability is not released yet. Until it ships, users have only the opaque TCC prompt. Gatekeeper's Ward fills that gap today, in unprivileged user space: no kernel extensions, no SIP changes, no restricted entitlements.
+Apple is tightening macOS permissions because of AI agents, and its new options (split permissions, folder-limited Full Disk Access, "ask every time") make users answer more prompts. Those prompts still name the app, not the command behind it. Gatekeeper's Ward gives each prompt the missing context, in unprivileged user space: no kernel extensions, no SIP changes, no restricted entitlements.
 
-It only informs. Apple's dialog keeps full control, and the user always answers with Apple's own **Allow** or **Don't Allow** button.
+**Inform-only is why teams can adopt it today.** It never blocks or modifies anything, so it cannot break a workflow or weaken a macOS security boundary. Installing it needs no system extension, no Endpoint Security entitlement and no SIP change, which is the kind of review that normally stalls a security tool. Apple's dialog keeps full control, and the user always answers with Apple's own **Allow** or **Don't Allow** button.
+
+### The problem is public, and Apple is responding
+
+| Signal | What it shows |
+|---|---|
+| Apple, macOS 27.3 beta 2 (Nov 16, 2026) | Device Control and Data Access splits in two, Full Disk Access can be limited to chosen folders, apps can be set to "ask every time". Apple: *"Before granting an app such extraordinary access, users should understand that it puts all of the data on their Mac at risk."* ([The Hacker News](https://thehackernews.com/2026/11/apple-tightens-macos-app-permissions-to.html), [TechCrunch](https://techcrunch.com/2026/11/16/apple-reveals-new-mac-security-controls-as-ai-agents-raise-privacy-risks/)) |
+| Still beta | Not in a general release. Users running agents today still get the opaque prompt. |
+| Developer discussion ([Hacker News, Oct 3](https://news.ycombinator.com/item?id=49937631)) | *"Granting terminal full disk access grants arbitrary scripts full disk access."* and *"It would be nice to limit that to a single use, or a single harness session."* |
+| Why the prompt is vague | TCC attributes a child's access to the app the user launched, so an `ls` run from a terminal appears as the terminal. The prompt cannot name the command. |
+| Enterprise and consumer concern | Broad disk access lets agents reach credentials, API keys and session tokens ([Petronella, Oct 5](https://petronellatech.com/blog/apple-plans-tighter-macos-full-disk-access-controls-over-ai-agent-data-access/)). A widely shared `r/mac` thread reports a desktop AI app listing local files including `.env` ([Jul 14](https://www.reddit.com/r/mac/comments/1uvxp9r/warning_new_chatgpt_mac_desktop_update_bypasses/)). |
+
+**Apple's changes make the Ward more useful, not less.** They decide how much access an app can hold, and "ask every time" will likely put more prompts in front of users. Based on the published descriptions, those prompts still do not say which command is behind them. Without the Ward, more prompts mean more blind clicks (prompt fatigue). With it, each prompt shows the lineage, `argv` and working directory. Apple also says previously granted permissions stay in effect, so existing grants keep needing this visibility.
 
 ### Real-device proof: DeepSeek Harness asks for the Desktop folder
 
@@ -65,7 +77,19 @@ With the baseline alone, a safe directory listing and a delete or exfiltration l
 
 ![Apple's prompt beside the Gatekeeper's Ward Fortress HUD](demo/assets/deepseek-harness/ward_deepseek_harness_desktop_pair.png)
 
-The same capture works for a second AI IDE and a different permission: Qoder asking for the Microphone ([pair shot](demo/assets/qoder/ward_qoder_microphone_pair.png)). The command there is a `swift -e` one-liner, so the HUD shows the compiler process rather than a readable command, but the lineage Qoder → zsh → swift-frontend still names the source.
+### Same kind of prompt, risky command: a credential file caught by the risk tags
+
+Apple's dialog has the same wording as in the benign case, only for the Documents folder. The agent ran `wc -c /Users/iolaire/Documents/temp_ai/vegurn/.env.prod.example`, and the HUD flags the path as a **CREDENTIAL FILE**, marks the spirit "Suspicious Spirit at the Gate", and highlights the path in Mischief Crimson. The command prints only a byte count, and the file is a `.example` template.
+
+![Apple's Documents prompt beside the Fortress HUD with a CREDENTIAL FILE risk tag](demo/assets/deepseek-harness/ward_deepseek_harness_env_file_pair.png)
+
+| | Benign (`ls` on Desktop) | Risky (`wc -c` on a `.env` file in Documents) |
+|---|---|---|
+| Apple's prompt | Desktop folder text | Documents folder text |
+| HUD status | Spirit Paused at the Gate | Suspicious Spirit at the Gate |
+| Risk tag | None | CREDENTIAL FILE, `.env.prod.example` highlighted |
+
+The same capture works for a second AI IDE and a different permission: Qoder asking for the Microphone ([pair shot](demo/assets/qoder/ward_qoder_microphone_pair.png)). Even though the request comes from an inline `swift -e` compiler run, the Ward traces the lineage Qoder → zsh → swift-frontend, so the user knows which app triggered the prompt. (Limits of this capture are in the technical notes at the end.)
 
 **Who benefits now:** developers running autonomous AI coding agents and IDEs (Kiro, Cursor, Claude Code, DeepSeek Harness), and any Mac user facing an unexpected permission popup from an app they barely recognize.
 
@@ -87,6 +111,7 @@ The process lineage tree shows each spirit carrying a contextual tool (🔍 for 
 | Zombie API | `sysctl KERN_PROCARGS2` — 20-year-old POSIX, resurrected |
 | Modern declarative | SwiftUI Fortress HUD |
 | System forensics | macOS Unified Log NDJSON streaming |
+| Risk triage | Heuristics that flag secret-hunting and exfiltration arguments in the command |
 | Target domain | Cutting-edge autonomous AI coding agents |
 
 This fits the *"stitch together a chimera of technologies"* prompt to the letter.
@@ -97,29 +122,35 @@ This fits the *"stitch together a chimera of technologies"* prompt to the letter
 
 ## Differentiators
 
+### Why nobody built this before: the core technical insight
+
+While a permission dialog is open, `tccd` does not answer the process that asked, so that process (and its parents) stays in the Darwin process table. The Ward reads `argv`, working directory and lineage from it with an unprivileged `sysctl(KERN_PROCARGS2)` call, with no race against a short-lived command. Tools that need to see brief CLI commands usually reach for Apple's Endpoint Security framework, which needs a restricted entitlement and a system extension. The prompt itself gives the Ward the window that framework would otherwise be used for. If the process has already exited, the HUD degrades to partial information with a note.
+
+The pipeline stitches four layers together: BSD buffer parsing (`KERN_PROCARGS2`), real-time Unified Log NDJSON streaming, risk triage of arguments (`.env`, `.pem`, `id_rsa`, `curl`, `base64`) and a non-activating SwiftUI `NSPanel` overlay. Risk triage is what turns a process viewer into a decision aid.
+
 ### How it compares to existing tools
 
 Gatekeeper's Ward does one narrow job: when a TCC prompt is on screen, it shows the command behind it. The tools below solve neighboring problems, and several can block things that the Ward only reports.
 
-| | Apple's TCC prompt | Little Snitch | Santa | Objective-See (LuLu, OverSight) | `log stream` by hand | **Gatekeeper's Ward** |
-|---|---|---|---|---|---|---|
-| Main job | Ask the user to allow a protected resource | Network connection firewall | Allow or block binary execution | Firewall, camera and mic use alerts, persistence checks | Read raw system logs | Explain who is behind a TCC prompt |
-| Reacts to a TCC prompt | Is the prompt | No | No | No (OverSight reports camera and mic use, not the prompt) | Yes, if you know the predicate | **Yes** |
-| Shows the child command, args and cwd | No (app name only) | No | Shows the binary, not the prompt context | No | No, needs `ps` and `lsof` follow-up | **Yes** |
-| Shows the process lineage | No | No | No | No | No | **Yes** |
-| Flags risky arguments (`.pem`, `.env`, `curl`) | No | No | No | No | No | **Yes** |
-| Can block | Yes, the user decides | Yes | Yes | Yes (LuLu) | No | No, it informs only |
-| Needs a kernel or system extension, or restricted entitlement | No | Yes (network extension) | Yes (Endpoint Security) | Yes for most | No | **No** |
+| | Apple's TCC prompt | Little Snitch | Santa | Objective-See (LuLu, OverSight) | `log stream` by hand | Agent guardrails (IDE hooks, agent permission prompts, MCP gateways) | **Gatekeeper's Ward** |
+|---|---|---|---|---|---|---|---|
+| Main job | Ask the user to allow a protected resource | Network connection firewall | Allow or block binary execution | Firewall, camera and mic use alerts, persistence checks | Read raw system logs | Gate or log the actions an agent routes through its own tool layer | Explain who is behind a TCC prompt |
+| Reacts to a TCC prompt | Is the prompt | No | No | No (OverSight reports camera and mic use, not the prompt) | Yes, if you know the predicate | No | **Yes** |
+| Shows the child command, args and cwd | No (app name only) | No | Shows the binary, not the prompt context | No | No, needs `ps` and `lsof` follow-up | Only what a cooperating agent reports | **Yes** |
+| Shows the process lineage | No | No | No | No | No | No | **Yes** |
+| Flags risky arguments (`.pem`, `.env`, `curl`) | No | No | No | No | No | Varies, only for tool calls it sees | **Yes** |
+| Can block | Yes, the user decides | Yes | Yes | Yes (LuLu) | No | Yes, for supported agents | No, it informs only |
+| Needs a kernel or system extension, or restricted entitlement | No | Yes (network extension) | Yes (Endpoint Security) | Yes for most | No | No | **No** |
 
-*Summary based on each project's public documentation. Verify a row before quoting it elsewhere.*
+*Based on each project's public documentation.*
 
+**Agent-agnostic and OS-boundary native.** Agent guardrails only see what a cooperating, supported agent routes through them. The Ward watches the macOS boundary instead, so it covers Cursor, Claude Code, Kiro, DeepSeek Harness, a script run from a package install hook, or an unvetted MCP server, whenever the process touches a TCC-protected resource and the prompt appears.
 
-- **No kernel extension required** — pure userspace, ships as a notarised `.app`
+- **No kernel extension required** — pure userspace Swift `.app` that builds from source with zero restricted entitlements
 - **No SIP bypass** — zero security compromise required to install or run
 - **Open source** — developers can audit and trust it
 - **Zero config** — install, launch, done
 - **Real-time** — HUD appears the instant the permission dialog fires, not after
-- **Process suspension insight** — `tccd` blocks the child process thread while waiting; the process is frozen in the table, so `sysctl` inspection is always reliable
 
 ---
 
@@ -150,9 +181,17 @@ Gatekeeper's Ward does one narrow job: when a TCC prompt is on screen, it shows 
 |---|---|---|
 | 0:00–0:35 | AI agent running + opaque TCC modal | *"Modern agents work fast but macOS blinds us. You're forced to guess."* |
 | 0:35–1:15 | Same trigger — Fortress HUD slides in alongside Apple's dialog | *"Gatekeeper's Ward unmasks the intruder instantly."* |
-| 1:15–2:00 | Code walkthrough: `sysctl KERN_PROCARGS2` + Unified Log | *"Zero dark magic. No kernel extensions. We resurrect 20-year-old POSIX APIs."* |
+| 1:15–2:00 | Code walkthrough: `sysctl KERN_PROCARGS2` + Unified Log. Then a 10–15 s Kiro beat: `.kiro/specs/` folders, hooks, steering, and the property-based tests on the `KERN_PROCARGS2` and log parsers passing | *"Zero dark magic. No kernel extensions. We resurrect 20-year-old POSIX APIs. Specs, hooks and property-based tests built it with Kiro."* |
 | 2:00–2:35 | Menu bar ghost, history dropdown, risk tags on suspicious args | *"Full lineage tree, process history, automatic risk tagging."* |
-| 2:35–3:00 | Impact: before/after pair, Apple's finer-grained permissions not shipped yet, Apache 2.0 repo link | *"Apple's finer-grained agent permissions aren't here yet. The Ward is. Know who knocks before you drop the castle gates."* |
+| 2:35–3:00 | Impact: before/after pair, Apple's macOS 27.3 beta controls (still unreleased) answer how much access, the Ward answers which command, Apache 2.0 repo link | *"Apple is tightening agent permissions, and it is still in beta. Even then, the prompt will not tell you which command is asking. The Ward does. Know who knocks before you drop the castle gates."* |
+
+---
+
+## Technical notes and limits
+
+- The Qoder Microphone capture runs through an inline `swift -e` compiler, so the HUD shows the compiler process (`swift-frontend`) instead of a readable command. The lineage still identifies Qoder.
+- Parsing depends on TCC log wording, which changes between macOS versions. A regex fallback on `eventMessage` covers wording drift. The real-device captures come from one macOS version.
+- The Ward informs only. It cannot press or block Apple's buttons.
 
 ---
 

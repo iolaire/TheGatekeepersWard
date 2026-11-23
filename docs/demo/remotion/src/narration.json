@@ -2,7 +2,7 @@
   {
     "id": "scene-01-intro",
     "title": "Intro, Hook and Immediate Need",
-    "text": "Every day, autonomous A I coding tools and random Mac apps throw up a system permission popup. It names the app. It never says what that app is about to do. One blind click on Allow can hand an autonomous agent your Desktop, your Documents, even your camera. Apple is working on finer grained permissions for A I tools, but they are not released yet. Gatekeeper's Ward fills that gap today."
+    "text": "Every day, autonomous A I coding tools and random Mac apps throw up a system permission popup. It names the app. It never says what that app is about to do. One blind click on Allow can hand an autonomous agent your Desktop, your Documents, even your camera. Apple is tightening these permissions for A I agents, but the new prompts still name only the app, not the command. Gatekeeper's Ward fills in the missing context today."
   },
   {
     "id": "scene-02-baseline",

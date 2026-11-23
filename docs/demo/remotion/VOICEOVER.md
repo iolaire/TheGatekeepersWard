@@ -14,10 +14,10 @@ The spoken copy uses spelled-out letters ("A I", "H U D", "T C C") so the scratc
 ## Scene 1: Intro, Hook and Immediate Need
 - **ID:** `scene-01-intro`
 - **Timecode:** 0:00-0:26
-- **Impact point:** Real-world need: opaque prompts, blind Allow, Apple's fix not shipped.
+- **Impact point:** Real-world need: opaque prompts, blind Allow, Apple's new controls still do not name the command.
 - **Visual cues:** Title card with the ghost mascot. Right column reveals: a generic macOS prompt, `$ ???` marked UNKNOWN, an amber "Apple: not released yet" card, then a violet "Gatekeeper's Ward: Today" card.
 
-> Every day, autonomous A I coding tools and random Mac apps throw up a system permission popup. It names the app. It never says what that app is about to do. One blind click on Allow can hand an autonomous agent your Desktop, your Documents, even your camera. Apple is working on finer grained permissions for A I tools, but they are not released yet. Gatekeeper's Ward fills that gap today.
+> Every day, autonomous A I coding tools and random Mac apps throw up a system permission popup. It names the app. It never says what that app is about to do. One blind click on Allow can hand an autonomous agent your Desktop, your Documents, even your camera. Apple is tightening these permissions for A I agents, but the new prompts still name only the app, not the command. Gatekeeper's Ward fills in the missing context today.
 
 ## Scene 2: Baseline Flow
 - **ID:** `scene-02-baseline`

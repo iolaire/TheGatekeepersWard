@@ -3,6 +3,18 @@
 Running notes from the build. Newest entries at the top.
 
 ---
+## 2026-11-23 (14:45 UTC) — Day 19: Recaptured DeepSeek Desktop and Qoder Microphone with the current HUD
+**iolaire (pairing with Kiro)**
+Re-ran `deepseek-harness desktop` (baseline and Ward) and `qoder microphone` so the README and pitch images show the current HUD ("Answer in Apple's dialog" footer, plain-language header). The Qoder Ward run took several tries. In an old Qoder chat, the agent had saved a note that `swift -e` microphone probes return false and ran the command in the background, which returned `false` with no prompt. The run that worked started from a fresh task in the TheGatekeepersWard workspace, opened by hand. On that screen, the framework's `find:text area` search took about 80 s, probably because of the sessions heatmap, but it finished. Prompt detection recorded 16×14 bounds (likely the "?" button), and the full-screen shot was taken before the HUD appeared, so the published `pair.png` was cropped wrongly. It was replaced with a frame from that run's `flow.mov` at 83 s, cropped to the prompt and HUD. The pair is a real frame from the same session, not a composite. The local `ward_qoder_microphone_screen.png` (gitignored) is now the full 83 s frame. The Qoder baseline from this round was unusable: a second DeepSeek Desktop prompt stayed on screen for the whole recording, so the framework saved DeepSeek's dialog as Qoder's baseline. The baseline prompt shot and manifest were restored from git (the Nov 22 capture). A baseline shows only Apple's prompt, so the HUD update does not affect it. The local baseline `flow.mov` and `_screen.png` are still the bad ones and should not be used for the video. Follow-ups: tighten prompt-bounds detection in `scripts/capture/lib/runner_steps.sh` to ignore tiny child elements, and decide whether the Qoder profile should open a new task automatically.
+---
+## 2026-11-23 (13:05 UTC) — Day 19: Risk-tag capture with DeepSeek Harness
+**iolaire (pairing with Kiro)**
+Added an `env-file` risk-tag scenario to `scripts/capture/profiles/deepseek-harness.profile` and ran it end to end (baseline, then Ward). An earlier `ls -1 ~/.aws ~/Desktop` attempt showed a SECRET PATH tag but needed Desktop to raise the prompt, because `~/.aws` is not TCC-protected, so it was dropped. The scenario runs `wc -c` on `~/Documents/temp_ai/vegurn/.env.prod.example`: one path in a protected folder, flagged CREDENTIAL FILE. An `ls -l` on a single file raised no prompt, because `stat` is not gated by TCC, so the scenario uses `wc -c`, which opens the file and prints only a byte count. A first Ward run put the HUD on the portrait display; moving the pointer to the main display before the run fixed it. The README and pitch use the `env-file` pair. The framework required stopping a dev-build Ward that was already running. The capture was on macOS 27.2.1.
+---
+## 2026-11-23 (12:50 UTC) — Day 19: Impact messaging tied to Apple's macOS 27.3 beta
+**iolaire (pairing with Kiro)**
+Added a "Why now" section to the README Potential Impact text and a matching signals table to `docs/pitch.md`. It cites Apple's Nov 16 macOS 27.3 beta 2 controls (split permissions, folder-limited Full Disk Access, "ask every time"), the Hacker News Full Disk Access thread, and the enterprise and Reddit coverage. The demo-flow closing line now says Apple's controls are still in beta and do not name the command behind a prompt. The Hacker News article and thread were fetched and the Apple quote and two commenter quotes match. The TechCrunch, Petronella and Reddit links are cited from the research notes and were not re-fetched. The claim that Apple's beta does not show the command is worded "based on the published descriptions" because it has not been tested on a 27.3 machine. Second pass on the pitch from review feedback: Apple's changes are framed as raising the Ward's value (more prompts, same missing context), inform-only is framed as the reason it can be adopted today, the Process-suspension insight is now its own "core technical insight" block, the comparison table gained an agent-guardrails column, the ASCII mockup no longer shows clickable buttons, the unverified "notarised" claim was replaced, the Qoder caveat moved to a technical-notes section, and the demo flow has a Kiro beat. Still to do: capture a real risky-command prompt (for example `rg` on a `.env` file), update `docs/demo/remotion/src/narration.json` and `VOICEOVER.md` scene 1 and the closing scene to match, then re-render the audio.
+---
 ## 2026-11-23 (04:00 UTC) — Third-party names notice
 
 **iolaire (pairing with Kiro)**
@@ -154,9 +166,18 @@ Closed the open question of whether Gemini-generated images may ship in the proj
 
 ---
 
+## 2026-11-21 (17:37 UTC) — Day 17: Dharshaneshwaran makes the HUD copy plain language
+**Dharshaneshwaran (pairing with Kiro)**
+Four commits on `feature/hud-plain-language-copy` (17:23 to 17:37 UTC) closed the open item from the Day 6 notes: a clearer title than "TCC EVENT DETECTED" for people who do not know the term. The branch was merged into `main` on Nov 23 (02:30 UTC, `79e4573`).
+- **Spec first.** `.kiro/specs/hud-plain-language-copy` (requirements, design, tasks) was written before the code (`a63efa2`). It amends requirements 3.3 and 3.7 of `castle-keep-visual-theme`, and only changes displayed text and layout. Detection, inspection and risk tagging are untouched.
+- **Banner title.** The amber banner now reads "A spirit is knocking at your Documents Vault", built from `TCCService.vaultName` for every service, including "Unknown Vault" (`e17fdc1`). The title wraps to a second line instead of dropping below 11 pt.
+- **Risk reasons.** The Risk Legend changed from a wrapped row of crimson chips to one line per category, each with a short reason, such as "Can send data off your Mac." for a network tool (`2c548c5`). Every reason is at most 40 characters so it fits on one line at the 400 pt card width. The VoiceOver label reads each category with its reason.
+- **Docs.** The UI copy table in `.kiro/steering/swiftui-hud-design.md` and the `castle-keep-visual-theme` spec list the new title and reasons. The README screenshot was refreshed to show both (`be3e747`).
+- **Tests.** New cases in `HUDContentTests` and `HUDSectionTests` cover the title and the legend rows.
+---
 ## 2026-11-20 (08:00 UTC) — Day 16: Dharshaneshwaran re-runs the hackathon review and fixes the README
 
-**Dharshaneshwaran**
+**Dharshaneshwaran (pairing with Kiro)**
 
 Two docs-only commits arrived through PR #2 (`dev` into `main`). The first re-ran the `/code-review-hackathon` prompt and refreshed `docs/HACKATHON_REVIEW.md`. The second fixed the README items that review flagged.
 
@@ -348,7 +369,7 @@ The 14:06 UTC entry below lists these items as open follow-ups; that was true wh
 
 ## 2026-11-09 (14:06 UTC) — Day 5: Dharshaneshwaran's branch meets main
 
-**Dharshaneshwaran**
+**Dharshaneshwaran (pairing with Kiro)**
 
 While iolaire was adding eight triggers to WardTrigger on `main`, the `dev` branch was still on the three-service parser. Dharshaneshwaran merged `main` into `dev` and found the HUD no longer compiled: `TCCService` had gained cases for Downloads, Calendar, Reminders, Photos, Camera and Screen Capture, and the HUD's vault-name `switch` is exhaustive. Dharshaneshwaran added the six vault names (`2e1b562`), so every WardTrigger service now gets its own lore copy in the HUD instead of "Unknown Vault".
 
@@ -396,7 +417,7 @@ WardTrigger only covered three TCC services (Documents, Contacts, Microphone). T
 
 ## 2026-11-08 (08:52 UTC) — Day 4: Phase 2 and 3 land on the dev branch
 
-**Dharshaneshwaran**
+**Dharshaneshwaran (pairing with Kiro)**
 
 The whole runtime pipeline went in on a separate `dev` branch, in three commits across the morning (07:27 and 08:52 UTC). It was not visible on `main` until the Nov 9 merge, which is why the Day 5 notes below still call the inspector, watcher and HUD unbuilt.
 

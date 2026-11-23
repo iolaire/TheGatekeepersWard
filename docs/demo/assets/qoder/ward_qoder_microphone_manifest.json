@@ -3,8 +3,8 @@
   "bundle_id": "com.qoder.app",
   "scenario": "microphone",
   "mode": "ward",
-  "started_at": "2026-11-23T02:13:01Z",
-  "ended_at": "2026-11-23T02:13:27Z",
+  "started_at": "2026-11-23T14:40:54Z",
+  "ended_at": "2026-11-23T14:42:26Z",
   "macos_version": "27.2.1",
   "artifacts": [
     "capture.log",
@@ -15,15 +15,15 @@
     "screen.png"
   ],
   "outcome": "ok",
-  "ward_commit": "be8c576e1699374596104731a3688b99689595c3",
+  "ward_commit": "484015f6e5182d635332e12ab0a38c50beddc03b",
   "prompt": {
     "bounds": {
-      "h": 20,
-      "w": 20,
-      "x": 1270,
-      "y": 389
+      "h": 14,
+      "w": 16,
+      "x": 1272,
+      "y": 392
     },
-    "detected_at": "2026-11-23T02:13:20.525Z",
+    "detected_at": "2026-11-23T14:42:19.246Z",
     "resolution": "dismissed",
     "service_match": true
   },
@@ -34,11 +34,11 @@
       "x": 1495,
       "y": 207
     },
-    "detected_at": "2026-11-23T02:13:21.511Z"
+    "detected_at": "2026-11-23T14:42:20.296Z"
   },
   "video": {
-    "bytes": 53361416,
-    "duration_s": 20.627,
+    "bytes": 202620190,
+    "duration_s": 86.78,
     "status": "ok"
   },
   "reset_failed": false,

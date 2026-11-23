@@ -1,0 +1,47 @@
+{
+  "profile_id": "deepseek-harness",
+  "bundle_id": "com.deepseek.dsh",
+  "scenario": "env-file",
+  "mode": "ward",
+  "started_at": "2026-11-23T14:16:30Z",
+  "ended_at": "2026-11-23T14:17:00Z",
+  "macos_version": "27.2.1",
+  "artifacts": [
+    "capture.log",
+    "flow.mov",
+    "hud.png",
+    "pair.png",
+    "prompt.png",
+    "screen.png"
+  ],
+  "outcome": "ok",
+  "ward_commit": "484015f6e5182d635332e12ab0a38c50beddc03b",
+  "prompt": {
+    "bounds": {
+      "h": 358,
+      "w": 410,
+      "x": 1075,
+      "y": 207
+    },
+    "detected_at": "2026-11-23T14:16:53.837Z",
+    "resolution": "dismissed",
+    "service_match": true
+  },
+  "hud": {
+    "bounds": {
+      "h": 629,
+      "w": 400,
+      "x": 1495,
+      "y": 207
+    },
+    "detected_at": "2026-11-23T14:16:54.888Z"
+  },
+  "video": {
+    "bytes": 87802767,
+    "duration_s": 24.81,
+    "status": "ok"
+  },
+  "reset_failed": false,
+  "failed_step": null,
+  "error": null
+}
